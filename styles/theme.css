@@ -1,0 +1,233 @@
+@import "tailwindcss";
+ 
+@theme inline {
+  --font-display: "Inter", "sans-serif";
+  --color-primary-500: oklch(0.84 0.18 117.33);
+  --spacing: 0.25rem;
+}
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --font-size: 16px;
+  --font-family-base: Menlo, Monaco, monospace;
+
+  --white: #ffffff;
+  --black: #000000;
+
+  --text-secondary: #333333;
+  --text-tertiary: #868686;
+  --text-quaternary: #e5e5e5;
+
+  --status-success: #58cc02;
+  --status-failure: #ff4b4b;
+  --status-info: #b2b2b2;
+
+  --background-primary: #eeeeee;
+  --background-secondary: #f2f2f2;
+  --background-tertiary: #f7f7f7;
+  --background-quaternary: #ffffff;
+  --background-neutral: #fafafa;
+
+  --action-primary: #000000;
+  --action-active: #595959;
+  --action-disabled: #b2b2b2;
+  --action-secondary: #f2f2f2;
+  --action-link: #0043ff;
+
+  --border-primary: #e6e6e6;
+  --border-secondary: #ededed;
+  --border-disabled: #f5f5f5;
+  --border-tertiary: #eff3f7;
+
+  --icon-primary: #8e8e93;
+  --icon-edit: #292d32;
+
+  --background: var(--background-primary);
+  --foreground: var(--black);
+  --card: var(--background-quaternary);
+  --card-foreground: var(--black);
+  --popover: var(--background-quaternary);
+  --popover-foreground: var(--black);
+  --primary: var(--action-primary);
+  --primary-foreground: var(--white);
+  --secondary: var(--background-secondary);
+  --secondary-foreground: var(--text-secondary);
+  --muted: var(--background-tertiary);
+  --muted-foreground: var(--text-tertiary);
+  --accent: var(--background-secondary);
+  --accent-foreground: var(--text-secondary);
+  --destructive: var(--status-failure);
+  --destructive-foreground: var(--white);
+  --border: var(--border-primary);
+  --input: var(--border-secondary);
+  --input-background: var(--background-quaternary);
+  --switch-background: var(--border-tertiary);
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --ring: var(--action-link);
+  --radius: 0.625rem;
+  --sidebar: var(--background-neutral);
+  --sidebar-foreground: var(--black);
+  --sidebar-primary: var(--action-primary);
+  --sidebar-primary-foreground: var(--white);
+  --sidebar-accent: var(--background-secondary);
+  --sidebar-accent-foreground: var(--text-secondary);
+  --sidebar-border: var(--border-secondary);
+  --sidebar-ring: var(--action-link);
+}
+
+.dark {
+  --background: var(--background-primary);
+  --foreground: var(--black);
+  --card: var(--background-quaternary);
+  --card-foreground: var(--black);
+  --popover: var(--background-quaternary);
+  --popover-foreground: var(--black);
+  --primary: var(--action-primary);
+  --primary-foreground: var(--white);
+  --secondary: var(--background-secondary);
+  --secondary-foreground: var(--text-secondary);
+  --muted: var(--background-tertiary);
+  --muted-foreground: var(--text-tertiary);
+  --accent: var(--background-secondary);
+  --accent-foreground: var(--text-secondary);
+  --destructive: var(--status-failure);
+  --destructive-foreground: var(--white);
+  --border: var(--border-primary);
+  --input: var(--border-secondary);
+  --ring: var(--action-link);
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --sidebar: var(--background-neutral);
+  --sidebar-foreground: var(--black);
+  --sidebar-primary: var(--action-primary);
+  --sidebar-primary-foreground: var(--white);
+  --sidebar-accent: var(--background-secondary);
+  --sidebar-accent-foreground: var(--text-secondary);
+  --sidebar-border: var(--border-secondary);
+  --sidebar-ring: var(--action-link);
+}
+
+@theme inline {
+  --font-family-sans: var(--font-family-base);
+  --font-family-mono: var(--font-family-base);
+  --color-white: var(--white);
+  --color-black: var(--black);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-tertiary);
+  --color-text-quaternary: var(--text-quaternary);
+  --color-status-success: var(--status-success);
+  --color-status-failure: var(--status-failure);
+  --color-status-info: var(--status-info);
+  --color-background-primary: var(--background-primary);
+  --color-background-secondary: var(--background-secondary);
+  --color-background-tertiary: var(--background-tertiary);
+  --color-background-quaternary: var(--background-quaternary);
+  --color-background-neutral: var(--background-neutral);
+  --color-action-primary: var(--action-primary);
+  --color-action-active: var(--action-active);
+  --color-action-disabled: var(--action-disabled);
+  --color-action-secondary: var(--action-secondary);
+  --color-action-link: var(--action-link);
+  --color-border-primary: var(--border-primary);
+  --color-border-secondary: var(--border-secondary);
+  --color-border-disabled: var(--border-disabled);
+  --color-border-tertiary: var(--border-tertiary);
+  --color-icon-primary: var(--icon-primary);
+  --color-icon-edit: var(--icon-edit);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-input-background: var(--input-background);
+  --color-switch-background: var(--switch-background);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-family-base);
+  }
+
+  /**
+  * Default typography styles for HTML elements (h1-h4, p, label, button, input).
+  * These are in @layer base, so Tailwind utility classes (like text-sm, text-lg) automatically override them.
+  */
+
+  html {
+    font-size: var(--font-size);
+  }
+
+  h1 {
+    font-size: var(--text-2xl);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h2 {
+    font-size: var(--text-xl);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h3 {
+    font-size: var(--text-lg);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h4 {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  label {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  button {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  input {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-normal);
+    line-height: 1.5;
+  }
+}
