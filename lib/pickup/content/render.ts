@@ -1,4 +1,6 @@
-import type { PickupAnnotation, PickupToken } from '@/lib/pickup/messages';
+import type { PickupAnnotation } from '@/lib/pickup/messages';
+import { buildSentenceAst } from '@/lib/pickup/ast/adapter-registry';
+import { buildRenderModelFromSentenceAst, type RenderToken } from '@/lib/pickup/render-model';
 import { getPickupTypeById } from '@/lib/pickup/pickup-types';
 import { attachPickupInteractions } from './interactions';
 
@@ -7,13 +9,13 @@ const PICKUP_CATEGORY_ATTR = 'data-pickup-category';
 const PICKUP_ACCENT_VARIABLE = '--xen-pickup-accent';
 const PICKUP_SOFT_BG_VARIABLE = '--xen-pickup-soft-bg';
 
-type RenderableToken = PickupAnnotation['tokens'][number] & {
+type RenderableToken = RenderToken & {
   start: number;
   end: number;
   renderedText: string;
 };
 
-type RenderedToken = PickupAnnotation['tokens'][number] & {
+type RenderedToken = RenderToken & {
   renderedText: string;
   element: HTMLSpanElement;
 };
@@ -23,7 +25,7 @@ function isValidOffset(value: number, sourceLength: number) {
 }
 
 function resolveTokenSpan(
-  token: PickupAnnotation['tokens'][number],
+  token: RenderToken,
   sourceText: string,
   cursor: number,
 ) {
@@ -53,7 +55,7 @@ function resolveTokenSpan(
 }
 
 function buildRenderableTokens(
-  tokens: PickupAnnotation['tokens'],
+  tokens: RenderToken[],
   sourceText: string,
 ) {
   const renderableTokens: RenderableToken[] = [];
@@ -82,46 +84,7 @@ function buildRenderableTokens(
   return renderableTokens;
 }
 
-function buildMockMeaning(token: PickupToken) {
-  const category = token.kind === 'grammar' ? 'Grammar' : 'Vocabulary';
-  const surface = token.text?.trim();
-  if (!surface) {
-    return `${category} meaning (mock)`;
-  }
-  return `${category} meaning (mock): ${surface}`;
-}
-
-function buildGroupMap(tokens: PickupAnnotation['tokens'], annotationId: string) {
-  const groups = new Map<number, string>();
-  const indexSet = new Set<number>();
-
-  tokens.forEach((token) => {
-    if (typeof token.tokenIndex === 'number') {
-      indexSet.add(token.tokenIndex);
-    }
-  });
-
-  tokens.forEach((token) => {
-    if (token.kind !== 'grammar') {
-      return;
-    }
-    if (typeof token.tokenIndex !== 'number' || typeof token.headIndex !== 'number') {
-      return;
-    }
-    if (!indexSet.has(token.headIndex)) {
-      return;
-    }
-    const groupId = `g:${annotationId}:${token.headIndex}`;
-    groups.set(token.tokenIndex, groupId);
-    if (!groups.has(token.headIndex)) {
-      groups.set(token.headIndex, groupId);
-    }
-  });
-
-  return groups;
-}
-
-export function buildTokenSpan(token: PickupAnnotation['tokens'][number], tokenText: string) {
+export function buildTokenSpan(token: RenderToken, tokenText: string) {
   const type = getPickupTypeById(token.typeId);
   const wrapper = document.createElement('span');
   wrapper.className = 'xen-pickup-token';
@@ -134,7 +97,7 @@ export function buildTokenSpan(token: PickupAnnotation['tokens'][number], tokenT
   return wrapper;
 }
 
-function buildFallbackFragment(tokens: PickupAnnotation['tokens']) {
+function buildFallbackFragment(tokens: RenderToken[]) {
   const fragment = document.createDocumentFragment();
   const renderedTokens: RenderedToken[] = [];
   tokens.forEach((token, index) => {
@@ -148,7 +111,7 @@ function buildFallbackFragment(tokens: PickupAnnotation['tokens']) {
   return { fragment, renderedTokens };
 }
 
-function buildAnnotatedFragment(tokens: PickupAnnotation['tokens'], sourceText: string) {
+function buildAnnotatedFragment(tokens: RenderToken[], sourceText: string) {
   if (!sourceText) {
     return buildFallbackFragment(tokens);
   }
@@ -180,36 +143,25 @@ function buildAnnotatedFragment(tokens: PickupAnnotation['tokens'], sourceText: 
   return { fragment, renderedTokens };
 }
 
-function resolveTokenMeaning(token: PickupToken) {
-  if (typeof token.meaning === 'string' && token.meaning.trim()) {
-    return token.meaning;
-  }
-  return buildMockMeaning(token);
-}
-
-function decorateRenderedTokens(annotation: PickupAnnotation, renderedTokens: RenderedToken[]) {
+function decorateRenderedTokens(renderedTokens: RenderedToken[]) {
   if (renderedTokens.length === 0) {
     return;
   }
-
-  const groupMap = buildGroupMap(annotation.tokens, annotation.id);
   const tokenElements: HTMLSpanElement[] = [];
 
   renderedTokens.forEach((token) => {
     const element = token.element;
     tokenElements.push(element);
 
-    if (typeof token.tokenIndex === 'number') {
-      element.dataset.pickupTokenIndex = String(token.tokenIndex);
-      const groupId = groupMap.get(token.tokenIndex);
-      if (groupId) {
-        element.dataset.pickupGroup = groupId;
-      }
+    element.dataset.pickupUnit = token.id;
+    if (token.groupId) {
+      element.dataset.pickupGroup = token.groupId;
     }
-
-    const meaning = resolveTokenMeaning(token);
-    if (meaning) {
-      element.dataset.pickupMeaning = meaning;
+    if (token.role) {
+      element.dataset.pickupRole = token.role;
+    }
+    if (token.meaning) {
+      element.dataset.pickupMeaning = token.meaning;
     }
   });
 
@@ -229,14 +181,16 @@ export function applyAnnotations(
 
     const htmlElement = element as HTMLElement;
     const sourceText = htmlElement.dataset.pickupOriginal ?? htmlElement.textContent ?? '';
-    const { fragment, renderedTokens } = buildAnnotatedFragment(annotation.tokens, sourceText);
+    const sentenceAst = buildSentenceAst({ annotation, text: sourceText });
+    const renderModel = buildRenderModelFromSentenceAst(sentenceAst);
+    const { fragment, renderedTokens } = buildAnnotatedFragment(renderModel.tokens, sourceText);
 
     htmlElement.textContent = '';
     htmlElement.appendChild(fragment);
     htmlElement.dataset.pickupProcessed = 'true';
     htmlElement.dataset.pickupStatus = 'done';
     htmlElement.dataset.pickupAnnotated = 'true';
-    decorateRenderedTokens(annotation, renderedTokens);
+    decorateRenderedTokens(renderedTokens);
     appliedIds.add(annotation.id);
   });
 

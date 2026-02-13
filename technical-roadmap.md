@@ -159,3 +159,22 @@ Owner: xen
 - DoD-1: 所有阶段验收标准可量化并达标。
 - DoD-2: CI 覆盖 schema tests、regression tests、benchmark smoke tests。
 - DoD-3: 用户可见输出只允许来自 AST，不允许每个模式独立临时解析。
+
+## 6. 接下来要做（Next）
+
+- N1 语法结构规则扩展
+- 增加结构: 时态/语态组合、名词短语 (NP)、动词短语 (VP)、固定短语 (MWE)。
+- 明确结构优先级与覆盖规则，避免组冲突。
+
+- N2 Tooltip 交互实现（按“默认轻”原则）
+- Tooltip 两行: 第 1 行角色信息，第 2 行短解释（<= 12 字）。
+- 右侧按钮 `结构` / `释义`，点击切换内容。
+- 支持点击锁定组高亮，点击空白取消。
+
+- N3 AST / RenderModel 稳定化
+- 明确定义 GrammarPoint 产出标准（label / explanation / evidenceUnitIds）。
+- 为 grammarPoints 添加稳定排序，确保同输入稳定输出。
+
+- N4 可替换解析器接口
+- 在 adapter-registry 基础上，补充“外部解析结果”输入的接口定义。
+- 记录如何注入 Benepar / Stanza 输出（先文档，后实现）。
