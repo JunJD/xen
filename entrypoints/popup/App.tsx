@@ -7,7 +7,7 @@ import {
   Settings,
   Star,
 } from 'lucide-react';
-import { GrammarTokens } from '@/components/GrammarTokens';
+import { PickupTokens } from '@/components/PickupTokens';
 
 function App() {
   const [isLoggedIn] = useState(true);
@@ -57,7 +57,7 @@ function App() {
             </div>
           </div>
 
-          <GrammarTokens />
+          <PickupTokens />
 
         </div>
 

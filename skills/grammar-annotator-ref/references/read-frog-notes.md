@@ -13,41 +13,41 @@
 - 动态页面竞态：MutationObserver 可能导致重复处理或二次插入。
 - 交互冲突：如果有悬浮 UI，需要避免和页面样式冲突。
 
-## 可复用点（本仓库里现成的）
+## 可复用点（本仓库上一级里现成的）
 
 ### DOM 遍历与标记
-- `src/utils/host/dom/traversal.ts`
+- `/Users/junjieding/dingjunjie_dev/2026_02/read-frog/src/utils/host/dom/traversal.ts`
   - `walkAndLabelElement` 遍历 DOM 并打段落标记。
   - `extractTextContent` 稳定提取文本（含 <br>）。
-- `src/utils/host/dom/filter.ts`
+- `/Users/junjieding/dingjunjie_dev/2026_02/read-frog/src/utils/host/dom/filter.ts`
   - 跳过规则、inline/block 判断、不要进入的元素判定。
-- `src/utils/constants/dom-rules.ts`
+- `/Users/junjieding/dingjunjie_dev/2026_02/read-frog/src/utils/constants/dom-rules.ts`
   - 中央规则表（哪些 tag/selector 跳过或强制 block）。
 
 ### 整页扫描 + 观察
-- `src/entrypoints/host.content/translation-control/page-translation.ts`
+- `/Users/junjieding/dingjunjie_dev/2026_02/read-frog/src/entrypoints/host.content/translation-control/page-translation.ts`
   - `PageTranslationManager` 组合 IntersectionObserver + MutationObserver。
   - 包含 shadow root 遍历与动态 DOM 处理。
 
 ### DOM 插入模式
-- `src/utils/host/translate/dom/translation-insertion.ts`
+- `/Users/junjieding/dingjunjie_dev/2026_02/read-frog/src/utils/host/translate/dom/translation-insertion.ts`
   - 插入节点时处理 inline/block 与样式装饰。
-- `src/utils/host/dom/batch-dom.ts`
+- `/Users/junjieding/dingjunjie_dev/2026_02/read-frog/src/utils/host/dom/batch-dom.ts`
   - DOM 写入批处理，避免抖动。
 
 ### 后台队列 + 批量请求
-- `src/entrypoints/background/translation-queues.ts`
+- `/Users/junjieding/dingjunjie_dev/2026_02/read-frog/src/entrypoints/background/translation-queues.ts`
   - RequestQueue + BatchQueue 的组合用法、缓存、摘要。
-- `src/utils/request/request-queue.ts`, `src/utils/request/batch-queue.ts`
+- `/Users/junjieding/dingjunjie_dev/2026_02/read-frog/src/utils/request/request-queue.ts`, `/Users/junjieding/dingjunjie_dev/2026_02/read-frog/src/utils/request/batch-queue.ts`
   - 限速、重试、批量/单条回退。
 
 ### 消息通道（content <-> background）
-- `src/utils/message.ts`
+- `/Users/junjieding/dingjunjie_dev/2026_02/read-frog/src/utils/message.ts`
   - 类型化消息协议，sendMessage/onMessage。
 
 ### Shadow DOM UI 注入
-- `src/entrypoints/selection.content/index.tsx`
-- `src/utils/shadow-root.ts`
+- `/Users/junjieding/dingjunjie_dev/2026_02/read-frog/src/entrypoints/selection.content/index.tsx`
+- `/Users/junjieding/dingjunjie_dev/2026_02/read-frog/src/utils/shadow-root.ts`
 
 ## 推荐的最小流程（新插件思路）
 
@@ -71,9 +71,9 @@
 
 ## 快速阅读清单（优先读）
 
-- `src/entrypoints/host.content/translation-control/page-translation.ts`
-- `src/utils/host/dom/traversal.ts`
-- `src/utils/host/dom/filter.ts`
-- `src/utils/host/translate/dom/translation-insertion.ts`
-- `src/entrypoints/background/translation-queues.ts`
+- `/Users/junjieding/dingjunjie_dev/2026_02/read-frog/src/entrypoints/host.content/translation-control/page-translation.ts`
+- `/Users/junjieding/dingjunjie_dev/2026_02/read-frog/src/utils/host/dom/traversal.ts`
+- `/Users/junjieding/dingjunjie_dev/2026_02/read-frog/src/utils/host/dom/filter.ts`
+- `/Users/junjieding/dingjunjie_dev/2026_02/read-frog/src/utils/host/translate/dom/translation-insertion.ts`
+- `/Users/junjieding/dingjunjie_dev/2026_02/read-frog/src/entrypoints/background/translation-queues.ts`
 
