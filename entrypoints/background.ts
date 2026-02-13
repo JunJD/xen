@@ -1,5 +1,4 @@
 ﻿import { defineBackground } from '#imports';
-import Dexie, { type Table } from 'dexie';
 import { sha256 } from 'js-sha256';
 import type {
   PickupAnnotation,
@@ -7,6 +6,7 @@ import type {
   PickupParagraph,
   PickupToken,
 } from '@/lib/pickup/messages';
+import { createPickupCache } from '@/lib/pickup/cache';
 import {
   PICKUP_OFFSCREEN_CHANNEL,
   PICKUP_OFFSCREEN_DOCUMENT_PATH,
@@ -37,24 +37,6 @@ declare const chrome:
   }
   | undefined;
 
-type PickupCacheEntry = {
-  hash: string;
-  sourceHash: string;
-  modelKey: string;
-  version: number;
-  tokens: PickupToken[];
-  updatedAt: number;
-  lastAccessed: number;
-};
-
-const CACHE_DB_VERSION = 2;
-const CACHE_ENTRY_VERSION = 1;
-const CACHE_TTL_MS = 1000 * 60 * 60 * 24 * 30; // 30 days
-const CACHE_MAX_ENTRIES = 5000;
-const CACHE_CLEAN_INTERVAL_MS = 1000 * 60 * 30; // 30 minutes
-const CACHE_ACCESS_UPDATE_INTERVAL_MS = 1000 * 60 * 5; // 5 minutes
-const CACHE_MODEL_KEY = 'spacy-pyodide-0.21.3';
-
 const FALLBACK_MODEL_STATUS: PickupModelStatus = {
   status: 'error',
   error: 'offscreen_unavailable',
@@ -64,91 +46,11 @@ const FALLBACK_MODEL_STATUS: PickupModelStatus = {
   stage: 'offscreen 不可用',
 };
 
-class PickupCacheDB extends Dexie {
-  annotations!: Table<PickupCacheEntry, string>;
-
-  constructor() {
-    super('xenPickupCache');
-    this.version(1).stores({
-      annotations: '&hash, updatedAt',
-    });
-    this.version(CACHE_DB_VERSION).stores({
-      annotations: '&hash, updatedAt, lastAccessed, modelKey, version',
-    }).upgrade((tx) => {
-      return tx.table('annotations').toCollection().modify((entry: PickupCacheEntry) => {
-        const now = Date.now();
-        entry.lastAccessed = entry.lastAccessed ?? entry.updatedAt ?? now;
-        entry.version = entry.version ?? CACHE_ENTRY_VERSION;
-        entry.modelKey = entry.modelKey ?? 'unknown';
-        entry.sourceHash = entry.sourceHash ?? entry.hash;
-        entry.updatedAt = entry.updatedAt ?? now;
-      });
-    });
-  }
-}
-
-const db = new PickupCacheDB();
 let warmupInFlight = false;
 let creatingOffscreenDocument: Promise<void> | null = null;
 let offscreenDocumentReady = false;
-let lastCachePruneAt = 0;
-let cachePruneInFlight: Promise<void> | null = null;
 
-function getCacheModelKey() {
-  return CACHE_MODEL_KEY;
-}
-
-function buildCacheKey(sourceHash: string, modelKey: string) {
-  return sha256(`${modelKey}|${sourceHash}`);
-}
-
-function isEntryExpired(entry: PickupCacheEntry, now: number) {
-  return now - entry.updatedAt > CACHE_TTL_MS;
-}
-
-async function pruneCache(reason: string) {
-  if (cachePruneInFlight) {
-    return cachePruneInFlight;
-  }
-
-  cachePruneInFlight = (async () => {
-    const now = Date.now();
-    const expireBefore = now - CACHE_TTL_MS;
-
-    try {
-      await db.annotations.where('updatedAt').below(expireBefore).delete();
-      await db.annotations.where('version').notEqual(CACHE_ENTRY_VERSION).delete();
-
-      const total = await db.annotations.count();
-      if (total > CACHE_MAX_ENTRIES) {
-        const toRemove = total - CACHE_MAX_ENTRIES;
-        const keys = await db.annotations
-          .orderBy('lastAccessed')
-          .limit(toRemove)
-          .primaryKeys();
-        if (keys.length > 0) {
-          await db.annotations.bulkDelete(keys);
-        }
-      }
-    }
-    catch (error) {
-      console.warn('Cache prune failed:', reason, error);
-    }
-  })().finally(() => {
-    cachePruneInFlight = null;
-  });
-
-  return cachePruneInFlight;
-}
-
-function maybePruneCache(reason: string) {
-  const now = Date.now();
-  if (now - lastCachePruneAt < CACHE_CLEAN_INTERVAL_MS) {
-    return;
-  }
-  lastCachePruneAt = now;
-  void pruneCache(reason);
-}
+const cache = createPickupCache();
 
 async function ensureOffscreenDocument(): Promise<boolean> {
   const runtime = chrome?.runtime;
@@ -277,48 +179,6 @@ async function buildTokens(text: string): Promise<PickupToken[]> {
   return [];
 }
 
-async function getCachedTokens(hash: string, modelKey: string) {
-  try {
-    const entry = await db.annotations.get(hash);
-    if (!entry) {
-      return null;
-    }
-
-    const now = Date.now();
-    if (entry.version !== CACHE_ENTRY_VERSION || entry.modelKey !== modelKey || isEntryExpired(entry, now)) {
-      await db.annotations.delete(hash);
-      return null;
-    }
-
-    if (!entry.lastAccessed || now - entry.lastAccessed > CACHE_ACCESS_UPDATE_INTERVAL_MS) {
-      await db.annotations.update(hash, { lastAccessed: now });
-    }
-
-    return entry;
-  }
-  catch {
-    return null;
-  }
-}
-
-async function setCachedTokens(hash: string, sourceHash: string, modelKey: string, tokens: PickupToken[]) {
-  try {
-    const now = Date.now();
-    await db.annotations.put({
-      hash,
-      sourceHash,
-      modelKey,
-      version: CACHE_ENTRY_VERSION,
-      tokens,
-      updatedAt: now,
-      lastAccessed: now,
-    });
-  }
-  catch {
-    return;
-  }
-}
-
 export default defineBackground(() => {
   const runtime = chrome?.runtime;
   runtime?.onInstalled?.addListener(() => {
@@ -328,7 +188,7 @@ export default defineBackground(() => {
     void triggerWarmup();
   });
   void triggerWarmup();
-  maybePruneCache('startup');
+  void cache.maybePrune('startup');
 
   onMessage('pickupModelWarmup', async () => {
     await triggerWarmup();
@@ -354,15 +214,13 @@ export default defineBackground(() => {
   onMessage('pickupAnnotate', async (message) => {
     const paragraphs = (message.data?.paragraphs ?? []) as PickupParagraph[];
     const annotations: PickupAnnotation[] = [];
-    const modelKey = getCacheModelKey();
     let wroteCache = false;
 
     for (const paragraph of paragraphs) {
       const sourceHash = paragraph.hash ?? sha256(paragraph.text);
-      const cacheKey = buildCacheKey(sourceHash, modelKey);
-      const cached = await getCachedTokens(cacheKey, modelKey);
-      if (cached?.tokens && cached.tokens.length > 0) {
-        annotations.push({ id: paragraph.id, tokens: cached.tokens });
+      const cached = await cache.get(sourceHash);
+      if (cached?.value && cached.value.length > 0) {
+        annotations.push({ id: paragraph.id, tokens: cached.value });
         continue;
       }
 
@@ -372,12 +230,12 @@ export default defineBackground(() => {
       }
 
       annotations.push({ id: paragraph.id, tokens });
-      await setCachedTokens(cacheKey, sourceHash, modelKey, tokens);
+      await cache.set(sourceHash, tokens);
       wroteCache = true;
     }
 
     if (wroteCache) {
-      maybePruneCache('annotate');
+      void cache.maybePrune('annotate');
     }
 
     return { annotations };
