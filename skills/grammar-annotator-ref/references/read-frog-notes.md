@@ -1,4 +1,4 @@
-# 语法标注笔记（Read Frog 参考）
+﻿# 语法标注笔记（Read Frog 参考）
 
 目标：把这个仓库当作参考，实现“整页语法结构 + 词汇标注”的简化浏览器插件。
 本文记录难点、可复用点、以及要看的代码位置。
@@ -16,38 +16,38 @@
 ## 可复用点（本仓库上一级里现成的）
 
 ### DOM 遍历与标记
-- `/Users/junjieding/dingjunjie_dev/2026_02/read-frog/src/utils/host/dom/traversal.ts`
+- `../read-frog/src/utils/host/dom/traversal.ts`
   - `walkAndLabelElement` 遍历 DOM 并打段落标记。
   - `extractTextContent` 稳定提取文本（含 <br>）。
-- `/Users/junjieding/dingjunjie_dev/2026_02/read-frog/src/utils/host/dom/filter.ts`
+- `../read-frog/src/utils/host/dom/filter.ts`
   - 跳过规则、inline/block 判断、不要进入的元素判定。
-- `/Users/junjieding/dingjunjie_dev/2026_02/read-frog/src/utils/constants/dom-rules.ts`
+- `../read-frog/src/utils/constants/dom-rules.ts`
   - 中央规则表（哪些 tag/selector 跳过或强制 block）。
 
 ### 整页扫描 + 观察
-- `/Users/junjieding/dingjunjie_dev/2026_02/read-frog/src/entrypoints/host.content/translation-control/page-translation.ts`
+- `../read-frog/src/entrypoints/host.content/translation-control/page-translation.ts`
   - `PageTranslationManager` 组合 IntersectionObserver + MutationObserver。
   - 包含 shadow root 遍历与动态 DOM 处理。
 
 ### DOM 插入模式
-- `/Users/junjieding/dingjunjie_dev/2026_02/read-frog/src/utils/host/translate/dom/translation-insertion.ts`
+- `../read-frog/src/utils/host/translate/dom/translation-insertion.ts`
   - 插入节点时处理 inline/block 与样式装饰。
-- `/Users/junjieding/dingjunjie_dev/2026_02/read-frog/src/utils/host/dom/batch-dom.ts`
+- `../read-frog/src/utils/host/dom/batch-dom.ts`
   - DOM 写入批处理，避免抖动。
 
 ### 后台队列 + 批量请求
-- `/Users/junjieding/dingjunjie_dev/2026_02/read-frog/src/entrypoints/background/translation-queues.ts`
+- `../read-frog/src/entrypoints/background/translation-queues.ts`
   - RequestQueue + BatchQueue 的组合用法、缓存、摘要。
-- `/Users/junjieding/dingjunjie_dev/2026_02/read-frog/src/utils/request/request-queue.ts`, `/Users/junjieding/dingjunjie_dev/2026_02/read-frog/src/utils/request/batch-queue.ts`
+- `../read-frog/src/utils/request/request-queue.ts`, `../read-frog/src/utils/request/batch-queue.ts`
   - 限速、重试、批量/单条回退。
 
 ### 消息通道（content <-> background）
-- `/Users/junjieding/dingjunjie_dev/2026_02/read-frog/src/utils/message.ts`
+- `../read-frog/src/utils/message.ts`
   - 类型化消息协议，sendMessage/onMessage。
 
 ### Shadow DOM UI 注入
-- `/Users/junjieding/dingjunjie_dev/2026_02/read-frog/src/entrypoints/selection.content/index.tsx`
-- `/Users/junjieding/dingjunjie_dev/2026_02/read-frog/src/utils/shadow-root.ts`
+- `../read-frog/src/entrypoints/selection.content/index.tsx`
+- `../read-frog/src/utils/shadow-root.ts`
 
 ## 推荐的最小流程（新插件思路）
 
@@ -71,9 +71,10 @@
 
 ## 快速阅读清单（优先读）
 
-- `/Users/junjieding/dingjunjie_dev/2026_02/read-frog/src/entrypoints/host.content/translation-control/page-translation.ts`
-- `/Users/junjieding/dingjunjie_dev/2026_02/read-frog/src/utils/host/dom/traversal.ts`
-- `/Users/junjieding/dingjunjie_dev/2026_02/read-frog/src/utils/host/dom/filter.ts`
-- `/Users/junjieding/dingjunjie_dev/2026_02/read-frog/src/utils/host/translate/dom/translation-insertion.ts`
-- `/Users/junjieding/dingjunjie_dev/2026_02/read-frog/src/entrypoints/background/translation-queues.ts`
+- `../read-frog/src/entrypoints/host.content/translation-control/page-translation.ts`
+- `../read-frog/src/utils/host/dom/traversal.ts`
+- `../read-frog/src/utils/host/dom/filter.ts`
+- `../read-frog/src/utils/host/translate/dom/translation-insertion.ts`
+- `../read-frog/src/entrypoints/background/translation-queues.ts`
+
 

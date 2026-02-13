@@ -5,14 +5,20 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "sync:pyodide": "node ./scripts/sync-pyodide.mjs",
+    "predev": "pnpm run sync:pyodide",
     "dev": "wxt",
     "dev:firefox": "wxt -b firefox",
+    "prebuild": "pnpm run sync:pyodide",
     "build": "wxt build",
+    "prebuild:firefox": "pnpm run sync:pyodide",
     "build:firefox": "wxt build -b firefox",
+    "prezip": "pnpm run sync:pyodide",
     "zip": "wxt zip",
+    "prezip:firefox": "pnpm run sync:pyodide",
     "zip:firefox": "wxt zip -b firefox",
     "compile": "tsc --noEmit",
-    "postinstall": "wxt prepare"
+    "postinstall": "pnpm run sync:pyodide && wxt prepare"
   },
   "dependencies": {
     "@mozilla/readability": "^0.6.0",
@@ -25,6 +31,7 @@
     "js-sha256": "^0.11.1",
     "lucide-react": "^0.563.0",
     "motion": "^12.34.0",
+    "pyodide": "^0.21.3",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "tailwind-merge": "^3.4.0",

@@ -12,7 +12,9 @@ description: 用于浏览器插件“整页语法结构+词汇标注”的参考
 
 ## 快速指引
 
-先读参考文档：`/Users/junjieding/dingjunjie_dev/2026_02/read-frog/skills/grammar-annotator-ref/references/read-frog-notes.md`  
+团队路径约定：`read-frog` 与当前项目同级放置（例如当前仓库是 `xen`，则使用 `../read-frog`）。  
+
+先读参考文档：`../read-frog/skills/grammar-annotator-ref/references/read-frog-notes.md`  
 里面包含难点清单、可复用点、风险提示、以及具体文件路径。
 
 如果问题仍不清晰，再根据文档里的路径去读源码文件。

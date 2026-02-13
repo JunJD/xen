@@ -9,20 +9,28 @@ export function ensurePickupStyles() {
   style.id = STYLE_ID;
   style.textContent = `
     .xen-pickup-token {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      border-radius: 6px;
-      border: 1px solid transparent;
-      padding: 2px 6px;
-      font-family: Menlo, Monaco, monospace;
-      font-size: 12px;
-      line-height: 1.4;
-      white-space: nowrap;
+      display: inline;
+      color: inherit;
+      font: inherit;
+      line-height: inherit;
+      text-decoration-line: underline;
+      text-decoration-color: var(--xen-pickup-accent, #2563eb);
+      text-decoration-thickness: 2px;
+      text-underline-offset: 2px;
+      background-color: var(--xen-pickup-soft-bg, rgba(37, 99, 235, 0.12));
+      border-radius: 2px;
+      transition: background-color 0.15s ease;
     }
-    .xen-pickup-tag {
-      font-size: 9px;
-      opacity: 0.6;
+    .xen-pickup-token[data-pickup-category="grammar"] {
+      --xen-pickup-accent: #2563eb;
+      --xen-pickup-soft-bg: rgba(37, 99, 235, 0.12);
+    }
+    .xen-pickup-token[data-pickup-category="vocabulary"] {
+      --xen-pickup-accent: #059669;
+      --xen-pickup-soft-bg: rgba(5, 150, 105, 0.12);
+    }
+    .xen-pickup-token:hover {
+      filter: brightness(0.98);
     }
     [data-pickup-status="loading"] {
       position: relative;

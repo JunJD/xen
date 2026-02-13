@@ -1,17 +1,99 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ArrowLeftRight,
   Bell,
   BookOpen,
+  LoaderCircle,
   MoreVertical,
   Settings,
   Star,
 } from 'lucide-react';
 import { PickupTokens } from '@/components/PickupTokens';
+import type { PickupModelStatus } from '@/lib/pickup/messages';
+import { sendMessage } from '@/lib/pickup/messaging';
+
+const INITIAL_MODEL_STATUS: PickupModelStatus = {
+  status: 'idle',
+  error: null,
+  startedAt: null,
+  readyAt: null,
+  progress: 0,
+  stage: '等待初始化',
+};
 
 function App() {
   const [isLoggedIn] = useState(true);
   const [notificationCount, setNotificationCount] = useState(2);
+  const [modelStatus, setModelStatus] = useState<PickupModelStatus>(INITIAL_MODEL_STATUS);
+
+  useEffect(() => {
+    let disposed = false;
+    let timerId: number | undefined;
+
+    const scheduleNext = (delay: number) => {
+      timerId = window.setTimeout(() => {
+        void pollStatus();
+      }, delay);
+    };
+
+    const pollStatus = async () => {
+      try {
+        const response = await sendMessage('pickupModelStatus');
+        if (disposed) {
+          return;
+        }
+
+        const nextStatus = response?.status ?? INITIAL_MODEL_STATUS;
+        setModelStatus(nextStatus);
+
+        if (nextStatus.status === 'idle' || nextStatus.status === 'error') {
+          void sendMessage('pickupModelWarmup').catch(() => undefined);
+        }
+
+        if (nextStatus.status !== 'ready') {
+          scheduleNext(700);
+        }
+      }
+      catch {
+        if (!disposed) {
+          scheduleNext(1200);
+        }
+      }
+    };
+
+    void sendMessage('pickupModelWarmup').catch(() => undefined);
+    void pollStatus();
+
+    return () => {
+      disposed = true;
+      if (timerId !== undefined) {
+        window.clearTimeout(timerId);
+      }
+    };
+  }, []);
+
+  if (modelStatus.status !== 'ready') {
+    return (
+      <div className="flex h-full w-full items-center justify-center bg-background-tertiary">
+        <div className="flex w-[360px] flex-col items-center gap-3 rounded border border-border-primary bg-background-quaternary p-6 text-center">
+          <LoaderCircle className="h-6 w-6 animate-spin text-icon-primary" />
+          <p className="text-sm text-black">模型正在初始化，请稍候...</p>
+          <p className="text-xs text-text-tertiary">当前状态: {modelStatus.status}</p>
+          <p className="text-xs text-text-tertiary">{modelStatus.stage}</p>
+          <div className="h-2 w-full overflow-hidden rounded bg-background-secondary">
+            <div
+              className="h-full bg-action-primary transition-all duration-300"
+              style={{ width: `${modelStatus.progress}%` }}
+            />
+          </div>
+          <p className="text-xs text-black">{modelStatus.progress}%</p>
+          {modelStatus.error && (
+            <p className="text-xs text-status-warning">重试中: {modelStatus.error}</p>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-full w-full items-center justify-center bg-background-tertiary">
@@ -58,7 +140,6 @@ function App() {
           </div>
 
           <PickupTokens />
-
         </div>
 
         <div className="border-t border-border-primary bg-background-quaternary p-4">

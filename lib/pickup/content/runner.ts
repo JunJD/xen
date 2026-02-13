@@ -13,12 +13,23 @@ const INTERSECTION_OPTIONS: IntersectionObserverInit = {
   threshold: 0.1,
 };
 
+const COLLECT_DEBOUNCE_MS = 400;
+const INITIAL_COLLECT_DELAY_MS = 300;
+const INITIAL_COLLECT_RETRY_COUNT = 2;
+const INITIAL_COLLECT_RETRY_INTERVAL_MS = 1000;
+const READY_STATE_COMPLETE = 'complete';
+
 export function createPickupRunner() {
   let isApplying = false;
   let mutationTimer: number | undefined;
+  let initialCollectTimer: number | undefined;
   let lastRequestId = 0;
   let observer: MutationObserver | null = null;
   let intersectionObserver: IntersectionObserver | null = null;
+  let isCollectionEnabled = false;
+  let hasDeferredCollect = false;
+  let loadHandler: (() => void) | null = null;
+  const initialRetryTimers = new Set<number>();
   const pending = new Map<string, PendingParagraph>();
   const readyQueue = new Set<string>();
 
@@ -157,29 +168,94 @@ export function createPickupRunner() {
   }
 
   function scheduleCollect() {
+    if (!isCollectionEnabled) {
+      hasDeferredCollect = true;
+      return;
+    }
+
     if (mutationTimer) {
       window.clearTimeout(mutationTimer);
     }
     mutationTimer = window.setTimeout(() => {
       collectAndObserve();
-    }, 400);
+    }, COLLECT_DEBOUNCE_MS);
+  }
+
+  function runInitialCollectPasses() {
+    isCollectionEnabled = true;
+    collectAndObserve();
+
+    if (hasDeferredCollect) {
+      hasDeferredCollect = false;
+      collectAndObserve();
+    }
+
+    for (let attempt = 1; attempt <= INITIAL_COLLECT_RETRY_COUNT; attempt += 1) {
+      const retryTimer = window.setTimeout(() => {
+        initialRetryTimers.delete(retryTimer);
+        collectAndObserve();
+      }, INITIAL_COLLECT_RETRY_INTERVAL_MS * attempt);
+      initialRetryTimers.add(retryTimer);
+    }
+  }
+
+  function scheduleInitialCollect() {
+    initialCollectTimer = window.setTimeout(() => {
+      initialCollectTimer = undefined;
+      runInitialCollectPasses();
+    }, INITIAL_COLLECT_DELAY_MS);
+  }
+
+  function setupInitialCollectionGate() {
+    if (document.readyState === READY_STATE_COMPLETE) {
+      scheduleInitialCollect();
+      return;
+    }
+
+    loadHandler = () => {
+      loadHandler = null;
+      scheduleInitialCollect();
+    };
+
+    window.addEventListener('load', loadHandler, { once: true });
   }
 
   function start() {
     ensurePickupStyles();
     intersectionObserver = new IntersectionObserver(handleIntersections, INTERSECTION_OPTIONS);
-    collectAndObserve();
+
     observer = new MutationObserver(() => {
       scheduleCollect();
     });
-    observer.observe(document.body, { childList: true, subtree: true });
+    if (document.body) {
+      observer.observe(document.body, { childList: true, subtree: true });
+    }
+
+    setupInitialCollectionGate();
   }
 
   function stop() {
+    if (mutationTimer) {
+      window.clearTimeout(mutationTimer);
+      mutationTimer = undefined;
+    }
+    if (initialCollectTimer) {
+      window.clearTimeout(initialCollectTimer);
+      initialCollectTimer = undefined;
+    }
+    initialRetryTimers.forEach(timer => window.clearTimeout(timer));
+    initialRetryTimers.clear();
+    if (loadHandler) {
+      window.removeEventListener('load', loadHandler);
+      loadHandler = null;
+    }
+
     observer?.disconnect();
     observer = null;
     intersectionObserver?.disconnect();
     intersectionObserver = null;
+    isCollectionEnabled = false;
+    hasDeferredCollect = false;
     pending.clear();
     readyQueue.clear();
   }
