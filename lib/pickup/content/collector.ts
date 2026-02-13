@@ -33,7 +33,7 @@ export function collectParagraphs(root: ParentNode = document) {
     const id = `xen-pickup-${timestamp}-${index++}`;
     const hash = sha256(text);
     htmlElement.dataset.pickupId = id;
-    htmlElement.dataset.pickupStatus = 'loading';
+    htmlElement.dataset.pickupStatus = 'pending';
     paragraphs.push({ id, text, hash });
     elementMap.set(id, element);
   });

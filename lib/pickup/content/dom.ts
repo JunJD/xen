@@ -43,7 +43,11 @@ export function isEligibleElement(element: Element) {
   if (element.dataset.pickupProcessed === 'true') {
     return false;
   }
-  if (element.dataset.pickupStatus === 'loading' || element.dataset.pickupStatus === 'done') {
+  if (
+    element.dataset.pickupStatus === 'pending'
+    || element.dataset.pickupStatus === 'loading'
+    || element.dataset.pickupStatus === 'done'
+  ) {
     return false;
   }
   if (element.isContentEditable || element.closest('[contenteditable="true"]')) {
