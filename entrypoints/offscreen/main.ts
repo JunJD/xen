@@ -1,5 +1,8 @@
 import type { PickupModelStatus } from '@/lib/pickup/messages';
 import {
+  PICKUP_OFFSCREEN_ACTION_ANALYZE,
+  PICKUP_OFFSCREEN_ACTION_STATUS,
+  PICKUP_OFFSCREEN_ACTION_WARMUP,
   PICKUP_OFFSCREEN_CHANNEL,
   isPickupOffscreenRequest,
   type PickupOffscreenResponse,
@@ -10,29 +13,16 @@ import {
   warmupSpacyRuntime,
 } from '@/lib/pickup/spacy/analyzer';
 
-declare const chrome:
-  | {
-    runtime?: {
-      onMessage?: {
-        addListener: (
-          callback: (
-            message: unknown,
-            sender: unknown,
-            sendResponse: (response: PickupOffscreenResponse) => void,
-          ) => boolean | void,
-        ) => void;
-      };
-    };
-  }
-  | undefined;
+const STATUS_ERROR_RUNTIME_UNAVAILABLE = 'offscreen_runtime_unavailable';
+const STATUS_STAGE_RUNTIME_UNAVAILABLE = 'offscreen runtime 不可用';
 
 const FALLBACK_STATUS: PickupModelStatus = {
   status: 'error',
-  error: 'offscreen_runtime_unavailable',
+  error: STATUS_ERROR_RUNTIME_UNAVAILABLE,
   startedAt: null,
   readyAt: null,
   progress: 0,
-  stage: 'offscreen runtime 不可用',
+  stage: STATUS_STAGE_RUNTIME_UNAVAILABLE,
 };
 
 function buildErrorResponse(error: unknown): PickupOffscreenResponse {
@@ -50,22 +40,27 @@ chrome?.runtime?.onMessage?.addListener((message, _sender, sendResponse) => {
   }
 
   void (async () => {
-    if (message.action === 'warmup') {
+    if (message.action === PICKUP_OFFSCREEN_ACTION_WARMUP) {
       const status = await warmupSpacyRuntime();
       sendResponse({ ok: true, status });
       return;
     }
 
-    if (message.action === 'status') {
+    if (message.action === PICKUP_OFFSCREEN_ACTION_STATUS) {
       sendResponse({ ok: true, status: getSpacyRuntimeStatus() });
       return;
     }
 
-    const tokens = await analyzeTextWithSpacy(message.text);
-    sendResponse({
-      ok: true,
-      tokens: tokens ?? [],
-    });
+    if (message.action === PICKUP_OFFSCREEN_ACTION_ANALYZE) {
+      const tokens = await analyzeTextWithSpacy(message.text);
+      sendResponse({
+        ok: true,
+        tokens: tokens ?? [],
+      });
+      return;
+    }
+
+    sendResponse({ ok: true, tokens: [] });
   })().catch((error) => {
     console.warn('Offscreen handler failed:', error);
     sendResponse(buildErrorResponse(error));

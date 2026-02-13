@@ -14,6 +14,8 @@ export type SpacyAnalyzeToken = {
   tag?: string;
   dep?: string;
   head?: number;
+  sent?: number;
+  isRoot?: boolean;
   text?: string;
 };
 
@@ -35,14 +37,6 @@ type GlobalWithPyodide = {
   loadPyodide?: LoadPyodideFn;
   __xenLoadPyodidePromise?: Promise<LoadPyodideFn | null>;
 };
-
-declare const chrome:
-  | {
-    runtime?: {
-      getURL?: (path: string) => string;
-    };
-  }
-  | undefined;
 
 type AnalyzerRuntime = {
   analyze: (text: string) => SpacyAnalyzeDoc | null;
@@ -212,6 +206,12 @@ function normalizeToken(raw: unknown): SpacyAnalyzeToken | null {
     tag: typeof token.tag === 'string' ? token.tag : undefined,
     dep: typeof token.dep === 'string' ? token.dep : undefined,
     head: typeof token.head === 'number' ? token.head : undefined,
+    sent: typeof token.sent === 'number' ? token.sent : undefined,
+    isRoot: typeof token.is_root === 'boolean'
+      ? token.is_root
+      : typeof token.isRoot === 'boolean'
+        ? token.isRoot
+        : undefined,
     text: typeof token.text === 'string' ? token.text : undefined,
   };
 }
@@ -442,6 +442,13 @@ export function mapSpacyDocToPickupTokens(doc: SpacyAnalyzeDoc): PickupToken[] {
         label: type.name,
         start: token.start,
         end: token.end,
+        tokenIndex: token.i,
+        headIndex: token.head,
+        pos: token.pos,
+        dep: token.dep,
+        spacyTag: token.tag,
+        sentence: token.sent,
+        isRoot: token.isRoot,
       };
     })
     .filter(token => isRenderableTokenText(token.text));

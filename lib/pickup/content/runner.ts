@@ -32,6 +32,29 @@ export function createPickupRunner() {
   const initialRetryTimers = new Set<number>();
   const pending = new Map<string, PendingParagraph>();
   const readyQueue = new Set<string>();
+  let contextInvalidated = false;
+  let loggedInvalidated = false;
+
+  function isExtensionContextInvalidated(error: unknown) {
+    const message = error instanceof Error ? error.message : String(error ?? '');
+    return (
+      message.includes('Extension context invalidated')
+      || message.includes('The message port closed before a response was received')
+      || message.includes('Could not establish connection. Receiving end does not exist')
+    );
+  }
+
+  function handleContextInvalidatedOnce(error: unknown) {
+    if (!isExtensionContextInvalidated(error)) {
+      return false;
+    }
+    contextInvalidated = true;
+    if (!loggedInvalidated) {
+      loggedInvalidated = true;
+      console.warn('Pickup stopped: extension context invalidated. Reload the page to re-enable.');
+    }
+    return true;
+  }
 
   function collectAndObserve(root: ParentNode = document) {
     const { paragraphs, elementMap } = collectParagraphs(root);
@@ -58,6 +81,9 @@ export function createPickupRunner() {
   }
 
   async function processQueue() {
+    if (contextInvalidated) {
+      return;
+    }
     if (isApplying) {
       return;
     }
@@ -136,6 +162,10 @@ export function createPickupRunner() {
       elementMap.forEach((element) => {
         (element as HTMLElement).dataset.pickupStatus = 'error';
       });
+      if (handleContextInvalidatedOnce(error)) {
+        stop();
+        return;
+      }
       console.warn('Pickup annotation failed:', error);
     }
     finally {

@@ -12,6 +12,14 @@ export interface PickupToken {
   label?: string;
   start?: number;
   end?: number;
+  tokenIndex?: number;
+  headIndex?: number;
+  pos?: string;
+  dep?: string;
+  spacyTag?: string;
+  sentence?: number;
+  isRoot?: boolean;
+  meaning?: string;
 }
 
 export interface PickupAnnotation {
