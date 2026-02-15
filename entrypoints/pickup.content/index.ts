@@ -1,25 +1,36 @@
 import { defineContentScript } from '#imports';
 import {
   PICKUP_CONTROL_ACTION_QUERY,
+  PICKUP_CONTROL_ACTION_SET_MODE,
   PICKUP_CONTROL_ACTION_START,
   PICKUP_CONTROL_ACTION_STOP,
   PICKUP_CONTROL_ACTION_TOGGLE,
+  PICKUP_CONTROL_ACTION_TOGGLE_MODE,
   PICKUP_CONTROL_EVENT,
   PICKUP_STATE_EVENT,
   type PickupControlDetail,
   type PickupStateDetail,
 } from '@/lib/pickup/content/control-events';
 import { createPickupRunner } from '@/lib/pickup/content/runner';
+import {
+  applyPickupRenderMode,
+  isPickupRenderMode,
+  initPickupRenderMode,
+  persistPickupRenderMode,
+  togglePickupRenderMode,
+  type PickupRenderMode,
+} from '@/lib/pickup/content/render-mode';
 
 export default defineContentScript({
   matches: ['*://*/*'],
   runAt: 'document_idle',
   main() {
     const runner = createPickupRunner();
+    let currentMode: PickupRenderMode = initPickupRenderMode();
     runner.start();
 
     const emitState = () => {
-      const detail: PickupStateDetail = { active: runner.isStarted() };
+      const detail: PickupStateDetail = { active: runner.isStarted(), mode: currentMode };
       window.dispatchEvent(new CustomEvent(PICKUP_STATE_EVENT, { detail }));
     };
 
@@ -56,6 +67,28 @@ export default defineContentScript({
           runner.start();
         }
         emitState();
+        return;
+      }
+
+      if (action === PICKUP_CONTROL_ACTION_SET_MODE) {
+        const nextMode = isPickupRenderMode(customEvent.detail?.mode)
+          ? customEvent.detail.mode
+          : currentMode;
+        if (nextMode !== currentMode) {
+          currentMode = nextMode;
+          persistPickupRenderMode(currentMode);
+          applyPickupRenderMode(currentMode);
+        }
+        emitState();
+        return;
+      }
+
+      if (action === PICKUP_CONTROL_ACTION_TOGGLE_MODE) {
+        currentMode = togglePickupRenderMode(currentMode);
+        persistPickupRenderMode(currentMode);
+        applyPickupRenderMode(currentMode);
+        emitState();
+        return;
       }
     };
 

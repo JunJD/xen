@@ -15,6 +15,7 @@ import {
   MESSAGE_TYPES,
   STATUS_ERROR_CODES,
 } from '@/lib/pickup/constants';
+import { loadVocabDictionary, lookupVocabTranslation } from '@/lib/pickup/vocab/dictionary';
 import {
   PICKUP_OFFSCREEN_ACTION_ANALYZE,
   PICKUP_OFFSCREEN_ACTION_STATUS,
@@ -225,31 +226,40 @@ async function annotateParagraphs(
   return annotations;
 }
 
-function buildUnitTranslationPreview(unit: PickupTranslateUnitInput): PickupTranslateUnitPreview {
-  const placeholderText = `[待翻译]${unit.text}`;
+function buildUnitTranslationPreview(
+  unit: PickupTranslateUnitInput,
+  dictionary: Map<string, string>,
+): PickupTranslateUnitPreview {
+  const vocabTranslation = lookupVocabTranslation(unit.text, dictionary) ?? '';
   return {
     unitId: unit.unitId,
-    vocabInfusionText: placeholderText,
-    syntaxRebuildText: placeholderText,
+    vocabInfusionText: vocabTranslation,
+    syntaxRebuildText: '',
     context: unit,
   };
 }
 
 function buildParagraphTranslationPreview(
   paragraph: PickupTranslateParagraphInput,
+  dictionary: Map<string, string>,
 ): PickupTranslateParagraphPreview {
+  const PLACEHOLDER_TRANSLATION = '[待翻译]';
   return {
     id: paragraph.id,
     sourceText: paragraph.sourceText,
-    paragraphText: `[待翻译]${paragraph.sourceText}`,
-    units: paragraph.units.map(buildUnitTranslationPreview),
+    paragraphText: PLACEHOLDER_TRANSLATION,
+    units: paragraph.units.map(unit => buildUnitTranslationPreview(unit, dictionary)),
   };
 }
 
-function buildTranslationPreviews(
+async function buildTranslationPreviews(
   paragraphs: PickupTranslateParagraphInput[],
-): PickupTranslateParagraphPreview[] {
-  return paragraphs.map(buildParagraphTranslationPreview);
+): Promise<PickupTranslateParagraphPreview[]> {
+  if (paragraphs.length === 0) {
+    return [];
+  }
+  const dictionary = await loadVocabDictionary().catch(() => new Map());
+  return paragraphs.map(paragraph => buildParagraphTranslationPreview(paragraph, dictionary));
 }
 
 function resolveModelKey(modelKey?: string | (() => string)) {
@@ -306,7 +316,7 @@ export function setupPickupBackground(options: PickupBackgroundOptions = {}) {
 
   onMessage(MESSAGE_TYPES.translatePreview, async (message) => {
     const paragraphs = (message.data?.paragraphs ?? []) as PickupTranslateParagraphInput[];
-    const translations = buildTranslationPreviews(paragraphs);
+    const translations = await buildTranslationPreviews(paragraphs);
     return { translations };
   });
 }

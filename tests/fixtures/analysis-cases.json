@@ -1,0 +1,3322 @@
+[
+  {
+    "id": "relcl_basic",
+    "text": "APIs that are useful for defining components.",
+    "tokens": [
+      {
+        "text": "APIs",
+        "tag": "NNS",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "start": 0,
+        "end": 4,
+        "tokenIndex": 0,
+        "pos": "NOUN",
+        "dep": "ROOT"
+      },
+      {
+        "text": "that",
+        "tag": "WDT",
+        "typeId": 1,
+        "kind": "grammar",
+        "start": 5,
+        "end": 9,
+        "tokenIndex": 1,
+        "headIndex": 2,
+        "pos": "PRON",
+        "dep": "nsubj"
+      },
+      {
+        "text": "are",
+        "tag": "VBP",
+        "typeId": 1,
+        "kind": "grammar",
+        "start": 10,
+        "end": 13,
+        "tokenIndex": 2,
+        "headIndex": 0,
+        "pos": "AUX",
+        "dep": "relcl"
+      },
+      {
+        "text": "useful",
+        "tag": "JJ",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "start": 14,
+        "end": 20,
+        "tokenIndex": 3,
+        "headIndex": 2,
+        "pos": "ADJ",
+        "dep": "acomp"
+      },
+      {
+        "text": "for",
+        "tag": "IN",
+        "typeId": 1,
+        "kind": "grammar",
+        "start": 21,
+        "end": 24,
+        "tokenIndex": 4,
+        "headIndex": 3,
+        "pos": "ADP",
+        "dep": "prep"
+      },
+      {
+        "text": "defining",
+        "tag": "VBG",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "start": 25,
+        "end": 33,
+        "tokenIndex": 5,
+        "headIndex": 4,
+        "pos": "VERB",
+        "dep": "pcomp"
+      },
+      {
+        "text": "components",
+        "tag": "NNS",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "start": 34,
+        "end": 44,
+        "tokenIndex": 6,
+        "headIndex": 5,
+        "pos": "NOUN",
+        "dep": "dobj"
+      }
+    ],
+    "expect": {
+      "grammarPoints": [
+        {
+          "label": "定语从句",
+          "evidence": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ]
+        },
+        {
+          "label": "介词短语",
+          "evidence": [
+            4,
+            5,
+            6
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "advcl_when",
+    "text": "When the build fails we retry.",
+    "tokens": [
+      {
+        "text": "When",
+        "tag": "WRB",
+        "typeId": 1,
+        "kind": "grammar",
+        "start": 0,
+        "end": 4,
+        "tokenIndex": 0,
+        "headIndex": 3,
+        "pos": "SCONJ",
+        "dep": "mark"
+      },
+      {
+        "text": "the",
+        "tag": "DT",
+        "typeId": 1,
+        "kind": "grammar",
+        "start": 5,
+        "end": 8,
+        "tokenIndex": 1,
+        "headIndex": 2,
+        "pos": "DET",
+        "dep": "det"
+      },
+      {
+        "text": "build",
+        "tag": "NN",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "start": 9,
+        "end": 14,
+        "tokenIndex": 2,
+        "headIndex": 3,
+        "pos": "NOUN",
+        "dep": "nsubj"
+      },
+      {
+        "text": "fails",
+        "tag": "VBZ",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "start": 15,
+        "end": 20,
+        "tokenIndex": 3,
+        "headIndex": 5,
+        "pos": "VERB",
+        "dep": "advcl"
+      },
+      {
+        "text": "we",
+        "tag": "PRP",
+        "typeId": 1,
+        "kind": "grammar",
+        "start": 21,
+        "end": 23,
+        "tokenIndex": 4,
+        "headIndex": 5,
+        "pos": "PRON",
+        "dep": "nsubj"
+      },
+      {
+        "text": "retry",
+        "tag": "VBP",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "start": 24,
+        "end": 29,
+        "tokenIndex": 5,
+        "pos": "VERB",
+        "dep": "ROOT"
+      }
+    ],
+    "expect": {
+      "grammarPoints": [
+        {
+          "label": "状语从句",
+          "evidence": [
+            0,
+            1,
+            2,
+            3
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "ccomp_that",
+    "text": "I think that it works.",
+    "tokens": [
+      {
+        "text": "I",
+        "tag": "PRP",
+        "typeId": 1,
+        "kind": "grammar",
+        "start": 0,
+        "end": 1,
+        "tokenIndex": 0,
+        "headIndex": 1,
+        "pos": "PRON",
+        "dep": "nsubj"
+      },
+      {
+        "text": "think",
+        "tag": "VBP",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "start": 2,
+        "end": 7,
+        "tokenIndex": 1,
+        "pos": "VERB",
+        "dep": "ROOT"
+      },
+      {
+        "text": "that",
+        "tag": "IN",
+        "typeId": 1,
+        "kind": "grammar",
+        "start": 8,
+        "end": 12,
+        "tokenIndex": 2,
+        "headIndex": 4,
+        "pos": "SCONJ",
+        "dep": "mark"
+      },
+      {
+        "text": "it",
+        "tag": "PRP",
+        "typeId": 1,
+        "kind": "grammar",
+        "start": 13,
+        "end": 15,
+        "tokenIndex": 3,
+        "headIndex": 4,
+        "pos": "PRON",
+        "dep": "nsubj"
+      },
+      {
+        "text": "works",
+        "tag": "VBZ",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "start": 16,
+        "end": 21,
+        "tokenIndex": 4,
+        "headIndex": 1,
+        "pos": "VERB",
+        "dep": "ccomp"
+      }
+    ],
+    "expect": {
+      "grammarPoints": [
+        {
+          "label": "补语从句",
+          "evidence": [
+            2,
+            3,
+            4
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "xcomp_to",
+    "text": "We want to ship.",
+    "tokens": [
+      {
+        "text": "We",
+        "tag": "PRP",
+        "typeId": 1,
+        "kind": "grammar",
+        "start": 0,
+        "end": 2,
+        "tokenIndex": 0,
+        "headIndex": 1,
+        "pos": "PRON",
+        "dep": "nsubj"
+      },
+      {
+        "text": "want",
+        "tag": "VBP",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "start": 3,
+        "end": 7,
+        "tokenIndex": 1,
+        "pos": "VERB",
+        "dep": "ROOT"
+      },
+      {
+        "text": "to",
+        "tag": "TO",
+        "typeId": 1,
+        "kind": "grammar",
+        "start": 8,
+        "end": 10,
+        "tokenIndex": 2,
+        "headIndex": 3,
+        "pos": "PART",
+        "dep": "mark"
+      },
+      {
+        "text": "ship",
+        "tag": "VB",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "start": 11,
+        "end": 15,
+        "tokenIndex": 3,
+        "headIndex": 1,
+        "pos": "VERB",
+        "dep": "xcomp"
+      }
+    ],
+    "expect": {
+      "grammarPoints": [
+        {
+          "label": "开放补语",
+          "evidence": [
+            2,
+            3
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "passive_basic",
+    "text": "The task was assigned yesterday.",
+    "tokens": [
+      {
+        "text": "The",
+        "tag": "DT",
+        "typeId": 1,
+        "kind": "grammar",
+        "start": 0,
+        "end": 3,
+        "tokenIndex": 0,
+        "headIndex": 1,
+        "pos": "DET",
+        "dep": "det"
+      },
+      {
+        "text": "task",
+        "tag": "NN",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "start": 4,
+        "end": 8,
+        "tokenIndex": 1,
+        "headIndex": 3,
+        "pos": "NOUN",
+        "dep": "nsubjpass"
+      },
+      {
+        "text": "was",
+        "tag": "VBD",
+        "typeId": 1,
+        "kind": "grammar",
+        "start": 9,
+        "end": 12,
+        "tokenIndex": 2,
+        "headIndex": 3,
+        "pos": "AUX",
+        "dep": "auxpass"
+      },
+      {
+        "text": "assigned",
+        "tag": "VBN",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "start": 13,
+        "end": 21,
+        "tokenIndex": 3,
+        "pos": "VERB",
+        "dep": "ROOT"
+      },
+      {
+        "text": "yesterday",
+        "tag": "RB",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "start": 22,
+        "end": 31,
+        "tokenIndex": 4,
+        "headIndex": 3,
+        "pos": "ADV",
+        "dep": "advmod"
+      }
+    ],
+    "expect": {
+      "grammarPoints": [
+        {
+          "label": "被动语态",
+          "evidence": [
+            1,
+            2,
+            3
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "prep_phrase",
+    "text": "We met in the office.",
+    "tokens": [
+      {
+        "text": "We",
+        "tag": "PRP",
+        "typeId": 1,
+        "kind": "grammar",
+        "start": 0,
+        "end": 2,
+        "tokenIndex": 0,
+        "headIndex": 1,
+        "pos": "PRON",
+        "dep": "nsubj"
+      },
+      {
+        "text": "met",
+        "tag": "VBD",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "start": 3,
+        "end": 6,
+        "tokenIndex": 1,
+        "pos": "VERB",
+        "dep": "ROOT"
+      },
+      {
+        "text": "in",
+        "tag": "IN",
+        "typeId": 1,
+        "kind": "grammar",
+        "start": 7,
+        "end": 9,
+        "tokenIndex": 2,
+        "headIndex": 1,
+        "pos": "ADP",
+        "dep": "prep"
+      },
+      {
+        "text": "the",
+        "tag": "DT",
+        "typeId": 1,
+        "kind": "grammar",
+        "start": 10,
+        "end": 13,
+        "tokenIndex": 3,
+        "headIndex": 4,
+        "pos": "DET",
+        "dep": "det"
+      },
+      {
+        "text": "office",
+        "tag": "NN",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "start": 14,
+        "end": 20,
+        "tokenIndex": 4,
+        "headIndex": 2,
+        "pos": "NOUN",
+        "dep": "pobj"
+      }
+    ],
+    "expect": {
+      "grammarPoints": [
+        {
+          "label": "介词短语",
+          "evidence": [
+            2,
+            3,
+            4
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "relcl_who",
+    "text": "The engineer who fixed the bug left.",
+    "tokens": [
+      {
+        "text": "The",
+        "tag": "DT",
+        "typeId": 1,
+        "kind": "grammar",
+        "start": 0,
+        "end": 3,
+        "tokenIndex": 0,
+        "headIndex": 1,
+        "pos": "DET",
+        "dep": "det"
+      },
+      {
+        "text": "engineer",
+        "tag": "NN",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "start": 4,
+        "end": 12,
+        "tokenIndex": 1,
+        "headIndex": 6,
+        "pos": "NOUN",
+        "dep": "nsubj"
+      },
+      {
+        "text": "who",
+        "tag": "WP",
+        "typeId": 1,
+        "kind": "grammar",
+        "start": 13,
+        "end": 16,
+        "tokenIndex": 2,
+        "headIndex": 3,
+        "pos": "PRON",
+        "dep": "nsubj"
+      },
+      {
+        "text": "fixed",
+        "tag": "VBD",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "start": 17,
+        "end": 22,
+        "tokenIndex": 3,
+        "headIndex": 1,
+        "pos": "VERB",
+        "dep": "relcl"
+      },
+      {
+        "text": "the",
+        "tag": "DT",
+        "typeId": 1,
+        "kind": "grammar",
+        "start": 23,
+        "end": 26,
+        "tokenIndex": 4,
+        "headIndex": 5,
+        "pos": "DET",
+        "dep": "det"
+      },
+      {
+        "text": "bug",
+        "tag": "NN",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "start": 27,
+        "end": 30,
+        "tokenIndex": 5,
+        "headIndex": 3,
+        "pos": "NOUN",
+        "dep": "dobj"
+      },
+      {
+        "text": "left",
+        "tag": "VBD",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "start": 31,
+        "end": 35,
+        "tokenIndex": 6,
+        "pos": "VERB",
+        "dep": "ROOT"
+      }
+    ],
+    "expect": {
+      "grammarPoints": [
+        {
+          "label": "定语从句",
+          "evidence": [
+            2,
+            3,
+            4,
+            5
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "parataxis",
+    "text": "He came she left.",
+    "tokens": [
+      {
+        "text": "He",
+        "tag": "PRP",
+        "typeId": 1,
+        "kind": "grammar",
+        "start": 0,
+        "end": 2,
+        "tokenIndex": 0,
+        "headIndex": 1,
+        "pos": "PRON",
+        "dep": "nsubj"
+      },
+      {
+        "text": "came",
+        "tag": "VBD",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "start": 3,
+        "end": 7,
+        "tokenIndex": 1,
+        "pos": "VERB",
+        "dep": "ROOT"
+      },
+      {
+        "text": "she",
+        "tag": "PRP",
+        "typeId": 1,
+        "kind": "grammar",
+        "start": 8,
+        "end": 11,
+        "tokenIndex": 2,
+        "headIndex": 3,
+        "pos": "PRON",
+        "dep": "nsubj"
+      },
+      {
+        "text": "left",
+        "tag": "VBD",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "start": 12,
+        "end": 16,
+        "tokenIndex": 3,
+        "headIndex": 1,
+        "pos": "VERB",
+        "dep": "parataxis"
+      }
+    ],
+    "expect": {
+      "grammarPoints": [
+        {
+          "label": "并列分句",
+          "evidence": [
+            2,
+            3
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "agent_phrase",
+    "text": "The report was approved by the board.",
+    "tokens": [
+      {
+        "text": "The",
+        "tag": "DT",
+        "typeId": 1,
+        "kind": "grammar",
+        "start": 0,
+        "end": 3,
+        "tokenIndex": 0,
+        "headIndex": 1,
+        "pos": "DET",
+        "dep": "det"
+      },
+      {
+        "text": "report",
+        "tag": "NN",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "start": 4,
+        "end": 10,
+        "tokenIndex": 1,
+        "headIndex": 3,
+        "pos": "NOUN",
+        "dep": "nsubjpass"
+      },
+      {
+        "text": "was",
+        "tag": "VBD",
+        "typeId": 1,
+        "kind": "grammar",
+        "start": 11,
+        "end": 14,
+        "tokenIndex": 2,
+        "headIndex": 3,
+        "pos": "AUX",
+        "dep": "auxpass"
+      },
+      {
+        "text": "approved",
+        "tag": "VBN",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "start": 15,
+        "end": 23,
+        "tokenIndex": 3,
+        "pos": "VERB",
+        "dep": "ROOT"
+      },
+      {
+        "text": "by",
+        "tag": "IN",
+        "typeId": 1,
+        "kind": "grammar",
+        "start": 24,
+        "end": 26,
+        "tokenIndex": 4,
+        "headIndex": 3,
+        "pos": "ADP",
+        "dep": "agent"
+      },
+      {
+        "text": "the",
+        "tag": "DT",
+        "typeId": 1,
+        "kind": "grammar",
+        "start": 27,
+        "end": 30,
+        "tokenIndex": 5,
+        "headIndex": 6,
+        "pos": "DET",
+        "dep": "det"
+      },
+      {
+        "text": "board",
+        "tag": "NN",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "start": 31,
+        "end": 36,
+        "tokenIndex": 6,
+        "headIndex": 4,
+        "pos": "NOUN",
+        "dep": "pobj"
+      }
+    ],
+    "expect": {
+      "grammarPoints": [
+        {
+          "label": "被动语态",
+          "evidence": [
+            1,
+            2,
+            3,
+            4
+          ]
+        },
+        {
+          "label": "介词短语",
+          "evidence": [
+            4,
+            5,
+            6
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "acl_clause",
+    "text": "The plan to ship early succeeded.",
+    "tokens": [
+      {
+        "text": "The",
+        "tag": "DT",
+        "typeId": 1,
+        "kind": "grammar",
+        "start": 0,
+        "end": 3,
+        "tokenIndex": 0,
+        "headIndex": 1,
+        "pos": "DET",
+        "dep": "det"
+      },
+      {
+        "text": "plan",
+        "tag": "NN",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "start": 4,
+        "end": 8,
+        "tokenIndex": 1,
+        "headIndex": 5,
+        "pos": "NOUN",
+        "dep": "nsubj"
+      },
+      {
+        "text": "to",
+        "tag": "TO",
+        "typeId": 1,
+        "kind": "grammar",
+        "start": 9,
+        "end": 11,
+        "tokenIndex": 2,
+        "headIndex": 3,
+        "pos": "PART",
+        "dep": "mark"
+      },
+      {
+        "text": "ship",
+        "tag": "VB",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "start": 12,
+        "end": 16,
+        "tokenIndex": 3,
+        "headIndex": 1,
+        "pos": "VERB",
+        "dep": "acl"
+      },
+      {
+        "text": "early",
+        "tag": "RB",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "start": 17,
+        "end": 22,
+        "tokenIndex": 4,
+        "headIndex": 3,
+        "pos": "ADV",
+        "dep": "advmod"
+      },
+      {
+        "text": "succeeded",
+        "tag": "VBD",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "start": 23,
+        "end": 32,
+        "tokenIndex": 5,
+        "pos": "VERB",
+        "dep": "ROOT"
+      }
+    ],
+    "expect": {
+      "grammarPoints": [
+        {
+          "label": "定语从句",
+          "evidence": [
+            2,
+            3,
+            4
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "relcl_which_obj",
+    "text": "The feature which we shipped impressed users.",
+    "tokens": [
+      {
+        "text": "The",
+        "tag": "DT",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "DET",
+        "dep": "det",
+        "headIndex": 1,
+        "start": 0,
+        "end": 3,
+        "tokenIndex": 0
+      },
+      {
+        "text": "feature",
+        "tag": "NN",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "NOUN",
+        "dep": "nsubj",
+        "headIndex": 5,
+        "start": 4,
+        "end": 11,
+        "tokenIndex": 1
+      },
+      {
+        "text": "which",
+        "tag": "WDT",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "PRON",
+        "dep": "dobj",
+        "headIndex": 4,
+        "start": 12,
+        "end": 17,
+        "tokenIndex": 2
+      },
+      {
+        "text": "we",
+        "tag": "PRP",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "PRON",
+        "dep": "nsubj",
+        "headIndex": 4,
+        "start": 18,
+        "end": 20,
+        "tokenIndex": 3
+      },
+      {
+        "text": "shipped",
+        "tag": "VBD",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "relcl",
+        "headIndex": 1,
+        "start": 21,
+        "end": 28,
+        "tokenIndex": 4
+      },
+      {
+        "text": "impressed",
+        "tag": "VBD",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "ROOT",
+        "start": 29,
+        "end": 38,
+        "tokenIndex": 5
+      },
+      {
+        "text": "users",
+        "tag": "NNS",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "NOUN",
+        "dep": "dobj",
+        "headIndex": 5,
+        "start": 39,
+        "end": 44,
+        "tokenIndex": 6
+      }
+    ],
+    "expect": {
+      "grammarPoints": [
+        {
+          "label": "定语从句",
+          "evidence": [
+            2,
+            3,
+            4
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "relcl_where",
+    "text": "I visited the city where we met.",
+    "tokens": [
+      {
+        "text": "I",
+        "tag": "PRP",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "PRON",
+        "dep": "nsubj",
+        "headIndex": 1,
+        "start": 0,
+        "end": 1,
+        "tokenIndex": 0
+      },
+      {
+        "text": "visited",
+        "tag": "VBD",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "ROOT",
+        "start": 2,
+        "end": 9,
+        "tokenIndex": 1
+      },
+      {
+        "text": "the",
+        "tag": "DT",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "DET",
+        "dep": "det",
+        "headIndex": 3,
+        "start": 10,
+        "end": 13,
+        "tokenIndex": 2
+      },
+      {
+        "text": "city",
+        "tag": "NN",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "NOUN",
+        "dep": "dobj",
+        "headIndex": 1,
+        "start": 14,
+        "end": 18,
+        "tokenIndex": 3
+      },
+      {
+        "text": "where",
+        "tag": "WRB",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "SCONJ",
+        "dep": "advmod",
+        "headIndex": 6,
+        "start": 19,
+        "end": 24,
+        "tokenIndex": 4
+      },
+      {
+        "text": "we",
+        "tag": "PRP",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "PRON",
+        "dep": "nsubj",
+        "headIndex": 6,
+        "start": 25,
+        "end": 27,
+        "tokenIndex": 5
+      },
+      {
+        "text": "met",
+        "tag": "VBD",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "relcl",
+        "headIndex": 3,
+        "start": 28,
+        "end": 31,
+        "tokenIndex": 6
+      }
+    ],
+    "expect": {
+      "grammarPoints": [
+        {
+          "label": "定语从句",
+          "evidence": [
+            4,
+            5,
+            6
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "relcl_whose",
+    "text": "The engineer whose code shipped smiled.",
+    "tokens": [
+      {
+        "text": "The",
+        "tag": "DT",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "DET",
+        "dep": "det",
+        "headIndex": 1,
+        "start": 0,
+        "end": 3,
+        "tokenIndex": 0
+      },
+      {
+        "text": "engineer",
+        "tag": "NN",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "NOUN",
+        "dep": "nsubj",
+        "headIndex": 5,
+        "start": 4,
+        "end": 12,
+        "tokenIndex": 1
+      },
+      {
+        "text": "whose",
+        "tag": "WP$",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "PRON",
+        "dep": "poss",
+        "headIndex": 3,
+        "start": 13,
+        "end": 18,
+        "tokenIndex": 2
+      },
+      {
+        "text": "code",
+        "tag": "NN",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "NOUN",
+        "dep": "nsubj",
+        "headIndex": 4,
+        "start": 19,
+        "end": 23,
+        "tokenIndex": 3
+      },
+      {
+        "text": "shipped",
+        "tag": "VBD",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "relcl",
+        "headIndex": 1,
+        "start": 24,
+        "end": 31,
+        "tokenIndex": 4
+      },
+      {
+        "text": "smiled",
+        "tag": "VBD",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "ROOT",
+        "start": 32,
+        "end": 38,
+        "tokenIndex": 5
+      }
+    ],
+    "expect": {
+      "grammarPoints": [
+        {
+          "label": "定语从句",
+          "evidence": [
+            2,
+            3,
+            4
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "relcl_that_object",
+    "text": "The method that we use works.",
+    "tokens": [
+      {
+        "text": "The",
+        "tag": "DT",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "DET",
+        "dep": "det",
+        "headIndex": 1,
+        "start": 0,
+        "end": 3,
+        "tokenIndex": 0
+      },
+      {
+        "text": "method",
+        "tag": "NN",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "NOUN",
+        "dep": "nsubj",
+        "headIndex": 5,
+        "start": 4,
+        "end": 10,
+        "tokenIndex": 1
+      },
+      {
+        "text": "that",
+        "tag": "WDT",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "PRON",
+        "dep": "dobj",
+        "headIndex": 4,
+        "start": 11,
+        "end": 15,
+        "tokenIndex": 2
+      },
+      {
+        "text": "we",
+        "tag": "PRP",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "PRON",
+        "dep": "nsubj",
+        "headIndex": 4,
+        "start": 16,
+        "end": 18,
+        "tokenIndex": 3
+      },
+      {
+        "text": "use",
+        "tag": "VBP",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "relcl",
+        "headIndex": 1,
+        "start": 19,
+        "end": 22,
+        "tokenIndex": 4
+      },
+      {
+        "text": "works",
+        "tag": "VBZ",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "ROOT",
+        "start": 23,
+        "end": 28,
+        "tokenIndex": 5
+      }
+    ],
+    "expect": {
+      "grammarPoints": [
+        {
+          "label": "定语从句",
+          "evidence": [
+            2,
+            3,
+            4
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "advcl_because",
+    "text": "We postponed because the server crashed.",
+    "tokens": [
+      {
+        "text": "We",
+        "tag": "PRP",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "PRON",
+        "dep": "nsubj",
+        "headIndex": 1,
+        "start": 0,
+        "end": 2,
+        "tokenIndex": 0
+      },
+      {
+        "text": "postponed",
+        "tag": "VBD",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "ROOT",
+        "start": 3,
+        "end": 12,
+        "tokenIndex": 1
+      },
+      {
+        "text": "because",
+        "tag": "IN",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "SCONJ",
+        "dep": "mark",
+        "headIndex": 5,
+        "start": 13,
+        "end": 20,
+        "tokenIndex": 2
+      },
+      {
+        "text": "the",
+        "tag": "DT",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "DET",
+        "dep": "det",
+        "headIndex": 4,
+        "start": 21,
+        "end": 24,
+        "tokenIndex": 3
+      },
+      {
+        "text": "server",
+        "tag": "NN",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "NOUN",
+        "dep": "nsubj",
+        "headIndex": 5,
+        "start": 25,
+        "end": 31,
+        "tokenIndex": 4
+      },
+      {
+        "text": "crashed",
+        "tag": "VBD",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "advcl",
+        "headIndex": 1,
+        "start": 32,
+        "end": 39,
+        "tokenIndex": 5
+      }
+    ],
+    "expect": {
+      "grammarPoints": [
+        {
+          "label": "状语从句",
+          "evidence": [
+            2,
+            3,
+            4,
+            5
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "advcl_if",
+    "text": "If tests fail we rollback.",
+    "tokens": [
+      {
+        "text": "If",
+        "tag": "IN",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "SCONJ",
+        "dep": "mark",
+        "headIndex": 2,
+        "start": 0,
+        "end": 2,
+        "tokenIndex": 0
+      },
+      {
+        "text": "tests",
+        "tag": "NNS",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "NOUN",
+        "dep": "nsubj",
+        "headIndex": 2,
+        "start": 3,
+        "end": 8,
+        "tokenIndex": 1
+      },
+      {
+        "text": "fail",
+        "tag": "VBP",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "advcl",
+        "headIndex": 4,
+        "start": 9,
+        "end": 13,
+        "tokenIndex": 2
+      },
+      {
+        "text": "we",
+        "tag": "PRP",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "PRON",
+        "dep": "nsubj",
+        "headIndex": 4,
+        "start": 14,
+        "end": 16,
+        "tokenIndex": 3
+      },
+      {
+        "text": "rollback",
+        "tag": "VBP",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "ROOT",
+        "start": 17,
+        "end": 25,
+        "tokenIndex": 4
+      }
+    ],
+    "expect": {
+      "grammarPoints": [
+        {
+          "label": "状语从句",
+          "evidence": [
+            0,
+            1,
+            2
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "advcl_although",
+    "text": "Although it was late we continued.",
+    "tokens": [
+      {
+        "text": "Although",
+        "tag": "IN",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "SCONJ",
+        "dep": "mark",
+        "headIndex": 2,
+        "start": 0,
+        "end": 8,
+        "tokenIndex": 0
+      },
+      {
+        "text": "it",
+        "tag": "PRP",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "PRON",
+        "dep": "nsubj",
+        "headIndex": 2,
+        "start": 9,
+        "end": 11,
+        "tokenIndex": 1
+      },
+      {
+        "text": "was",
+        "tag": "VBD",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "AUX",
+        "dep": "advcl",
+        "headIndex": 5,
+        "start": 12,
+        "end": 15,
+        "tokenIndex": 2
+      },
+      {
+        "text": "late",
+        "tag": "JJ",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "ADJ",
+        "dep": "acomp",
+        "headIndex": 2,
+        "start": 16,
+        "end": 20,
+        "tokenIndex": 3
+      },
+      {
+        "text": "we",
+        "tag": "PRP",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "PRON",
+        "dep": "nsubj",
+        "headIndex": 5,
+        "start": 21,
+        "end": 23,
+        "tokenIndex": 4
+      },
+      {
+        "text": "continued",
+        "tag": "VBD",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "ROOT",
+        "start": 24,
+        "end": 33,
+        "tokenIndex": 5
+      }
+    ],
+    "expect": {
+      "grammarPoints": [
+        {
+          "label": "状语从句",
+          "evidence": [
+            0,
+            1,
+            2,
+            3
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "advcl_before",
+    "text": "Call me before you leave.",
+    "tokens": [
+      {
+        "text": "Call",
+        "tag": "VB",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "ROOT",
+        "start": 0,
+        "end": 4,
+        "tokenIndex": 0
+      },
+      {
+        "text": "me",
+        "tag": "PRP",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "PRON",
+        "dep": "dobj",
+        "headIndex": 0,
+        "start": 5,
+        "end": 7,
+        "tokenIndex": 1
+      },
+      {
+        "text": "before",
+        "tag": "IN",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "SCONJ",
+        "dep": "mark",
+        "headIndex": 4,
+        "start": 8,
+        "end": 14,
+        "tokenIndex": 2
+      },
+      {
+        "text": "you",
+        "tag": "PRP",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "PRON",
+        "dep": "nsubj",
+        "headIndex": 4,
+        "start": 15,
+        "end": 18,
+        "tokenIndex": 3
+      },
+      {
+        "text": "leave",
+        "tag": "VBP",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "advcl",
+        "headIndex": 0,
+        "start": 19,
+        "end": 24,
+        "tokenIndex": 4
+      }
+    ],
+    "expect": {
+      "grammarPoints": [
+        {
+          "label": "状语从句",
+          "evidence": [
+            2,
+            3,
+            4
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "advcl_while",
+    "text": "While it loads we wait.",
+    "tokens": [
+      {
+        "text": "While",
+        "tag": "IN",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "SCONJ",
+        "dep": "mark",
+        "headIndex": 2,
+        "start": 0,
+        "end": 5,
+        "tokenIndex": 0
+      },
+      {
+        "text": "it",
+        "tag": "PRP",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "PRON",
+        "dep": "nsubj",
+        "headIndex": 2,
+        "start": 6,
+        "end": 8,
+        "tokenIndex": 1
+      },
+      {
+        "text": "loads",
+        "tag": "VBZ",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "advcl",
+        "headIndex": 4,
+        "start": 9,
+        "end": 14,
+        "tokenIndex": 2
+      },
+      {
+        "text": "we",
+        "tag": "PRP",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "PRON",
+        "dep": "nsubj",
+        "headIndex": 4,
+        "start": 15,
+        "end": 17,
+        "tokenIndex": 3
+      },
+      {
+        "text": "wait",
+        "tag": "VBP",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "ROOT",
+        "start": 18,
+        "end": 22,
+        "tokenIndex": 4
+      }
+    ],
+    "expect": {
+      "grammarPoints": [
+        {
+          "label": "状语从句",
+          "evidence": [
+            0,
+            1,
+            2
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "advcl_unless",
+    "text": "We will not ship unless tests pass.",
+    "tokens": [
+      {
+        "text": "We",
+        "tag": "PRP",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "PRON",
+        "dep": "nsubj",
+        "headIndex": 3,
+        "start": 0,
+        "end": 2,
+        "tokenIndex": 0
+      },
+      {
+        "text": "will",
+        "tag": "MD",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "AUX",
+        "dep": "aux",
+        "headIndex": 3,
+        "start": 3,
+        "end": 7,
+        "tokenIndex": 1
+      },
+      {
+        "text": "not",
+        "tag": "RB",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "ADV",
+        "dep": "neg",
+        "headIndex": 3,
+        "start": 8,
+        "end": 11,
+        "tokenIndex": 2
+      },
+      {
+        "text": "ship",
+        "tag": "VB",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "ROOT",
+        "start": 12,
+        "end": 16,
+        "tokenIndex": 3
+      },
+      {
+        "text": "unless",
+        "tag": "IN",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "SCONJ",
+        "dep": "mark",
+        "headIndex": 6,
+        "start": 17,
+        "end": 23,
+        "tokenIndex": 4
+      },
+      {
+        "text": "tests",
+        "tag": "NNS",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "NOUN",
+        "dep": "nsubj",
+        "headIndex": 6,
+        "start": 24,
+        "end": 29,
+        "tokenIndex": 5
+      },
+      {
+        "text": "pass",
+        "tag": "VBP",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "advcl",
+        "headIndex": 3,
+        "start": 30,
+        "end": 34,
+        "tokenIndex": 6
+      }
+    ],
+    "expect": {
+      "grammarPoints": [
+        {
+          "label": "状语从句",
+          "evidence": [
+            4,
+            5,
+            6
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "ccomp_report",
+    "text": "She said the build failed.",
+    "tokens": [
+      {
+        "text": "She",
+        "tag": "PRP",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "PRON",
+        "dep": "nsubj",
+        "headIndex": 1,
+        "start": 0,
+        "end": 3,
+        "tokenIndex": 0
+      },
+      {
+        "text": "said",
+        "tag": "VBD",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "ROOT",
+        "start": 4,
+        "end": 8,
+        "tokenIndex": 1
+      },
+      {
+        "text": "the",
+        "tag": "DT",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "DET",
+        "dep": "det",
+        "headIndex": 3,
+        "start": 9,
+        "end": 12,
+        "tokenIndex": 2
+      },
+      {
+        "text": "build",
+        "tag": "NN",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "NOUN",
+        "dep": "nsubj",
+        "headIndex": 4,
+        "start": 13,
+        "end": 18,
+        "tokenIndex": 3
+      },
+      {
+        "text": "failed",
+        "tag": "VBD",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "ccomp",
+        "headIndex": 1,
+        "start": 19,
+        "end": 25,
+        "tokenIndex": 4
+      }
+    ],
+    "expect": {
+      "grammarPoints": [
+        {
+          "label": "补语从句",
+          "evidence": [
+            2,
+            3,
+            4
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "ccomp_whether",
+    "text": "They asked whether it worked.",
+    "tokens": [
+      {
+        "text": "They",
+        "tag": "PRP",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "PRON",
+        "dep": "nsubj",
+        "headIndex": 1,
+        "start": 0,
+        "end": 4,
+        "tokenIndex": 0
+      },
+      {
+        "text": "asked",
+        "tag": "VBD",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "ROOT",
+        "start": 5,
+        "end": 10,
+        "tokenIndex": 1
+      },
+      {
+        "text": "whether",
+        "tag": "IN",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "SCONJ",
+        "dep": "mark",
+        "headIndex": 4,
+        "start": 11,
+        "end": 18,
+        "tokenIndex": 2
+      },
+      {
+        "text": "it",
+        "tag": "PRP",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "PRON",
+        "dep": "nsubj",
+        "headIndex": 4,
+        "start": 19,
+        "end": 21,
+        "tokenIndex": 3
+      },
+      {
+        "text": "worked",
+        "tag": "VBD",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "ccomp",
+        "headIndex": 1,
+        "start": 22,
+        "end": 28,
+        "tokenIndex": 4
+      }
+    ],
+    "expect": {
+      "grammarPoints": [
+        {
+          "label": "补语从句",
+          "evidence": [
+            2,
+            3,
+            4
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "ccomp_heard",
+    "text": "We heard it was slow.",
+    "tokens": [
+      {
+        "text": "We",
+        "tag": "PRP",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "PRON",
+        "dep": "nsubj",
+        "headIndex": 1,
+        "start": 0,
+        "end": 2,
+        "tokenIndex": 0
+      },
+      {
+        "text": "heard",
+        "tag": "VBD",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "ROOT",
+        "start": 3,
+        "end": 8,
+        "tokenIndex": 1
+      },
+      {
+        "text": "it",
+        "tag": "PRP",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "PRON",
+        "dep": "nsubj",
+        "headIndex": 3,
+        "start": 9,
+        "end": 11,
+        "tokenIndex": 2
+      },
+      {
+        "text": "was",
+        "tag": "VBD",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "AUX",
+        "dep": "ccomp",
+        "headIndex": 1,
+        "start": 12,
+        "end": 15,
+        "tokenIndex": 3
+      },
+      {
+        "text": "slow",
+        "tag": "JJ",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "ADJ",
+        "dep": "acomp",
+        "headIndex": 3,
+        "start": 16,
+        "end": 20,
+        "tokenIndex": 4
+      }
+    ],
+    "expect": {
+      "grammarPoints": [
+        {
+          "label": "补语从句",
+          "evidence": [
+            2,
+            3,
+            4
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "ccomp_if",
+    "text": "I wonder if it will rain.",
+    "tokens": [
+      {
+        "text": "I",
+        "tag": "PRP",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "PRON",
+        "dep": "nsubj",
+        "headIndex": 1,
+        "start": 0,
+        "end": 1,
+        "tokenIndex": 0
+      },
+      {
+        "text": "wonder",
+        "tag": "VBP",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "ROOT",
+        "start": 2,
+        "end": 8,
+        "tokenIndex": 1
+      },
+      {
+        "text": "if",
+        "tag": "IN",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "SCONJ",
+        "dep": "mark",
+        "headIndex": 5,
+        "start": 9,
+        "end": 11,
+        "tokenIndex": 2
+      },
+      {
+        "text": "it",
+        "tag": "PRP",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "PRON",
+        "dep": "nsubj",
+        "headIndex": 5,
+        "start": 12,
+        "end": 14,
+        "tokenIndex": 3
+      },
+      {
+        "text": "will",
+        "tag": "MD",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "AUX",
+        "dep": "aux",
+        "headIndex": 5,
+        "start": 15,
+        "end": 19,
+        "tokenIndex": 4
+      },
+      {
+        "text": "rain",
+        "tag": "VB",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "ccomp",
+        "headIndex": 1,
+        "start": 20,
+        "end": 24,
+        "tokenIndex": 5
+      }
+    ],
+    "expect": {
+      "grammarPoints": [
+        {
+          "label": "补语从句",
+          "evidence": [
+            2,
+            3,
+            4,
+            5
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "ccomp_that_directive",
+    "text": "He insisted that we leave.",
+    "tokens": [
+      {
+        "text": "He",
+        "tag": "PRP",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "PRON",
+        "dep": "nsubj",
+        "headIndex": 1,
+        "start": 0,
+        "end": 2,
+        "tokenIndex": 0
+      },
+      {
+        "text": "insisted",
+        "tag": "VBD",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "ROOT",
+        "start": 3,
+        "end": 11,
+        "tokenIndex": 1
+      },
+      {
+        "text": "that",
+        "tag": "IN",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "SCONJ",
+        "dep": "mark",
+        "headIndex": 4,
+        "start": 12,
+        "end": 16,
+        "tokenIndex": 2
+      },
+      {
+        "text": "we",
+        "tag": "PRP",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "PRON",
+        "dep": "nsubj",
+        "headIndex": 4,
+        "start": 17,
+        "end": 19,
+        "tokenIndex": 3
+      },
+      {
+        "text": "leave",
+        "tag": "VB",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "ccomp",
+        "headIndex": 1,
+        "start": 20,
+        "end": 25,
+        "tokenIndex": 4
+      }
+    ],
+    "expect": {
+      "grammarPoints": [
+        {
+          "label": "补语从句",
+          "evidence": [
+            2,
+            3,
+            4
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "xcomp_need",
+    "text": "I need to finish.",
+    "tokens": [
+      {
+        "text": "I",
+        "tag": "PRP",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "PRON",
+        "dep": "nsubj",
+        "headIndex": 1,
+        "start": 0,
+        "end": 1,
+        "tokenIndex": 0
+      },
+      {
+        "text": "need",
+        "tag": "VBP",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "ROOT",
+        "start": 2,
+        "end": 6,
+        "tokenIndex": 1
+      },
+      {
+        "text": "to",
+        "tag": "TO",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "PART",
+        "dep": "mark",
+        "headIndex": 3,
+        "start": 7,
+        "end": 9,
+        "tokenIndex": 2
+      },
+      {
+        "text": "finish",
+        "tag": "VB",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "xcomp",
+        "headIndex": 1,
+        "start": 10,
+        "end": 16,
+        "tokenIndex": 3
+      }
+    ],
+    "expect": {
+      "grammarPoints": [
+        {
+          "label": "开放补语",
+          "evidence": [
+            2,
+            3
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "xcomp_help",
+    "text": "We helped them solve it.",
+    "tokens": [
+      {
+        "text": "We",
+        "tag": "PRP",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "PRON",
+        "dep": "nsubj",
+        "headIndex": 1,
+        "start": 0,
+        "end": 2,
+        "tokenIndex": 0
+      },
+      {
+        "text": "helped",
+        "tag": "VBD",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "ROOT",
+        "start": 3,
+        "end": 9,
+        "tokenIndex": 1
+      },
+      {
+        "text": "them",
+        "tag": "PRP",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "PRON",
+        "dep": "dobj",
+        "headIndex": 1,
+        "start": 10,
+        "end": 14,
+        "tokenIndex": 2
+      },
+      {
+        "text": "solve",
+        "tag": "VB",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "xcomp",
+        "headIndex": 1,
+        "start": 15,
+        "end": 20,
+        "tokenIndex": 3
+      },
+      {
+        "text": "it",
+        "tag": "PRP",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "PRON",
+        "dep": "dobj",
+        "headIndex": 3,
+        "start": 21,
+        "end": 23,
+        "tokenIndex": 4
+      }
+    ],
+    "expect": {
+      "grammarPoints": [
+        {
+          "label": "开放补语",
+          "evidence": [
+            3,
+            4
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "xcomp_make",
+    "text": "The update made users wait longer.",
+    "tokens": [
+      {
+        "text": "The",
+        "tag": "DT",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "DET",
+        "dep": "det",
+        "headIndex": 1,
+        "start": 0,
+        "end": 3,
+        "tokenIndex": 0
+      },
+      {
+        "text": "update",
+        "tag": "NN",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "NOUN",
+        "dep": "nsubj",
+        "headIndex": 2,
+        "start": 4,
+        "end": 10,
+        "tokenIndex": 1
+      },
+      {
+        "text": "made",
+        "tag": "VBD",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "ROOT",
+        "start": 11,
+        "end": 15,
+        "tokenIndex": 2
+      },
+      {
+        "text": "users",
+        "tag": "NNS",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "NOUN",
+        "dep": "dobj",
+        "headIndex": 2,
+        "start": 16,
+        "end": 21,
+        "tokenIndex": 3
+      },
+      {
+        "text": "wait",
+        "tag": "VB",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "xcomp",
+        "headIndex": 2,
+        "start": 22,
+        "end": 26,
+        "tokenIndex": 4
+      },
+      {
+        "text": "longer",
+        "tag": "RBR",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "ADV",
+        "dep": "advmod",
+        "headIndex": 4,
+        "start": 27,
+        "end": 33,
+        "tokenIndex": 5
+      }
+    ],
+    "expect": {
+      "grammarPoints": [
+        {
+          "label": "开放补语",
+          "evidence": [
+            4,
+            5
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "xcomp_allow",
+    "text": "They allowed us to deploy.",
+    "tokens": [
+      {
+        "text": "They",
+        "tag": "PRP",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "PRON",
+        "dep": "nsubj",
+        "headIndex": 1,
+        "start": 0,
+        "end": 4,
+        "tokenIndex": 0
+      },
+      {
+        "text": "allowed",
+        "tag": "VBD",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "ROOT",
+        "start": 5,
+        "end": 12,
+        "tokenIndex": 1
+      },
+      {
+        "text": "us",
+        "tag": "PRP",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "PRON",
+        "dep": "dobj",
+        "headIndex": 1,
+        "start": 13,
+        "end": 15,
+        "tokenIndex": 2
+      },
+      {
+        "text": "to",
+        "tag": "TO",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "PART",
+        "dep": "mark",
+        "headIndex": 4,
+        "start": 16,
+        "end": 18,
+        "tokenIndex": 3
+      },
+      {
+        "text": "deploy",
+        "tag": "VB",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "xcomp",
+        "headIndex": 1,
+        "start": 19,
+        "end": 25,
+        "tokenIndex": 4
+      }
+    ],
+    "expect": {
+      "grammarPoints": [
+        {
+          "label": "开放补语",
+          "evidence": [
+            3,
+            4
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "xcomp_force",
+    "text": "The policy forces teams to comply.",
+    "tokens": [
+      {
+        "text": "The",
+        "tag": "DT",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "DET",
+        "dep": "det",
+        "headIndex": 1,
+        "start": 0,
+        "end": 3,
+        "tokenIndex": 0
+      },
+      {
+        "text": "policy",
+        "tag": "NN",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "NOUN",
+        "dep": "nsubj",
+        "headIndex": 2,
+        "start": 4,
+        "end": 10,
+        "tokenIndex": 1
+      },
+      {
+        "text": "forces",
+        "tag": "VBZ",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "ROOT",
+        "start": 11,
+        "end": 17,
+        "tokenIndex": 2
+      },
+      {
+        "text": "teams",
+        "tag": "NNS",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "NOUN",
+        "dep": "dobj",
+        "headIndex": 2,
+        "start": 18,
+        "end": 23,
+        "tokenIndex": 3
+      },
+      {
+        "text": "to",
+        "tag": "TO",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "PART",
+        "dep": "mark",
+        "headIndex": 5,
+        "start": 24,
+        "end": 26,
+        "tokenIndex": 4
+      },
+      {
+        "text": "comply",
+        "tag": "VB",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "xcomp",
+        "headIndex": 2,
+        "start": 27,
+        "end": 33,
+        "tokenIndex": 5
+      }
+    ],
+    "expect": {
+      "grammarPoints": [
+        {
+          "label": "开放补语",
+          "evidence": [
+            4,
+            5
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "passive_neg",
+    "text": "The release was not delayed.",
+    "tokens": [
+      {
+        "text": "The",
+        "tag": "DT",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "DET",
+        "dep": "det",
+        "headIndex": 1,
+        "start": 0,
+        "end": 3,
+        "tokenIndex": 0
+      },
+      {
+        "text": "release",
+        "tag": "NN",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "NOUN",
+        "dep": "nsubjpass",
+        "headIndex": 4,
+        "start": 4,
+        "end": 11,
+        "tokenIndex": 1
+      },
+      {
+        "text": "was",
+        "tag": "VBD",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "AUX",
+        "dep": "auxpass",
+        "headIndex": 4,
+        "start": 12,
+        "end": 15,
+        "tokenIndex": 2
+      },
+      {
+        "text": "not",
+        "tag": "RB",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "ADV",
+        "dep": "neg",
+        "headIndex": 4,
+        "start": 16,
+        "end": 19,
+        "tokenIndex": 3
+      },
+      {
+        "text": "delayed",
+        "tag": "VBN",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "ROOT",
+        "start": 20,
+        "end": 27,
+        "tokenIndex": 4
+      }
+    ],
+    "expect": {
+      "grammarPoints": [
+        {
+          "label": "被动语态",
+          "evidence": [
+            1,
+            2,
+            3,
+            4
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "passive_agent",
+    "text": "The feature was built by interns.",
+    "tokens": [
+      {
+        "text": "The",
+        "tag": "DT",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "DET",
+        "dep": "det",
+        "headIndex": 1,
+        "start": 0,
+        "end": 3,
+        "tokenIndex": 0
+      },
+      {
+        "text": "feature",
+        "tag": "NN",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "NOUN",
+        "dep": "nsubjpass",
+        "headIndex": 3,
+        "start": 4,
+        "end": 11,
+        "tokenIndex": 1
+      },
+      {
+        "text": "was",
+        "tag": "VBD",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "AUX",
+        "dep": "auxpass",
+        "headIndex": 3,
+        "start": 12,
+        "end": 15,
+        "tokenIndex": 2
+      },
+      {
+        "text": "built",
+        "tag": "VBN",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "ROOT",
+        "start": 16,
+        "end": 21,
+        "tokenIndex": 3
+      },
+      {
+        "text": "by",
+        "tag": "IN",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "ADP",
+        "dep": "agent",
+        "headIndex": 3,
+        "start": 22,
+        "end": 24,
+        "tokenIndex": 4
+      },
+      {
+        "text": "interns",
+        "tag": "NNS",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "NOUN",
+        "dep": "pobj",
+        "headIndex": 4,
+        "start": 25,
+        "end": 32,
+        "tokenIndex": 5
+      }
+    ],
+    "expect": {
+      "grammarPoints": [
+        {
+          "label": "被动语态",
+          "evidence": [
+            1,
+            2,
+            3,
+            4
+          ]
+        },
+        {
+          "label": "介词短语",
+          "evidence": [
+            4,
+            5
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "passive_perf",
+    "text": "The module has been tested.",
+    "tokens": [
+      {
+        "text": "The",
+        "tag": "DT",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "DET",
+        "dep": "det",
+        "headIndex": 1,
+        "start": 0,
+        "end": 3,
+        "tokenIndex": 0
+      },
+      {
+        "text": "module",
+        "tag": "NN",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "NOUN",
+        "dep": "nsubjpass",
+        "headIndex": 4,
+        "start": 4,
+        "end": 10,
+        "tokenIndex": 1
+      },
+      {
+        "text": "has",
+        "tag": "VBZ",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "AUX",
+        "dep": "aux",
+        "headIndex": 4,
+        "start": 11,
+        "end": 14,
+        "tokenIndex": 2
+      },
+      {
+        "text": "been",
+        "tag": "VBN",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "AUX",
+        "dep": "auxpass",
+        "headIndex": 4,
+        "start": 15,
+        "end": 19,
+        "tokenIndex": 3
+      },
+      {
+        "text": "tested",
+        "tag": "VBN",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "ROOT",
+        "start": 20,
+        "end": 26,
+        "tokenIndex": 4
+      }
+    ],
+    "expect": {
+      "grammarPoints": [
+        {
+          "label": "被动语态",
+          "evidence": [
+            1,
+            2,
+            3,
+            4
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "passive_modal",
+    "text": "The fix should be applied.",
+    "tokens": [
+      {
+        "text": "The",
+        "tag": "DT",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "DET",
+        "dep": "det",
+        "headIndex": 1,
+        "start": 0,
+        "end": 3,
+        "tokenIndex": 0
+      },
+      {
+        "text": "fix",
+        "tag": "NN",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "NOUN",
+        "dep": "nsubjpass",
+        "headIndex": 4,
+        "start": 4,
+        "end": 7,
+        "tokenIndex": 1
+      },
+      {
+        "text": "should",
+        "tag": "MD",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "AUX",
+        "dep": "aux",
+        "headIndex": 4,
+        "start": 8,
+        "end": 14,
+        "tokenIndex": 2
+      },
+      {
+        "text": "be",
+        "tag": "VB",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "AUX",
+        "dep": "auxpass",
+        "headIndex": 4,
+        "start": 15,
+        "end": 17,
+        "tokenIndex": 3
+      },
+      {
+        "text": "applied",
+        "tag": "VBN",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "ROOT",
+        "start": 18,
+        "end": 25,
+        "tokenIndex": 4
+      }
+    ],
+    "expect": {
+      "grammarPoints": [
+        {
+          "label": "被动语态",
+          "evidence": [
+            1,
+            2,
+            3,
+            4
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "prep_on",
+    "text": "We met on Monday.",
+    "tokens": [
+      {
+        "text": "We",
+        "tag": "PRP",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "PRON",
+        "dep": "nsubj",
+        "headIndex": 1,
+        "start": 0,
+        "end": 2,
+        "tokenIndex": 0
+      },
+      {
+        "text": "met",
+        "tag": "VBD",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "ROOT",
+        "start": 3,
+        "end": 6,
+        "tokenIndex": 1
+      },
+      {
+        "text": "on",
+        "tag": "IN",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "ADP",
+        "dep": "prep",
+        "headIndex": 1,
+        "start": 7,
+        "end": 9,
+        "tokenIndex": 2
+      },
+      {
+        "text": "Monday",
+        "tag": "NNP",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "PROPN",
+        "dep": "pobj",
+        "headIndex": 2,
+        "start": 10,
+        "end": 16,
+        "tokenIndex": 3
+      }
+    ],
+    "expect": {
+      "grammarPoints": [
+        {
+          "label": "介词短语",
+          "evidence": [
+            2,
+            3
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "prep_with",
+    "text": "She wrote with a pen.",
+    "tokens": [
+      {
+        "text": "She",
+        "tag": "PRP",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "PRON",
+        "dep": "nsubj",
+        "headIndex": 1,
+        "start": 0,
+        "end": 3,
+        "tokenIndex": 0
+      },
+      {
+        "text": "wrote",
+        "tag": "VBD",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "ROOT",
+        "start": 4,
+        "end": 9,
+        "tokenIndex": 1
+      },
+      {
+        "text": "with",
+        "tag": "IN",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "ADP",
+        "dep": "prep",
+        "headIndex": 1,
+        "start": 10,
+        "end": 14,
+        "tokenIndex": 2
+      },
+      {
+        "text": "a",
+        "tag": "DT",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "DET",
+        "dep": "det",
+        "headIndex": 4,
+        "start": 15,
+        "end": 16,
+        "tokenIndex": 3
+      },
+      {
+        "text": "pen",
+        "tag": "NN",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "NOUN",
+        "dep": "pobj",
+        "headIndex": 2,
+        "start": 17,
+        "end": 20,
+        "tokenIndex": 4
+      }
+    ],
+    "expect": {
+      "grammarPoints": [
+        {
+          "label": "介词短语",
+          "evidence": [
+            2,
+            3,
+            4
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "prep_for",
+    "text": "They left for lunch.",
+    "tokens": [
+      {
+        "text": "They",
+        "tag": "PRP",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "PRON",
+        "dep": "nsubj",
+        "headIndex": 1,
+        "start": 0,
+        "end": 4,
+        "tokenIndex": 0
+      },
+      {
+        "text": "left",
+        "tag": "VBD",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "ROOT",
+        "start": 5,
+        "end": 9,
+        "tokenIndex": 1
+      },
+      {
+        "text": "for",
+        "tag": "IN",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "ADP",
+        "dep": "prep",
+        "headIndex": 1,
+        "start": 10,
+        "end": 13,
+        "tokenIndex": 2
+      },
+      {
+        "text": "lunch",
+        "tag": "NN",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "NOUN",
+        "dep": "pobj",
+        "headIndex": 2,
+        "start": 14,
+        "end": 19,
+        "tokenIndex": 3
+      }
+    ],
+    "expect": {
+      "grammarPoints": [
+        {
+          "label": "介词短语",
+          "evidence": [
+            2,
+            3
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "parataxis_semicolon",
+    "text": "He called; she answered.",
+    "tokens": [
+      {
+        "text": "He",
+        "tag": "PRP",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "PRON",
+        "dep": "nsubj",
+        "headIndex": 1,
+        "start": 0,
+        "end": 2,
+        "tokenIndex": 0
+      },
+      {
+        "text": "called",
+        "tag": "VBD",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "ROOT",
+        "start": 3,
+        "end": 9,
+        "tokenIndex": 1
+      },
+      {
+        "text": ";",
+        "tag": ":",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "PUNCT",
+        "dep": "punct",
+        "headIndex": 1,
+        "start": 9,
+        "end": 10,
+        "tokenIndex": 2
+      },
+      {
+        "text": "she",
+        "tag": "PRP",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "PRON",
+        "dep": "nsubj",
+        "headIndex": 4,
+        "start": 11,
+        "end": 14,
+        "tokenIndex": 3
+      },
+      {
+        "text": "answered",
+        "tag": "VBD",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "parataxis",
+        "headIndex": 1,
+        "start": 15,
+        "end": 23,
+        "tokenIndex": 4
+      }
+    ],
+    "expect": {
+      "grammarPoints": [
+        {
+          "label": "并列分句",
+          "evidence": [
+            3,
+            4
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "acl_participle",
+    "text": "The files updated yesterday were large.",
+    "tokens": [
+      {
+        "text": "The",
+        "tag": "DT",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "DET",
+        "dep": "det",
+        "headIndex": 1,
+        "start": 0,
+        "end": 3,
+        "tokenIndex": 0
+      },
+      {
+        "text": "files",
+        "tag": "NNS",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "NOUN",
+        "dep": "nsubj",
+        "headIndex": 5,
+        "start": 4,
+        "end": 9,
+        "tokenIndex": 1
+      },
+      {
+        "text": "updated",
+        "tag": "VBN",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "acl",
+        "headIndex": 1,
+        "start": 10,
+        "end": 17,
+        "tokenIndex": 2
+      },
+      {
+        "text": "yesterday",
+        "tag": "RB",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "ADV",
+        "dep": "advmod",
+        "headIndex": 2,
+        "start": 18,
+        "end": 27,
+        "tokenIndex": 3
+      },
+      {
+        "text": "were",
+        "tag": "VBD",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "AUX",
+        "dep": "cop",
+        "headIndex": 5,
+        "start": 28,
+        "end": 32,
+        "tokenIndex": 4
+      },
+      {
+        "text": "large",
+        "tag": "JJ",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "ADJ",
+        "dep": "ROOT",
+        "start": 33,
+        "end": 38,
+        "tokenIndex": 5
+      }
+    ],
+    "expect": {
+      "grammarPoints": [
+        {
+          "label": "定语从句",
+          "evidence": [
+            2,
+            3
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "acl_to2",
+    "text": "A chance to learn appeared.",
+    "tokens": [
+      {
+        "text": "A",
+        "tag": "DT",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "DET",
+        "dep": "det",
+        "headIndex": 1,
+        "start": 0,
+        "end": 1,
+        "tokenIndex": 0
+      },
+      {
+        "text": "chance",
+        "tag": "NN",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "NOUN",
+        "dep": "nsubj",
+        "headIndex": 4,
+        "start": 2,
+        "end": 8,
+        "tokenIndex": 1
+      },
+      {
+        "text": "to",
+        "tag": "TO",
+        "typeId": 1,
+        "kind": "grammar",
+        "pos": "PART",
+        "dep": "mark",
+        "headIndex": 3,
+        "start": 9,
+        "end": 11,
+        "tokenIndex": 2
+      },
+      {
+        "text": "learn",
+        "tag": "VB",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "acl",
+        "headIndex": 1,
+        "start": 12,
+        "end": 17,
+        "tokenIndex": 3
+      },
+      {
+        "text": "appeared",
+        "tag": "VBD",
+        "typeId": 2,
+        "kind": "vocabulary",
+        "pos": "VERB",
+        "dep": "ROOT",
+        "start": 18,
+        "end": 26,
+        "tokenIndex": 4
+      }
+    ],
+    "expect": {
+      "grammarPoints": [
+        {
+          "label": "定语从句",
+          "evidence": [
+            2,
+            3
+          ]
+        }
+      ]
+    }
+  }
+]

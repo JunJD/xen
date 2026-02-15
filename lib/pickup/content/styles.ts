@@ -246,6 +246,41 @@ export function ensurePickupStyles() {
       border-top: 1px solid rgba(148, 163, 184, 0.25);
       padding-top: 4px;
     }
+    :root[data-xen-pickup-mode="vocab_infusion"] .xen-pickup-three-lane [data-pickup-lane="syntax_rebuild"] {
+      display: none;
+    }
+    :root[data-xen-pickup-mode="syntax_rebuild"] .xen-pickup-three-lane [data-pickup-lane="vocab_infusion"] {
+      display: none;
+    }
+    :root[data-xen-pickup-mode="vocab_infusion"] .xen-pickup-role-badge {
+      display: none;
+    }
+    .xen-pickup-role-badge {
+      margin-left: 2px;
+      font-size: 0.58em;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      color: rgba(71, 85, 105, 0.82);
+      vertical-align: super;
+      cursor: help;
+    }
+    .xen-pickup-role-badge[data-pickup-badge="structure"] {
+      color: rgba(14, 116, 144, 0.9);
+      font-weight: 700;
+    }
+    .xen-pickup-role-badge[data-pickup-badge="token"] {
+      color: rgba(71, 85, 105, 0.72);
+      font-weight: 600;
+    }
+    :root[data-xen-pickup-theme="dark"] .xen-pickup-role-badge {
+      color: rgba(226, 232, 240, 0.78);
+    }
+    :root[data-xen-pickup-theme="dark"] .xen-pickup-role-badge[data-pickup-badge="structure"] {
+      color: rgba(56, 189, 248, 0.9);
+    }
+    :root[data-xen-pickup-theme="dark"] .xen-pickup-role-badge[data-pickup-badge="token"] {
+      color: rgba(226, 232, 240, 0.68);
+    }
     .xen-pickup-token:hover {
       background-color: transparent;
       text-decoration-color: #415ccc;
@@ -279,13 +314,10 @@ export function ensurePickupStyles() {
       gap: 2px;
     }
     .xen-pickup-tooltip-line {
-      max-width: 220px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .xen-pickup-tooltip-line-role {
-      font-weight: 600;
+      max-width: 280px;
+      white-space: pre-line;
+      overflow: visible;
+      text-overflow: clip;
     }
     .xen-pickup-tooltip-line-desc {
       opacity: 0.92;

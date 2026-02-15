@@ -2,36 +2,15 @@ import tippy, { type Props } from 'tippy.js';
 
 const TIPPY_THEME = 'xen-pickup';
 const TOKEN_SELECTOR = '.xen-pickup-token';
+const ROLE_BADGE_SELECTOR = '.xen-pickup-role-badge';
 const PICKUP_UI_SELECTOR = '[data-pickup-ui]';
+const BADGE_KIND_STRUCTURE = 'structure';
+const PICKUP_CATEGORY_VOCAB = 'vocabulary';
+const PICKUP_LANE_ATTR = 'data-pickup-lane';
+const PICKUP_LANE_SYNTAX = 'syntax_rebuild';
 
-const TOOLTIP_DESC_MAX_LENGTH = 12;
-const TOOLTIP_ROLE_PREFIX = '角色: ';
-const TOOLTIP_FALLBACK_ROLE = '未分类';
 const TOOLTIP_FALLBACK_DESC = '暂无解释';
-
-const TOOLTIP_MODE_STRUCTURE = 'structure';
-const TOOLTIP_MODE_MEANING = 'meaning';
-type TooltipMode = typeof TOOLTIP_MODE_STRUCTURE | typeof TOOLTIP_MODE_MEANING;
-
-const TOOLTIP_BUTTON_LABEL_BY_MODE: Record<TooltipMode, string> = {
-  [TOOLTIP_MODE_STRUCTURE]: '结构',
-  [TOOLTIP_MODE_MEANING]: '释义',
-};
-
-const STRUCTURE_EXPLANATIONS: Array<{ keyword: string; explanation: string }> = [
-  { keyword: '谓语', explanation: '句子核心动作' },
-  { keyword: '主语', explanation: '动作发出者' },
-  { keyword: '宾语', explanation: '动作承受对象' },
-  { keyword: '定语', explanation: '限定名词范围' },
-  { keyword: '状语', explanation: '补充动作状态' },
-  { keyword: '补语', explanation: '补足核心信息' },
-  { keyword: '介词', explanation: '引出介词结构' },
-  { keyword: '并列', explanation: '并列成分连接' },
-  { keyword: '从句', explanation: '从属句法结构' },
-  { keyword: '标点', explanation: '句法停顿标记' },
-  { keyword: '语法', explanation: '语法功能提示' },
-  { keyword: '词汇', explanation: '词汇角色提示' },
-];
+const MOCK_MEANING_PREFIX_PATTERN = /^(语法|词汇)释义（mock）：?/;
 
 let hoverHandlersReady = false;
 let activeGroupId: string | null = null;
@@ -65,72 +44,65 @@ function findTokenElement(target: EventTarget | null): HTMLElement | null {
   return target.closest<HTMLElement>(TOKEN_SELECTOR);
 }
 
+function findRoleBadge(target: EventTarget | null): HTMLElement | null {
+  if (!(target instanceof HTMLElement)) {
+    return null;
+  }
+  if (target.classList.contains('xen-pickup-role-badge')) {
+    return target;
+  }
+  return target.closest<HTMLElement>(ROLE_BADGE_SELECTOR);
+}
+
+function isStructureBadge(badge: HTMLElement) {
+  return badge.dataset.pickupBadge === BADGE_KIND_STRUCTURE;
+}
+
 function isInsidePickupUi(target: EventTarget | null) {
   return target instanceof HTMLElement && Boolean(target.closest(PICKUP_UI_SELECTOR));
 }
 
-function normalizeTooltipText(value: string) {
-  return value.replace(/\s+/g, ' ').trim();
+function isVocabToken(element: HTMLElement) {
+  return element.classList.contains('xen-pickup-token')
+    && element.dataset.pickupCategory === PICKUP_CATEGORY_VOCAB;
 }
 
-function clampTooltipText(value: string, maxLength: number) {
+function isSyntaxLane(element: HTMLElement) {
+  const lane = element.closest<HTMLElement>(`[${PICKUP_LANE_ATTR}]`)?.dataset.pickupLane;
+  return lane === PICKUP_LANE_SYNTAX;
+}
+
+function shouldShowTooltip(element: HTMLElement) {
+  if (isSyntaxLane(element) && isVocabToken(element)) {
+    return false;
+  }
+  return true;
+}
+
+function normalizeTooltipText(value: string) {
+  const normalized = value.replace(/\r\n?/g, '\n');
+  const lines = normalized
+    .split('\n')
+    .map(line => line.replace(/\s+/g, ' ').trim())
+    .filter(Boolean);
+  return lines.join('\n');
+}
+
+function clampTooltipText(value: string) {
   const normalized = normalizeTooltipText(value);
   if (!normalized) {
     return TOOLTIP_FALLBACK_DESC;
   }
-  if (normalized.length <= maxLength) {
-    return normalized;
-  }
-  const visibleLength = Math.max(0, maxLength - 3);
-  return `${normalized.slice(0, visibleLength)}...`;
+  return normalized;
 }
 
-function resolveTooltipRole(reference: HTMLElement) {
-  const role = normalizeTooltipText(reference.dataset.pickupRole ?? '');
-  if (role) {
-    return role;
-  }
-  const category = reference.dataset.pickupCategory;
-  if (category === 'grammar') {
-    return '语法';
-  }
-  if (category === 'vocabulary') {
-    return '词汇';
-  }
-  return TOOLTIP_FALLBACK_ROLE;
-}
-
-function resolveStructureDescription(role: string) {
-  for (const item of STRUCTURE_EXPLANATIONS) {
-    if (role.includes(item.keyword)) {
-      return item.explanation;
-    }
-  }
-  return '句法结构提示';
-}
-
-function resolveMeaningDescription(reference: HTMLElement, role: string) {
-  const meaning = normalizeTooltipText(reference.dataset.pickupMeaning ?? '');
+function resolveMeaningDescription(reference: HTMLElement) {
+  const raw = String(reference.dataset.pickupMeaning ?? '');
+  const meaning = normalizeTooltipText(raw.replace(MOCK_MEANING_PREFIX_PATTERN, ''));
   if (!meaning) {
-    return resolveStructureDescription(role);
+    return TOOLTIP_FALLBACK_DESC;
   }
   return meaning;
-}
-
-function resolveTooltipDescription(reference: HTMLElement, role: string, mode: TooltipMode) {
-  if (mode === TOOLTIP_MODE_STRUCTURE) {
-    return clampTooltipText(resolveStructureDescription(role), TOOLTIP_DESC_MAX_LENGTH);
-  }
-  return clampTooltipText(resolveMeaningDescription(reference, role), TOOLTIP_DESC_MAX_LENGTH);
-}
-
-function buildTooltipActionButton(mode: TooltipMode) {
-  const button = document.createElement('button');
-  button.type = 'button';
-  button.className = 'xen-pickup-tooltip-action';
-  button.dataset.pickupTooltipAction = mode;
-  button.textContent = TOOLTIP_BUTTON_LABEL_BY_MODE[mode];
-  return button;
 }
 
 function createTooltipContent(reference: HTMLElement) {
@@ -138,58 +110,16 @@ function createTooltipContent(reference: HTMLElement) {
   root.className = 'xen-pickup-tooltip';
   root.setAttribute('data-pickup-ui', 'true');
 
-  const lines = document.createElement('div');
-  lines.className = 'xen-pickup-tooltip-lines';
-  lines.setAttribute('data-pickup-ui', 'true');
-
-  const roleLine = document.createElement('div');
-  roleLine.className = 'xen-pickup-tooltip-line xen-pickup-tooltip-line-role';
-  roleLine.setAttribute('data-pickup-ui', 'true');
-
   const descriptionLine = document.createElement('div');
   descriptionLine.className = 'xen-pickup-tooltip-line xen-pickup-tooltip-line-desc';
   descriptionLine.setAttribute('data-pickup-ui', 'true');
 
-  lines.append(roleLine, descriptionLine);
-
-  const actions = document.createElement('div');
-  actions.className = 'xen-pickup-tooltip-actions';
-  actions.setAttribute('data-pickup-ui', 'true');
-
-  const structureButton = buildTooltipActionButton(TOOLTIP_MODE_STRUCTURE);
-  const meaningButton = buildTooltipActionButton(TOOLTIP_MODE_MEANING);
-  structureButton.setAttribute('data-pickup-ui', 'true');
-  meaningButton.setAttribute('data-pickup-ui', 'true');
-
-  actions.append(structureButton, meaningButton);
-  root.append(lines, actions);
-
-  let currentMode: TooltipMode = TOOLTIP_MODE_MEANING;
+  root.append(descriptionLine);
 
   const update = () => {
-    const role = resolveTooltipRole(reference);
-    roleLine.textContent = `${TOOLTIP_ROLE_PREFIX}${role}`;
-    descriptionLine.textContent = resolveTooltipDescription(reference, role, currentMode);
-    structureButton.dataset.pickupActive = currentMode === TOOLTIP_MODE_STRUCTURE ? 'true' : 'false';
-    meaningButton.dataset.pickupActive = currentMode === TOOLTIP_MODE_MEANING ? 'true' : 'false';
+    descriptionLine.textContent = clampTooltipText(resolveMeaningDescription(reference));
   };
 
-  const switchMode = (mode: TooltipMode) => {
-    if (currentMode === mode) {
-      return;
-    }
-    currentMode = mode;
-    update();
-  };
-
-  const handleActionClick = (event: MouseEvent, mode: TooltipMode) => {
-    event.preventDefault();
-    event.stopPropagation();
-    switchMode(mode);
-  };
-
-  structureButton.addEventListener('click', event => handleActionClick(event, TOOLTIP_MODE_STRUCTURE));
-  meaningButton.addEventListener('click', event => handleActionClick(event, TOOLTIP_MODE_MEANING));
   root.addEventListener('pointerdown', (event) => {
     event.stopPropagation();
   });
@@ -257,7 +187,14 @@ function handlePointerOver(event: PointerEvent) {
   if (lockedGroupId) {
     return;
   }
-  const token = findTokenElement(event.target);
+  const badge = findRoleBadge(event.target);
+  if (!badge) {
+    return;
+  }
+  if (!isStructureBadge(badge)) {
+    return;
+  }
+  const token = findTokenElement(badge);
   if (!token) {
     return;
   }
@@ -272,21 +209,20 @@ function handlePointerOut(event: PointerEvent) {
   if (lockedGroupId) {
     return;
   }
+  if (!activeGroupId) {
+    return;
+  }
   const token = findTokenElement(event.target);
   if (!token) {
     return;
   }
   const groupId = token.dataset.pickupGroup;
-  if (!groupId) {
+  if (!groupId || groupId !== activeGroupId) {
     return;
   }
 
   const related = event.relatedTarget as HTMLElement | null;
-  if (related?.classList.contains('xen-pickup-token')) {
-    if (related.dataset.pickupGroup === groupId) {
-      return;
-    }
-  } else if (related) {
+  if (related) {
     const relatedToken = related.closest<HTMLElement>(
       `.xen-pickup-token[data-pickup-group="${groupId}"]`,
     );
@@ -303,7 +239,17 @@ function handlePointerDown(event: PointerEvent) {
     return;
   }
 
-  const token = findTokenElement(event.target);
+  const badge = findRoleBadge(event.target);
+  if (!badge) {
+    if (lockedGroupId) {
+      unlockActiveGroup();
+    }
+    return;
+  }
+  if (!isStructureBadge(badge)) {
+    return;
+  }
+  const token = findTokenElement(badge);
   if (!token) {
     if (lockedGroupId) {
       unlockActiveGroup();
@@ -345,7 +291,11 @@ function createTooltip(element: HTMLElement) {
     ...BASE_TIPPY_PROPS,
     content: tooltipContent.root,
     onShow() {
+      if (!shouldShowTooltip(element)) {
+        return false;
+      }
       tooltipContent.update();
+      return undefined;
     },
   });
 }

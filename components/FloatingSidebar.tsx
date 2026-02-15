@@ -1,22 +1,32 @@
 import { useEffect, useState } from 'react';
-import { Settings } from 'lucide-react';
+import { Languages, Settings, SquareCode } from 'lucide-react';
 import {
   PICKUP_CONTROL_ACTION_QUERY,
+  PICKUP_CONTROL_ACTION_TOGGLE_MODE,
   PICKUP_CONTROL_ACTION_TOGGLE,
   PICKUP_CONTROL_EVENT,
   PICKUP_STATE_EVENT,
   type PickupControlDetail,
   type PickupStateDetail,
 } from '@/lib/pickup/content/control-events';
+import {
+  PICKUP_RENDER_MODE_SYNTAX_REBUILD,
+  PICKUP_RENDER_MODE_VOCAB_INFUSION,
+  type PickupRenderMode,
+} from '@/lib/pickup/content/render-mode';
 
 export function FloatingSidebar() {
   const [pickupActive, setPickupActive] = useState(true);
+  const [pickupMode, setPickupMode] = useState<PickupRenderMode>(PICKUP_RENDER_MODE_SYNTAX_REBUILD);
 
   useEffect(() => {
     const handleState = (event: Event) => {
       const customEvent = event as CustomEvent<PickupStateDetail>;
       if (typeof customEvent.detail?.active === 'boolean') {
         setPickupActive(customEvent.detail.active);
+      }
+      if (customEvent.detail?.mode) {
+        setPickupMode(customEvent.detail.mode);
       }
     };
 
@@ -33,6 +43,14 @@ export function FloatingSidebar() {
     const detail: PickupControlDetail = { action: PICKUP_CONTROL_ACTION_TOGGLE };
     window.dispatchEvent(new CustomEvent(PICKUP_CONTROL_EVENT, { detail }));
   };
+
+  const handleToggleMode = () => {
+    const detail: PickupControlDetail = { action: PICKUP_CONTROL_ACTION_TOGGLE_MODE };
+    window.dispatchEvent(new CustomEvent(PICKUP_CONTROL_EVENT, { detail }));
+  };
+
+  const isVocabMode = pickupMode === PICKUP_RENDER_MODE_VOCAB_INFUSION;
+  const modeLabel = isVocabMode ? '原生语法' : '翻译语法';
 
   return (
     <div className="fixed right-6 top-1/2 flex -translate-y-1/2 flex-col items-center gap-3 font-mono text-black">
@@ -56,20 +74,18 @@ export function FloatingSidebar() {
         </div>
       </button>
 
-      <button className="flex h-12 w-12 items-center justify-center rounded-xl border border-border-primary bg-background-quaternary shadow-md transition-colors hover:bg-background-secondary">
-        <svg
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          className="text-black"
-        >
-          <path d="M12 2L2 7L12 12L22 7L12 2Z" />
-          <path d="M2 17L12 22L22 17" />
-          <path d="M2 12L12 17L22 12" />
-        </svg>
+      <button
+        type="button"
+        aria-label={`切换模式（当前：${modeLabel}）`}
+        title={`点击切换模式（当前：${modeLabel}）`}
+        onClick={handleToggleMode}
+        className="flex h-12 w-12 items-center justify-center rounded-xl border border-border-primary bg-background-quaternary shadow-md transition-colors hover:bg-background-secondary"
+      >
+        {isVocabMode ? (
+          <SquareCode className="h-5 w-5 text-black" />
+        ) : (
+          <Languages className="h-5 w-5 text-black" />
+        )}
       </button>
 
       <button className="flex h-10 w-10 items-center justify-center rounded-full border border-border-primary bg-background-quaternary shadow-sm transition-colors hover:bg-background-secondary">

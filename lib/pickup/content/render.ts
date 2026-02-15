@@ -9,6 +9,8 @@ import { buildRenderModelFromSentenceAst, type RenderToken } from '@/lib/pickup/
 import { getPickupTypeById } from '@/lib/pickup/pickup-types';
 import { attachPickupInteractions } from './interactions';
 import { requestTranslationPreview } from './transport';
+import { GRAMMAR_ROLE_MEANINGS } from './grammar-role-meanings';
+import type { GrammarPointAst } from '@/lib/pickup/ast/types';
 
 const PICKUP_IGNORE_ATTR = 'data-pickup-ignore';
 const PICKUP_CATEGORY_ATTR = 'data-pickup-category';
@@ -17,14 +19,29 @@ const PICKUP_SOFT_BG_VARIABLE = '--xen-pickup-soft-bg';
 const PICKUP_THREE_LANE_CLASS = 'xen-pickup-three-lane';
 const PICKUP_LANE_CLASS = 'xen-pickup-lane';
 const PICKUP_LANE_CONTENT_CLASS = 'xen-pickup-lane-content';
+const PICKUP_ROLE_BADGE_CLASS = 'xen-pickup-role-badge';
+const PICKUP_ROLE_BADGE_KIND_ATTR = 'data-pickup-badge';
+const STRUCTURE_ROLE_LABELS = new Set([
+  '定语从句',
+  '状语从句',
+  '补语从句',
+  '开放补语',
+  '并列分句',
+]);
 
 const LANE_ORIGINAL = 'original';
+const LANE_TARGET = 'target';
 const LANE_VOCAB_INFUSION = 'vocab_infusion';
 const LANE_SYNTAX_REBUILD = 'syntax_rebuild';
-type PickupLane = typeof LANE_ORIGINAL | typeof LANE_VOCAB_INFUSION | typeof LANE_SYNTAX_REBUILD;
+type PickupLane =
+  | typeof LANE_ORIGINAL
+  | typeof LANE_TARGET
+  | typeof LANE_VOCAB_INFUSION
+  | typeof LANE_SYNTAX_REBUILD;
 
 const MOCK_MEANING_PREFIX_PATTERN = /^(语法|词汇)释义（mock）：/;
 const EMPTY_TEXT = '';
+const PLACEHOLDER_TRANSLATION = '[待翻译]';
 const TOKEN_AFFIX_PATTERN = /^([^A-Za-z0-9\u4e00-\u9fff]*)(.*?)([^A-Za-z0-9\u4e00-\u9fff]*)$/;
 
 const ZH_TO_EN_FALLBACK_MAP: Record<string, string> = {
@@ -77,6 +94,11 @@ type AnnotatedFragmentResult = {
 type UnitTranslationOverride = {
   vocabInfusionText: string;
   syntaxRebuildText: string;
+};
+
+type ParagraphTranslationOverride = {
+  paragraphText?: string;
+  units: Map<string, UnitTranslationOverride>;
 };
 
 type SentenceRenderEntry = {
@@ -298,8 +320,8 @@ function buildTranslationPreviewInputs(entries: SentenceRenderEntry[]): PickupTr
 
 function buildTranslationOverrideLookup(
   translations: PickupTranslateParagraphPreview[],
-): Map<string, Map<string, UnitTranslationOverride>> {
-  const paragraphLookup = new Map<string, Map<string, UnitTranslationOverride>>();
+): Map<string, ParagraphTranslationOverride> {
+  const paragraphLookup = new Map<string, ParagraphTranslationOverride>();
 
   translations.forEach((paragraphPreview) => {
     const unitLookup = new Map<string, UnitTranslationOverride>();
@@ -309,7 +331,10 @@ function buildTranslationOverrideLookup(
         syntaxRebuildText: unitPreview.syntaxRebuildText,
       });
     });
-    paragraphLookup.set(paragraphPreview.id, unitLookup);
+    paragraphLookup.set(paragraphPreview.id, {
+      paragraphText: paragraphPreview.paragraphText,
+      units: unitLookup,
+    });
   });
 
   return paragraphLookup;
@@ -317,23 +342,7 @@ function buildTranslationOverrideLookup(
 
 function resolveVocabInfusionTokenText(
   token: RenderableToken,
-  overrides?: Map<string, UnitTranslationOverride>,
 ) {
-  const override = overrides?.get(token.id);
-  if (override?.vocabInfusionText) {
-    return override.vocabInfusionText;
-  }
-  if (token.kind !== 'vocabulary') {
-    return token.renderedText;
-  }
-  const meaning = normalizeMeaning(token.meaning);
-  if (hasEnglish(meaning)) {
-    return meaning;
-  }
-  const fallback = translateByFallbackDictionary(token.renderedText, ZH_TO_EN_FALLBACK_MAP);
-  if (fallback) {
-    return fallback;
-  }
   return token.renderedText;
 }
 
@@ -341,21 +350,6 @@ function resolveSyntaxRebuildTokenText(
   token: RenderableToken,
   overrides?: Map<string, UnitTranslationOverride>,
 ) {
-  const override = overrides?.get(token.id);
-  if (override?.syntaxRebuildText) {
-    return override.syntaxRebuildText;
-  }
-  if (token.kind !== 'vocabulary') {
-    return token.renderedText;
-  }
-  const meaning = normalizeMeaning(token.meaning);
-  if (hasChinese(meaning)) {
-    return meaning;
-  }
-  const fallback = translateByFallbackDictionary(token.renderedText, EN_TO_ZH_FALLBACK_MAP, true);
-  if (fallback) {
-    return fallback;
-  }
   return token.renderedText;
 }
 
@@ -375,7 +369,7 @@ function createLaneShell(lane: PickupLane) {
 function buildThreeLaneLayout(
   tokens: RenderToken[],
   sourceText: string,
-  overrides?: Map<string, UnitTranslationOverride>,
+  overrides?: ParagraphTranslationOverride,
 ) {
   const container = document.createElement('div');
   container.className = PICKUP_THREE_LANE_CLASS;
@@ -386,13 +380,29 @@ function buildThreeLaneLayout(
   originalLane.contentElement.textContent = sourceText;
   container.appendChild(originalLane.laneElement);
 
+  const targetLane = createLaneShell(LANE_TARGET);
+  if (overrides?.paragraphText?.trim()) {
+    targetLane.contentElement.textContent = overrides.paragraphText;
+  } else {
+    targetLane.contentElement.textContent = PLACEHOLDER_TRANSLATION;
+  }
+  container.appendChild(targetLane.laneElement);
+
   const vocabLane = createLaneShell(LANE_VOCAB_INFUSION);
-  const vocabRender = buildAnnotatedFragment(tokens, sourceText, token => resolveVocabInfusionTokenText(token, overrides));
+  const vocabRender = buildAnnotatedFragment(
+    tokens,
+    sourceText,
+    token => resolveVocabInfusionTokenText(token),
+  );
   vocabLane.contentElement.appendChild(vocabRender.fragment);
   container.appendChild(vocabLane.laneElement);
 
   const syntaxLane = createLaneShell(LANE_SYNTAX_REBUILD);
-  const syntaxRender = buildAnnotatedFragment(tokens, sourceText, token => resolveSyntaxRebuildTokenText(token, overrides));
+  const syntaxRender = buildAnnotatedFragment(
+    tokens,
+    sourceText,
+    token => resolveSyntaxRebuildTokenText(token, overrides?.units),
+  );
   syntaxLane.contentElement.appendChild(syntaxRender.fragment);
   container.appendChild(syntaxLane.laneElement);
 
@@ -402,11 +412,34 @@ function buildThreeLaneLayout(
   };
 }
 
-function decorateRenderedTokens(renderedTokens: RenderedToken[]) {
+function resolveVocabTooltipMeaning(
+  token: RenderedToken,
+  overrides?: Map<string, UnitTranslationOverride>,
+) {
+  if (token.kind !== 'vocabulary') {
+    return EMPTY_TEXT;
+  }
+  const override = overrides?.get(token.id);
+  if (!override?.vocabInfusionText?.trim()) {
+    return EMPTY_TEXT;
+  }
+  return override.vocabInfusionText;
+}
+
+function decorateRenderedTokens(
+  renderedTokens: RenderedToken[],
+  grammarPoints: GrammarPointAst[],
+  overrides?: Map<string, UnitTranslationOverride>,
+) {
   if (renderedTokens.length === 0) {
     return;
   }
   const tokenElements: HTMLSpanElement[] = [];
+  const badgeElements: HTMLSpanElement[] = [];
+  const renderedByUnitId = new Map<string, RenderedToken>();
+  renderedTokens.forEach((token) => {
+    renderedByUnitId.set(token.id, token);
+  });
 
   renderedTokens.forEach((token) => {
     const element = token.element;
@@ -419,12 +452,75 @@ function decorateRenderedTokens(renderedTokens: RenderedToken[]) {
     if (token.role) {
       element.dataset.pickupRole = token.role;
     }
-    if (token.meaning) {
+    const lane = element.closest<HTMLElement>('[data-pickup-lane]')?.dataset.pickupLane;
+    const vocabMeaning = lane === LANE_VOCAB_INFUSION
+      ? resolveVocabTooltipMeaning(token, overrides)
+      : EMPTY_TEXT;
+    if (vocabMeaning) {
+      element.dataset.pickupMeaning = vocabMeaning;
+    } else if (token.meaning) {
       element.dataset.pickupMeaning = token.meaning;
+    }
+
+    if (token.kind === 'grammar') {
+      const role = normalizeMeaning(token.role ?? token.label ?? token.meaning);
+      if (role && role !== '标点' && !STRUCTURE_ROLE_LABELS.has(role)) {
+        const badge = document.createElement('span');
+        badge.className = PICKUP_ROLE_BADGE_CLASS;
+        badge.textContent = role;
+        badge.setAttribute(PICKUP_ROLE_BADGE_KIND_ATTR, 'token');
+        badge.dataset.pickupRole = role;
+        badge.dataset.pickupCategory = 'grammar';
+        const mappedMeaning = GRAMMAR_ROLE_MEANINGS[role];
+        if (mappedMeaning) {
+          badge.dataset.pickupMeaning = mappedMeaning;
+        }
+        element.appendChild(badge);
+        badgeElements.push(badge);
+      }
     }
   });
 
-  attachPickupInteractions(tokenElements);
+  grammarPoints.forEach((point) => {
+    if (!point.evidenceUnitIds || point.evidenceUnitIds.length === 0) {
+      return;
+    }
+    const candidates = point.evidenceUnitIds
+      .map(unitId => renderedByUnitId.get(unitId))
+      .filter((token): token is RenderedToken => Boolean(token));
+    if (candidates.length === 0) {
+      return;
+    }
+    let anchor = candidates[0];
+    candidates.forEach((token) => {
+      if (typeof token.start === 'number' && typeof anchor.start === 'number') {
+        if (token.start < anchor.start) {
+          anchor = token;
+        }
+      }
+    });
+    const label = normalizeMeaning(point.label);
+    if (!label || label === '标点') {
+      return;
+    }
+    const badge = document.createElement('span');
+    badge.className = PICKUP_ROLE_BADGE_CLASS;
+    badge.textContent = label;
+    badge.setAttribute(PICKUP_ROLE_BADGE_KIND_ATTR, 'structure');
+    badge.dataset.pickupRole = label;
+    badge.dataset.pickupCategory = 'grammar';
+    const mappedMeaning = GRAMMAR_ROLE_MEANINGS[label];
+    if (mappedMeaning) {
+      badge.dataset.pickupMeaning = mappedMeaning;
+    } else if (point.explanation) {
+      badge.dataset.pickupMeaning = normalizeMeaning(point.explanation);
+    }
+    badge.dataset.pickupGroup = point.id;
+    anchor.element.appendChild(badge);
+    badgeElements.push(badge);
+  });
+
+  attachPickupInteractions([...tokenElements, ...badgeElements]);
 }
 
 export async function applyAnnotations(
@@ -451,7 +547,7 @@ export async function applyAnnotations(
     });
   });
 
-  let translationOverridesByParagraph = new Map<string, Map<string, UnitTranslationOverride>>();
+  let translationOverridesByParagraph = new Map<string, ParagraphTranslationOverride>();
   const translationInputs = buildTranslationPreviewInputs(entries);
 
   if (translationInputs.some(input => input.units.length > 0)) {
@@ -474,7 +570,7 @@ export async function applyAnnotations(
     element.dataset.pickupProcessed = 'true';
     element.dataset.pickupStatus = 'done';
     element.dataset.pickupAnnotated = 'true';
-    decorateRenderedTokens(renderedTokens);
+    decorateRenderedTokens(renderedTokens, sentenceAst.grammarPoints, overrides?.units);
     appliedIds.add(annotation.id);
   });
 
