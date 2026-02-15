@@ -27,6 +27,37 @@ export interface PickupAnnotation {
   tokens: PickupToken[];
 }
 
+export interface PickupTranslateUnitInput {
+  unitId: string;
+  text: string;
+  kind?: 'grammar' | 'vocabulary';
+  role?: string;
+  pos?: string;
+  dep?: string;
+  tokenIndex?: number;
+  span?: [number, number] | null;
+}
+
+export interface PickupTranslateParagraphInput {
+  id: string;
+  sourceText: string;
+  units: PickupTranslateUnitInput[];
+}
+
+export interface PickupTranslateUnitPreview {
+  unitId: string;
+  vocabInfusionText: string;
+  syntaxRebuildText: string;
+  context: PickupTranslateUnitInput;
+}
+
+export interface PickupTranslateParagraphPreview {
+  id: string;
+  sourceText: string;
+  paragraphText: string;
+  units: PickupTranslateUnitPreview[];
+}
+
 export type PickupModelRuntimeStatus = 'idle' | 'initializing' | 'ready' | 'error';
 
 export interface PickupModelStatus {

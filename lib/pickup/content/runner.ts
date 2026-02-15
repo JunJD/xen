@@ -34,6 +34,7 @@ export function createPickupRunner() {
   const readyQueue = new Set<string>();
   let contextInvalidated = false;
   let loggedInvalidated = false;
+  let started = false;
 
   function isExtensionContextInvalidated(error: unknown) {
     const message = error instanceof Error ? error.message : String(error ?? '');
@@ -155,7 +156,7 @@ export function createPickupRunner() {
         });
         return;
       }
-      applyAnnotations(annotations, elementMap);
+      await applyAnnotations(annotations, elementMap);
     }
     catch (error) {
       window.clearTimeout(timeoutId);
@@ -250,7 +251,32 @@ export function createPickupRunner() {
     window.addEventListener('load', loadHandler, { once: true });
   }
 
+  function restoreAnnotatedContent(root: ParentNode = document) {
+    const annotatedElements = root.querySelectorAll<HTMLElement>('[data-pickup-annotated="true"]');
+    annotatedElements.forEach((element) => {
+      const original = element.dataset.pickupOriginal;
+      if (typeof original === 'string') {
+        element.textContent = original;
+      }
+      delete element.dataset.pickupAnnotated;
+      delete element.dataset.pickupProcessed;
+      delete element.dataset.pickupStatus;
+      delete element.dataset.pickupId;
+    });
+
+    const statusElements = root.querySelectorAll<HTMLElement>('[data-pickup-status]');
+    statusElements.forEach((element) => {
+      delete element.dataset.pickupProcessed;
+      delete element.dataset.pickupStatus;
+      delete element.dataset.pickupId;
+    });
+  }
+
   function start() {
+    if (started) {
+      return;
+    }
+    started = true;
     ensurePickupStyles();
     intersectionObserver = new IntersectionObserver(handleIntersections, INTERSECTION_OPTIONS);
 
@@ -265,6 +291,10 @@ export function createPickupRunner() {
   }
 
   function stop() {
+    if (!started) {
+      return;
+    }
+    started = false;
     if (mutationTimer) {
       window.clearTimeout(mutationTimer);
       mutationTimer = undefined;
@@ -293,5 +323,7 @@ export function createPickupRunner() {
   return {
     start,
     stop,
+    restore: restoreAnnotatedContent,
+    isStarted: () => started,
   };
 }

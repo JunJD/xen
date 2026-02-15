@@ -222,33 +222,42 @@ export function ensurePickupStyles() {
       font: inherit;
       line-height: inherit;
       text-decoration-line: underline;
-      text-decoration-color: var(--xen-pickup-accent, #2563eb);
-      text-decoration-thickness: 2px;
+      text-decoration-style: dashed;
+      text-decoration-color: #415ccc;
+      text-decoration-thickness: 1.5px;
       text-underline-offset: 2px;
-      background-color: var(--xen-pickup-soft-bg, rgba(37, 99, 235, 0.12));
-      border-radius: 2px;
-      transition: background-color 0.15s ease;
+      background-color: transparent;
+      border-radius: 0;
+      transition: text-decoration-color 0.15s ease, text-decoration-thickness 0.15s ease;
     }
-    .xen-pickup-token[data-pickup-category="grammar"] {
-      --xen-pickup-accent: #2563eb;
-      --xen-pickup-soft-bg: rgba(37, 99, 235, 0.12);
+    .xen-pickup-three-lane {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
     }
-    .xen-pickup-token[data-pickup-category="vocabulary"] {
-      --xen-pickup-accent: #059669;
-      --xen-pickup-soft-bg: rgba(5, 150, 105, 0.12);
+    .xen-pickup-lane {
+      margin: 0;
+      padding: 0;
+    }
+    .xen-pickup-lane-content {
+      line-height: inherit;
+    }
+    .xen-pickup-lane + .xen-pickup-lane {
+      border-top: 1px solid rgba(148, 163, 184, 0.25);
+      padding-top: 4px;
     }
     .xen-pickup-token:hover {
-      filter: brightness(0.98);
+      background-color: transparent;
+      text-decoration-color: #415ccc;
     }
     .xen-pickup-token[data-pickup-active="true"] {
-      outline: 1px solid var(--xen-pickup-accent, #2563eb);
-      outline-offset: 1px;
-      border-radius: 3px;
+      background-color: transparent;
+      text-decoration-color: #415ccc;
+      text-decoration-thickness: 2px;
+      border-radius: 0;
     }
     [data-pickup-annotated="true"] {
-      outline: 1px dotted var(--xen-pickup-annotated-outline, rgba(14, 116, 144, 0.25));
-      outline-offset: 2px;
-      border-radius: 4px;
+      outline: none;
     }
     .tippy-box {
       position: relative;
@@ -258,6 +267,52 @@ export function ensurePickupStyles() {
       position: relative;
       z-index: 1;
     }
+    .xen-pickup-tooltip {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .xen-pickup-tooltip-lines {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .xen-pickup-tooltip-line {
+      max-width: 220px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .xen-pickup-tooltip-line-role {
+      font-weight: 600;
+    }
+    .xen-pickup-tooltip-line-desc {
+      opacity: 0.92;
+    }
+    .xen-pickup-tooltip-actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-left: 2px;
+      pointer-events: auto;
+    }
+    .xen-pickup-tooltip-action {
+      border: 0;
+      border-radius: 4px;
+      padding: 1px 6px;
+      font: inherit;
+      font-size: 11px;
+      line-height: 1.4;
+      color: #e2e8f0;
+      background: rgba(148, 163, 184, 0.24);
+      cursor: pointer;
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+    .xen-pickup-tooltip-action[data-pickup-active="true"] {
+      color: #f8fafc;
+      background: rgba(56, 189, 248, 0.38);
+    }
     .tippy-box[data-theme~="xen-pickup"] {
       background: rgba(15, 23, 42, 0.92);
       color: #f8fafc;
@@ -265,7 +320,7 @@ export function ensurePickupStyles() {
       font-size: 12px;
       line-height: 1.4;
       box-shadow: 0 10px 30px rgba(15, 23, 42, 0.18);
-      pointer-events: none;
+      pointer-events: auto;
     }
     .tippy-box[data-theme~="xen-pickup"] .tippy-content {
       padding: 6px 8px;

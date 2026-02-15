@@ -3,9 +3,18 @@ import type {
   PickupAnnotation,
   PickupModelStatus,
   PickupParagraph,
+  PickupTranslateParagraphInput,
+  PickupTranslateParagraphPreview,
+  PickupTranslateUnitInput,
+  PickupTranslateUnitPreview,
   PickupToken,
 } from '@/lib/pickup/messages';
 import { createPickupCache } from '@/lib/pickup/cache';
+import {
+  CACHE_PRUNE_REASONS,
+  MESSAGE_TYPES,
+  STATUS_ERROR_CODES,
+} from '@/lib/pickup/constants';
 import {
   PICKUP_OFFSCREEN_ACTION_ANALYZE,
   PICKUP_OFFSCREEN_ACTION_STATUS,
@@ -26,23 +35,6 @@ const OFFSCREEN_CONFIG = {
 } as const;
 
 const OFFSCREEN_CONTEXT_TYPES = [OFFSCREEN_CONFIG.contextType];
-
-const CACHE_PRUNE_REASONS = {
-  startup: 'startup',
-  annotate: 'annotate',
-} as const;
-
-const STATUS_ERROR_CODES = {
-  offscreenUnavailable: 'offscreen_unavailable',
-  warmupUnavailable: 'warmup_status_unavailable',
-  modelUnavailable: 'model_status_unavailable',
-} as const;
-
-const MESSAGE_TYPES = {
-  modelWarmup: 'pickupModelWarmup',
-  modelStatus: 'pickupModelStatus',
-  annotate: 'pickupAnnotate',
-} as const;
 
 const FALLBACK_MODEL_STATUS: PickupModelStatus = {
   status: 'error',
@@ -233,6 +225,33 @@ async function annotateParagraphs(
   return annotations;
 }
 
+function buildUnitTranslationPreview(unit: PickupTranslateUnitInput): PickupTranslateUnitPreview {
+  const placeholderText = `[待翻译]${unit.text}`;
+  return {
+    unitId: unit.unitId,
+    vocabInfusionText: placeholderText,
+    syntaxRebuildText: placeholderText,
+    context: unit,
+  };
+}
+
+function buildParagraphTranslationPreview(
+  paragraph: PickupTranslateParagraphInput,
+): PickupTranslateParagraphPreview {
+  return {
+    id: paragraph.id,
+    sourceText: paragraph.sourceText,
+    paragraphText: `[待翻译]${paragraph.sourceText}`,
+    units: paragraph.units.map(buildUnitTranslationPreview),
+  };
+}
+
+function buildTranslationPreviews(
+  paragraphs: PickupTranslateParagraphInput[],
+): PickupTranslateParagraphPreview[] {
+  return paragraphs.map(buildParagraphTranslationPreview);
+}
+
 function resolveModelKey(modelKey?: string | (() => string)) {
   if (!modelKey) {
     return undefined;
@@ -283,5 +302,11 @@ export function setupPickupBackground(options: PickupBackgroundOptions = {}) {
     const paragraphs = (message.data?.paragraphs ?? []) as PickupParagraph[];
     const annotations = await annotateParagraphs(offscreenClient, cache, paragraphs);
     return { annotations };
+  });
+
+  onMessage(MESSAGE_TYPES.translatePreview, async (message) => {
+    const paragraphs = (message.data?.paragraphs ?? []) as PickupTranslateParagraphInput[];
+    const translations = buildTranslationPreviews(paragraphs);
+    return { translations };
   });
 }

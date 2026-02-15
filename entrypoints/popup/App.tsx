@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { PickupTokens } from '@/components/PickupTokens';
 import type { PickupModelStatus } from '@/lib/pickup/messages';
-import { sendMessage } from '@/lib/pickup/messaging';
+import { sendMessage, MESSAGE_TYPES } from '@/lib/pickup/messaging';
 
 const INITIAL_MODEL_STATUS: PickupModelStatus = {
   status: 'idle',
@@ -38,7 +38,7 @@ function App() {
 
     const pollStatus = async () => {
       try {
-        const response = await sendMessage('pickupModelStatus');
+        const response = await sendMessage(MESSAGE_TYPES.modelStatus);
         if (disposed) {
           return;
         }
@@ -47,7 +47,7 @@ function App() {
         setModelStatus(nextStatus);
 
         if (nextStatus.status === 'idle' || nextStatus.status === 'error') {
-          void sendMessage('pickupModelWarmup').catch(() => undefined);
+          void sendMessage(MESSAGE_TYPES.modelWarmup).catch(() => undefined);
         }
 
         if (nextStatus.status !== 'ready') {
@@ -61,7 +61,7 @@ function App() {
       }
     };
 
-    void sendMessage('pickupModelWarmup').catch(() => undefined);
+    void sendMessage(MESSAGE_TYPES.modelWarmup).catch(() => undefined);
     void pollStatus();
 
     return () => {

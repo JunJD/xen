@@ -1,10 +1,57 @@
+import { useEffect, useState } from 'react';
 import { Settings } from 'lucide-react';
+import {
+  PICKUP_CONTROL_ACTION_QUERY,
+  PICKUP_CONTROL_ACTION_TOGGLE,
+  PICKUP_CONTROL_EVENT,
+  PICKUP_STATE_EVENT,
+  type PickupControlDetail,
+  type PickupStateDetail,
+} from '@/lib/pickup/content/control-events';
 
 export function FloatingSidebar() {
+  const [pickupActive, setPickupActive] = useState(true);
+
+  useEffect(() => {
+    const handleState = (event: Event) => {
+      const customEvent = event as CustomEvent<PickupStateDetail>;
+      if (typeof customEvent.detail?.active === 'boolean') {
+        setPickupActive(customEvent.detail.active);
+      }
+    };
+
+    window.addEventListener(PICKUP_STATE_EVENT, handleState as EventListener);
+    const queryDetail: PickupControlDetail = { action: PICKUP_CONTROL_ACTION_QUERY };
+    window.dispatchEvent(new CustomEvent(PICKUP_CONTROL_EVENT, { detail: queryDetail }));
+
+    return () => {
+      window.removeEventListener(PICKUP_STATE_EVENT, handleState as EventListener);
+    };
+  }, []);
+
+  const handleTogglePickup = () => {
+    const detail: PickupControlDetail = { action: PICKUP_CONTROL_ACTION_TOGGLE };
+    window.dispatchEvent(new CustomEvent(PICKUP_CONTROL_EVENT, { detail }));
+  };
+
   return (
     <div className="fixed right-6 top-1/2 flex -translate-y-1/2 flex-col items-center gap-3 font-mono text-black">
-      <button className="flex h-10 w-10 items-center justify-center rounded-full border border-border-primary bg-background-quaternary shadow-sm transition-colors hover:bg-background-secondary">
-        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-action-primary">
+      <button
+        type="button"
+        aria-label={pickupActive ? '还原原文' : '开始处理'}
+        title={pickupActive ? '点击还原原文' : '点击开始处理'}
+        onClick={handleTogglePickup}
+        className="relative flex h-10 w-10 items-center justify-center rounded-full border border-border-primary bg-background-quaternary shadow-sm transition-colors hover:bg-background-secondary"
+      >
+        {pickupActive && (
+          <span
+            aria-hidden
+            className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border border-background-quaternary bg-[#415ccc]"
+          />
+        )}
+        <div
+          className={`flex h-6 w-6 items-center justify-center rounded-full ${pickupActive ? 'bg-action-primary' : 'bg-gray-400'}`}
+        >
           <span className="text-[10px] text-white">A</span>
         </div>
       </button>
