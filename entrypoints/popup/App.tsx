@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ChangeEvent } from 'react';
 import {
   ArrowLeftRight,
   Bell,
@@ -9,8 +9,9 @@ import {
   Star,
 } from 'lucide-react';
 import { PickupTokens } from '@/components/PickupTokens';
-import type { PickupModelStatus } from '@/lib/pickup/messages';
+import type { PickupModelStatus, TranslateProvider } from '@/lib/pickup/messages';
 import { sendMessage, MESSAGE_TYPES } from '@/lib/pickup/messaging';
+import { DEFAULT_TRANSLATE_PROVIDER, TRANSLATE_PROVIDERS, TRANSLATE_PROVIDER_LABELS } from '@/lib/pickup/translate/options';
 
 const INITIAL_MODEL_STATUS: PickupModelStatus = {
   status: 'idle',
@@ -25,6 +26,7 @@ function App() {
   const [isLoggedIn] = useState(true);
   const [notificationCount, setNotificationCount] = useState(2);
   const [modelStatus, setModelStatus] = useState<PickupModelStatus>(INITIAL_MODEL_STATUS);
+  const [translateProvider, setTranslateProvider] = useState<TranslateProvider>(DEFAULT_TRANSLATE_PROVIDER);
 
   useEffect(() => {
     let disposed = false;
@@ -71,6 +73,36 @@ function App() {
       }
     };
   }, []);
+
+  useEffect(() => {
+    let disposed = false;
+    const loadProvider = async () => {
+      try {
+        const response = await sendMessage(MESSAGE_TYPES.translateProviderGet);
+        if (!disposed && response?.provider) {
+          setTranslateProvider(response.provider);
+        }
+      }
+      catch {
+        // Ignore provider load errors and keep default.
+      }
+    };
+    void loadProvider();
+    return () => {
+      disposed = true;
+    };
+  }, []);
+
+  const handleProviderChange = async (event: ChangeEvent<HTMLSelectElement>) => {
+    const nextProvider = event.target.value as TranslateProvider;
+    setTranslateProvider(nextProvider);
+    try {
+      await sendMessage(MESSAGE_TYPES.translateProviderSet, { provider: nextProvider });
+    }
+    catch {
+      // Ignore provider update errors.
+    }
+  };
 
   if (modelStatus.status !== 'ready') {
     return (
@@ -137,6 +169,21 @@ function App() {
               <ArrowLeftRight className="h-3 w-3 text-icon-primary" />
               <span>中文</span>
             </div>
+          </div>
+
+          <div className="mt-2 flex items-center justify-between rounded border border-border-primary bg-background-secondary p-3">
+            <span className="text-xs text-text-tertiary">翻译服务</span>
+            <select
+              className="rounded border border-border-primary bg-background-quaternary px-2 py-1 text-xs text-black outline-none focus:border-action-primary"
+              value={translateProvider}
+              onChange={handleProviderChange}
+            >
+              {TRANSLATE_PROVIDERS.map((provider) => (
+                <option key={provider} value={provider}>
+                  {TRANSLATE_PROVIDER_LABELS[provider]}
+                </option>
+              ))}
+            </select>
           </div>
 
           <PickupTokens />

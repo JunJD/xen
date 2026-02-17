@@ -21,6 +21,7 @@ const SKIP_TAGS = new Set([
   'OPTION',
   'BUTTON',
   'FORM',
+  'A',
   'CODE',
   'PRE',
   'HEADER',
@@ -40,6 +41,7 @@ const PICKUP_STATUS_DONE = 'done';
 const HIDDEN_DISPLAY_VALUE = 'none';
 const HIDDEN_VISIBILITY_VALUE = 'hidden';
 const BR_TAG_NAME = 'BR';
+const DISPLAY_CONTENTS_VALUE = 'contents';
 
 const ACTIVE_PICKUP_STATUSES = new Set([
   PICKUP_STATUS_PENDING,
@@ -47,13 +49,21 @@ const ACTIVE_PICKUP_STATUSES = new Set([
   PICKUP_STATUS_DONE,
 ]);
 
+
 function hasReadableText(node: Node) {
   return Boolean(node.textContent?.trim());
 }
 
 function isInlineDisplay(element: HTMLElement) {
   const display = window.getComputedStyle(element).display;
+  if (display === DISPLAY_CONTENTS_VALUE) {
+    return false;
+  }
   return INLINE_DISPLAY_KEYWORDS.some(keyword => display.includes(keyword));
+}
+
+export function isDisplayContentsElement(element: HTMLElement) {
+  return window.getComputedStyle(element).display === DISPLAY_CONTENTS_VALUE;
 }
 
 export function isHTMLElement(node: Node): node is HTMLElement {
@@ -64,10 +74,21 @@ export function isTextNode(node: Node): node is Text {
   return node.nodeType === Node.TEXT_NODE;
 }
 
-export function isElementVisible(element: Element) {
+export function isElementVisible(element: Element): boolean {
   const style = window.getComputedStyle(element);
   if (style.display === HIDDEN_DISPLAY_VALUE || style.visibility === HIDDEN_VISIBILITY_VALUE) {
     return false;
+  }
+  if (style.display === DISPLAY_CONTENTS_VALUE) {
+    return Array.from(element.childNodes).some((child) => {
+      if (isTextNode(child)) {
+        return Boolean(child.textContent?.trim());
+      }
+      if (isHTMLElement(child)) {
+        return isElementVisible(child);
+      }
+      return false;
+    });
   }
   return element.getClientRects().length > 0;
 }

@@ -41,7 +41,6 @@ type PickupLane =
 
 const MOCK_MEANING_PREFIX_PATTERN = /^(语法|词汇)释义（mock）：/;
 const EMPTY_TEXT = '';
-const PLACEHOLDER_TRANSLATION = '[待翻译]';
 const TOKEN_AFFIX_PATTERN = /^([^A-Za-z0-9\u4e00-\u9fff]*)(.*?)([^A-Za-z0-9\u4e00-\u9fff]*)$/;
 
 type RenderableToken = RenderToken & {
@@ -382,10 +381,10 @@ function buildThreeLaneLayout(
   container.appendChild(originalLane.laneElement);
 
   const targetLane = createLaneShell(LANE_TARGET);
-  if (overrides?.paragraphText?.trim()) {
+  if (typeof overrides?.paragraphText === 'string') {
     targetLane.contentElement.textContent = overrides.paragraphText;
   } else {
-    targetLane.contentElement.textContent = PLACEHOLDER_TRANSLATION;
+    targetLane.contentElement.textContent = EMPTY_TEXT;
   }
   container.appendChild(targetLane.laneElement);
 

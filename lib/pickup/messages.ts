@@ -4,6 +4,8 @@ export interface PickupParagraph {
   hash?: string;
 }
 
+export type TranslateProvider = 'google' | 'llm';
+
 export interface PickupToken {
   text: string;
   tag: string;

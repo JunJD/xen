@@ -9,6 +9,7 @@ import {
 } from './constants';
 import {
   extractTextContent,
+  isDisplayContentsElement,
   isEligibleElement,
   isHTMLElement,
   isShallowBlockTransNode,
@@ -79,6 +80,7 @@ function walkAndCollectParagraphElements(
 
   let hasInlineNodeChild = false;
   let forceBlock = false;
+  let descendantForceBlock = false;
 
   const validChildNodes = Array.from(element.childNodes).filter((child) => {
     if (isTextNode(child)) {
@@ -103,6 +105,9 @@ function walkAndCollectParagraphElements(
 
     const result = walkAndCollectParagraphElements(child, paragraphCandidates);
     forceBlock = forceBlock || result.forceBlock;
+    if (result.forceBlock) {
+      descendantForceBlock = true;
+    }
     if (result.isInlineNode) {
       hasInlineNodeChild = true;
     }
@@ -113,6 +118,9 @@ function walkAndCollectParagraphElements(
     for (const shadowChild of shadowChildren) {
       const result = walkAndCollectParagraphElements(shadowChild, paragraphCandidates);
       forceBlock = forceBlock || result.forceBlock;
+      if (result.forceBlock) {
+        descendantForceBlock = true;
+      }
       if (result.isInlineNode) {
         hasInlineNodeChild = true;
       }
@@ -124,9 +132,7 @@ function walkAndCollectParagraphElements(
   ).length;
   const blockChildCount = validChildNodes.filter(isShallowBlockTransNode).length;
 
-  if (hasInlineNodeChild && blockChildCount === 0 && isEligibleElement(element)) {
-    paragraphCandidates.add(element);
-  }
+  const hasBlockDescendant = descendantForceBlock;
 
   forceBlock = forceBlock
     || (
@@ -134,6 +140,16 @@ function walkAndCollectParagraphElements(
       && translatableChildCount >= MIN_TRANSLATABLE_CHILDREN_FOR_FORCE_BLOCK
     )
     || PARAGRAPH_FORCE_BLOCK_TAGS.has(element.tagName);
+
+  if (
+    hasInlineNodeChild
+    && blockChildCount === 0
+    && !hasBlockDescendant
+    && isEligibleElement(element)
+    && !isDisplayContentsElement(element)
+  ) {
+    paragraphCandidates.add(element);
+  }
 
   if (!element.textContent?.trim() && !forceBlock) {
     return {

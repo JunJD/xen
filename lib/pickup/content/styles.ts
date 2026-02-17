@@ -143,6 +143,7 @@ function applyPickupTheme() {
   }
 }
 
+
 function schedulePickupThemeUpdate() {
   if (themeUpdateTimer !== undefined) {
     return;
@@ -371,37 +372,29 @@ export function ensurePickupStyles() {
     }
     [data-pickup-status="loading"] {
       position: relative;
-      outline: 1px dashed var(--xen-pickup-loading-outline, #cfd8dc);
-      background: var(
-        --xen-pickup-loading-bg,
-        linear-gradient(120deg, #ffffff 0%, #e6f0ff 40%, #ffffff 80%)
-      );
-      background-size: 200% 100%;
-      animation: xen-pickup-pulse 1.2s ease-in-out infinite,
-        xen-pickup-glow 2.4s ease-in-out infinite;
+      outline: none;
+      background: transparent;
+      animation: none;
+    }
+    [data-pickup-status="loading"]::after {
+      content: '';
+      display: inline-block;
+      margin-left: 6px;
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      border: 2px solid color-mix(in srgb, var(--xen-pickup-spinner-color, var(--action-link, #0043ff)) 25%, transparent);
+      border-top-color: var(--xen-pickup-spinner-color, var(--action-link, #0043ff));
+      border-right-color: color-mix(in srgb, var(--xen-pickup-spinner-color, var(--action-link, #0043ff)) 60%, transparent);
+      opacity: 0.8;
+      animation: xen-pickup-loading-spin 0.8s linear infinite;
+    }
+    @keyframes xen-pickup-loading-spin {
+      to { transform: rotate(360deg); }
     }
     [data-pickup-status="error"] {
       outline: 1px dashed var(--xen-pickup-error-outline, #ff4b4b);
       background: var(--xen-pickup-error-bg, #fff7f7);
-    }
-    @keyframes xen-pickup-pulse {
-      0% {
-        background-position: 0% 50%;
-      }
-      100% {
-        background-position: 200% 50%;
-      }
-    }
-    @keyframes xen-pickup-glow {
-      0% {
-        box-shadow: 0 0 0 var(--xen-pickup-loading-glow-weak, rgba(0, 67, 255, 0.12));
-      }
-      50% {
-        box-shadow: 0 0 12px var(--xen-pickup-loading-glow-strong, rgba(0, 67, 255, 0.28));
-      }
-      100% {
-        box-shadow: 0 0 0 var(--xen-pickup-loading-glow-weak, rgba(0, 67, 255, 0.12));
-      }
     }
   `;
     document.head.appendChild(style);

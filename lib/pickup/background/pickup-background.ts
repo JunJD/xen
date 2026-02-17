@@ -8,6 +8,7 @@ import type {
   PickupTranslateUnitInput,
   PickupTranslateUnitPreview,
   PickupToken,
+  TranslateProvider,
 } from '@/lib/pickup/messages';
 import { createPickupCache } from '@/lib/pickup/cache';
 import {
@@ -31,6 +32,14 @@ import {
   type PickupOffscreenResponse,
 } from '@/lib/pickup/offscreen-protocol';
 import { onMessage } from '@/lib/pickup/messaging';
+import {
+  ensureTranslateProviderConfig,
+  ensureTranslateProvidersRegistered,
+  getStoredTranslateProvider,
+  isTranslateProvider,
+  setStoredTranslateProvider,
+  translateText,
+} from './translate';
 
 const OFFSCREEN_CONFIG = {
   contextType: 'OFFSCREEN_DOCUMENT',
@@ -248,25 +257,35 @@ function buildUnitTranslationPreview(
 
 function buildParagraphTranslationPreview(
   paragraph: PickupTranslateParagraphInput,
-  dictionary: Map<string, string>,
+  dictionary: VocabDictionary,
+  paragraphText: string,
 ): PickupTranslateParagraphPreview {
-  const PLACEHOLDER_TRANSLATION = '[待翻译]';
   return {
     id: paragraph.id,
     sourceText: paragraph.sourceText,
-    paragraphText: PLACEHOLDER_TRANSLATION,
+    paragraphText,
     units: paragraph.units.map(unit => buildUnitTranslationPreview(unit, dictionary)),
   };
 }
 
 async function buildTranslationPreviews(
   paragraphs: PickupTranslateParagraphInput[],
+  provider: TranslateProvider,
 ): Promise<PickupTranslateParagraphPreview[]> {
   if (paragraphs.length === 0) {
     return [];
   }
-  const dictionary = await loadVocabDictionary().catch(() => new Map());
-  return paragraphs.map(paragraph => buildParagraphTranslationPreview(paragraph, dictionary));
+  const dictionary = await loadVocabDictionary();
+  const previews: PickupTranslateParagraphPreview[] = [];
+  for (const paragraph of paragraphs) {
+    const sourceText = paragraph.sourceText ?? '';
+    const cleanText = sourceText.replace(/\u200B/g, '').trim();
+    const paragraphText = cleanText
+      ? await translateText(provider, { text: cleanText })
+      : '';
+    previews.push(buildParagraphTranslationPreview(paragraph, dictionary, paragraphText));
+  }
+  return previews;
 }
 
 function resolveModelKey(modelKey?: string | (() => string)) {
@@ -283,6 +302,10 @@ export function setupPickupBackground(options: PickupBackgroundOptions = {}) {
   const runtime = chrome?.runtime;
   const offscreenClient = createOffscreenClient();
   const cache = createPickupCache({ modelKey: resolveModelKey(options.modelKey) });
+  ensureTranslateProvidersRegistered();
+  void ensureTranslateProviderConfig().catch((error) => {
+    console.error('Translate provider config failed:', error);
+  });
 
   runtime?.onInstalled?.addListener(() => {
     void offscreenClient.warmup();
@@ -321,9 +344,26 @@ export function setupPickupBackground(options: PickupBackgroundOptions = {}) {
     return { annotations };
   });
 
+  onMessage(MESSAGE_TYPES.translateProviderGet, async () => {
+    const provider = await getStoredTranslateProvider();
+    return { provider };
+  });
+
+  onMessage(MESSAGE_TYPES.translateProviderSet, async (message) => {
+    const nextProvider = message.data?.provider;
+    if (!isTranslateProvider(nextProvider)) {
+      throw new Error('Translate provider is required.');
+    }
+    const provider = await setStoredTranslateProvider(nextProvider);
+    return { provider };
+  });
+
   onMessage(MESSAGE_TYPES.translatePreview, async (message) => {
     const paragraphs = (message.data?.paragraphs ?? []) as PickupTranslateParagraphInput[];
-    const translations = await buildTranslationPreviews(paragraphs);
+    const provider = isTranslateProvider(message.data?.provider)
+      ? message.data.provider
+      : await getStoredTranslateProvider();
+    const translations = await buildTranslationPreviews(paragraphs, provider);
     return { translations };
   });
 }

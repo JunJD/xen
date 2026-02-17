@@ -13,5 +13,8 @@ export async function requestAnnotations(paragraphs: PickupParagraph[]) {
 
 export async function requestTranslationPreview(paragraphs: PickupTranslateParagraphInput[]) {
   const response = await sendMessage(MESSAGE_TYPES.translatePreview, { paragraphs });
-  return (response?.translations ?? []) as PickupTranslateParagraphPreview[];
+  if (!response?.translations) {
+    throw new Error('Translation preview failed.');
+  }
+  return response.translations as PickupTranslateParagraphPreview[];
 }

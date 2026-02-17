@@ -23,10 +23,12 @@
     "postinstall": "pnpm run sync:pyodide && wxt prepare"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^2.0.0",
     "@mozilla/readability": "^0.6.0",
     "@tailwindcss/cli": "^4.1.18",
     "@tailwindcss/postcss": "^4.1.18",
     "@webext-core/messaging": "^2.3.0",
+    "ai": "^4.0.0",
     "clsx": "^2.1.1",
     "dexie": "^4.3.0",
     "franc": "^6.2.0",

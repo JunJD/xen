@@ -10,7 +10,7 @@ export const PARAGRAPH_FORCE_BLOCK_TAGS = new Set([
   'BLOCKQUOTE',
 ]);
 
-export const INLINE_DISPLAY_KEYWORDS = ['inline', 'contents'] as const;
+export const INLINE_DISPLAY_KEYWORDS = ['inline'] as const;
 export const MIN_BLOCK_CHILDREN_FOR_FORCE_BLOCK = 1;
 export const MIN_TRANSLATABLE_CHILDREN_FOR_FORCE_BLOCK = 2;
 

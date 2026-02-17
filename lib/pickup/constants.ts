@@ -3,6 +3,8 @@ export const MESSAGE_TYPES = {
   modelStatus: 'pickupModelStatus',
   annotate: 'pickupAnnotate',
   translatePreview: 'pickupTranslatePreview',
+  translateProviderGet: 'pickupTranslateProviderGet',
+  translateProviderSet: 'pickupTranslateProviderSet',
 } as const;
 
 export const STATUS_ERROR_CODES = {
