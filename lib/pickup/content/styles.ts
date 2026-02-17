@@ -256,9 +256,23 @@ export function ensurePickupStyles() {
     .xen-pickup-lane-content {
       line-height: inherit;
     }
+    .xen-pickup-inline {
+      display: inline;
+    }
+    .xen-pickup-inline .xen-pickup-lane {
+      display: inline;
+    }
+    .xen-pickup-inline .xen-pickup-lane-content {
+      display: inline;
+    }
     .xen-pickup-lane + .xen-pickup-lane {
       border-top: 1px solid rgba(148, 163, 184, 0.25);
       padding-top: 4px;
+    }
+    .xen-pickup-inline .xen-pickup-lane + .xen-pickup-lane {
+      border-top: 0;
+      padding-top: 0;
+      margin-left: 4px;
     }
     :root[data-xen-pickup-mode="vocab_infusion"] .xen-pickup-three-lane [data-pickup-lane="syntax_rebuild"] {
       display: none;

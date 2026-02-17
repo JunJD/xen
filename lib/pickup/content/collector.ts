@@ -28,6 +28,20 @@ type WalkResult = {
 const PICKUP_ID_PREFIX = 'xen-pickup';
 const PICKUP_STATUS_PENDING = 'pending';
 const WHITESPACE_PATTERN = /\s+/g;
+const MIN_INLINE_ALPHA_COUNT = 2;
+
+function isShortEnglishText(text: string) {
+  const compact = text.replace(/\s+/g, '');
+  if (!compact) {
+    return false;
+  }
+  const asciiLetters = (compact.match(/[A-Za-z]/g) ?? []).length;
+  if (asciiLetters < MIN_INLINE_ALPHA_COUNT) {
+    return false;
+  }
+  const nonAscii = (compact.match(/[^\x00-\x7F]/g) ?? []).length;
+  return nonAscii === 0;
+}
 
 function getTraversalRoots(root: ParentNode): HTMLElement[] {
   if (root instanceof Document) {
@@ -189,9 +203,10 @@ export function collectParagraphs(root: ParentNode = document) {
   elements.forEach((element) => {
     const text = extractTextContent(element).replace(WHITESPACE_PATTERN, ' ').trim();
     if (text.length < MIN_TEXT_LENGTH) {
-      return;
-    }
-    if (!isEnglishText(text)) {
+      if (!isShortEnglishText(text)) {
+        return;
+      }
+    } else if (!isEnglishText(text)) {
       return;
     }
     if (!element.dataset.pickupOriginal && text.length <= MAX_ORIGINAL_TEXT_LENGTH) {

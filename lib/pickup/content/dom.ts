@@ -21,7 +21,6 @@ const SKIP_TAGS = new Set([
   'OPTION',
   'BUTTON',
   'FORM',
-  'A',
   'CODE',
   'PRE',
   'HEADER',

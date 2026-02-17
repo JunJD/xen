@@ -17,6 +17,7 @@ const PICKUP_CATEGORY_ATTR = 'data-pickup-category';
 const PICKUP_ACCENT_VARIABLE = '--xen-pickup-accent';
 const PICKUP_SOFT_BG_VARIABLE = '--xen-pickup-soft-bg';
 const PICKUP_THREE_LANE_CLASS = 'xen-pickup-three-lane';
+const PICKUP_INLINE_CLASS = 'xen-pickup-inline';
 const PICKUP_LANE_CLASS = 'xen-pickup-lane';
 const PICKUP_LANE_CONTENT_CLASS = 'xen-pickup-lane-content';
 const PICKUP_ROLE_BADGE_CLASS = 'xen-pickup-role-badge';
@@ -28,6 +29,25 @@ const STRUCTURE_ROLE_LABELS = new Set([
   '开放补语',
   '并列分句',
 ]);
+const INLINE_LAYOUT_TAGS = new Set([
+  'SPAN',
+  'A',
+  'B',
+  'STRONG',
+  'EM',
+  'I',
+  'U',
+  'S',
+  'SMALL',
+  'LABEL',
+  'MARK',
+  'ABBR',
+  'CITE',
+  'Q',
+  'CODE',
+  'KBD',
+]);
+const MAX_INLINE_LAYOUT_TEXT_LENGTH = 80;
 
 const LANE_ORIGINAL = 'original';
 const LANE_TARGET = 'target';
@@ -353,13 +373,13 @@ function resolveSyntaxRebuildTokenText(
   return token.renderedText;
 }
 
-function createLaneShell(lane: PickupLane) {
-  const laneElement = document.createElement('section');
+function createLaneShell(lane: PickupLane, inline = false) {
+  const laneElement = document.createElement(inline ? 'span' : 'section');
   laneElement.className = PICKUP_LANE_CLASS;
   laneElement.dataset.pickupLane = lane;
   laneElement.setAttribute(PICKUP_IGNORE_ATTR, 'true');
 
-  const contentElement = document.createElement('div');
+  const contentElement = document.createElement(inline ? 'span' : 'div');
   contentElement.className = PICKUP_LANE_CONTENT_CLASS;
 
   laneElement.append(contentElement);
@@ -412,6 +432,32 @@ function buildThreeLaneLayout(
   };
 }
 
+function buildInlineLayout(
+  sourceText: string,
+  overrides?: ParagraphTranslationOverride,
+) {
+  const container = document.createElement('span');
+  container.className = PICKUP_INLINE_CLASS;
+  container.setAttribute(PICKUP_IGNORE_ATTR, 'true');
+  container.setAttribute('data-pickup-layout', 'inline');
+
+  const originalLane = createLaneShell(LANE_ORIGINAL, true);
+  originalLane.contentElement.textContent = sourceText;
+  container.appendChild(originalLane.laneElement);
+
+  const paragraphText = overrides?.paragraphText?.trim();
+  if (paragraphText) {
+    const targetLane = createLaneShell(LANE_TARGET, true);
+    targetLane.contentElement.textContent = paragraphText;
+    container.appendChild(targetLane.laneElement);
+  }
+
+  return {
+    container,
+    renderedTokens: [],
+  };
+}
+
 function resolveVocabTooltipMeaning(
   token: RenderedToken,
   overrides?: Map<string, UnitTranslationOverride>,
@@ -427,6 +473,21 @@ function resolveVocabTooltipMeaning(
     return override.vocabInfusionText;
   }
   return EMPTY_TEXT;
+}
+
+function shouldUseInlineLayout(element: HTMLElement, sourceText: string) {
+  const style = window.getComputedStyle(element);
+  if (style.display.includes('inline')) {
+    return true;
+  }
+  if (sourceText.length > MAX_INLINE_LAYOUT_TEXT_LENGTH) {
+    return false;
+  }
+  const isTruncated = style.whiteSpace === 'nowrap' || style.textOverflow === 'ellipsis';
+  if (INLINE_LAYOUT_TAGS.has(element.tagName) || isTruncated) {
+    return true;
+  }
+  return false;
 }
 
 function decorateRenderedTokens(
@@ -561,7 +622,7 @@ export async function applyAnnotations(
   let translationOverridesByParagraph = new Map<string, ParagraphTranslationOverride>();
   const translationInputs = buildTranslationPreviewInputs(entries);
 
-  if (translationInputs.some(input => input.units.length > 0)) {
+  if (translationInputs.length > 0) {
     try {
       const translations = await requestTranslationPreview(translationInputs);
       translationOverridesByParagraph = buildTranslationOverrideLookup(translations);
@@ -574,7 +635,10 @@ export async function applyAnnotations(
   entries.forEach(({ annotation, element, sourceText, sentenceAst }) => {
     const overrides = translationOverridesByParagraph.get(annotation.id);
     const renderModel = buildRenderModelFromSentenceAst(sentenceAst);
-    const { container, renderedTokens } = buildThreeLaneLayout(renderModel.tokens, sourceText, overrides);
+    const isInlineLayout = shouldUseInlineLayout(element, sourceText);
+    const { container, renderedTokens } = isInlineLayout
+      ? buildInlineLayout(sourceText, overrides)
+      : buildThreeLaneLayout(renderModel.tokens, sourceText, overrides);
 
     element.textContent = EMPTY_TEXT;
     element.appendChild(container);
