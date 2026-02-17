@@ -237,6 +237,7 @@ export function ensurePickupStyles() {
       font-size: 0.62em;
       vertical-align: super;
       text-decoration: none;
+      cursor: help;
       opacity: 0.7;
       color: rgba(71, 85, 105, 0.9);
     }
