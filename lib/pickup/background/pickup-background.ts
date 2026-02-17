@@ -10,7 +10,7 @@ import type {
   PickupToken,
   TranslateProvider,
 } from '@/lib/pickup/messages';
-import { createPickupCache } from '@/lib/pickup/cache';
+import { createPickupCache, createTranslationCache } from '@/lib/pickup/cache';
 import {
   CACHE_PRUNE_REASONS,
   MESSAGE_TYPES,
@@ -66,10 +66,26 @@ type OffscreenClient = {
 };
 
 type PickupCache = ReturnType<typeof createPickupCache>;
+type TranslationCache = ReturnType<typeof createTranslationCache>;
 
 export type PickupBackgroundOptions = {
   modelKey?: string | (() => string);
 };
+
+function resolveTranslationModelKey(provider: TranslateProvider) {
+  return `translate:${provider}`;
+}
+
+const translationCaches = new Map<string, TranslationCache>();
+
+function getTranslationCache(modelKey: string) {
+  let cache = translationCaches.get(modelKey);
+  if (!cache) {
+    cache = createTranslationCache({ modelKey: () => modelKey });
+    translationCaches.set(modelKey, cache);
+  }
+  return cache;
+}
 
 function createOffscreenClient(): OffscreenClient {
   let warmupInFlight = false;
@@ -275,15 +291,32 @@ async function buildTranslationPreviews(
   if (paragraphs.length === 0) {
     return [];
   }
+  const translationCache = getTranslationCache(resolveTranslationModelKey(provider));
   const dictionary = await loadVocabDictionary();
   const previews: PickupTranslateParagraphPreview[] = [];
+  let wroteCache = false;
   for (const paragraph of paragraphs) {
     const sourceText = paragraph.sourceText ?? '';
     const cleanText = sourceText.replace(/\u200B/g, '').trim();
-    const paragraphText = cleanText
-      ? await translateText(provider, { text: cleanText })
-      : '';
+    let paragraphText = '';
+    if (cleanText) {
+      const sourceHash = sha256(cleanText);
+      const cached = await translationCache.get(sourceHash);
+      const cachedValue = cached?.value?.trim() ?? '';
+      if (cachedValue) {
+        paragraphText = cached.value;
+      } else {
+        paragraphText = await translateText(provider, { text: cleanText });
+        if (paragraphText.trim()) {
+          await translationCache.set(sourceHash, paragraphText);
+          wroteCache = true;
+        }
+      }
+    }
     previews.push(buildParagraphTranslationPreview(paragraph, dictionary, paragraphText));
+  }
+  if (wroteCache) {
+    void translationCache.maybePrune(CACHE_PRUNE_REASONS.translate);
   }
   return previews;
 }

@@ -16,4 +16,5 @@ export const STATUS_ERROR_CODES = {
 export const CACHE_PRUNE_REASONS = {
   startup: 'startup',
   annotate: 'annotate',
+  translate: 'translate',
 } as const;
