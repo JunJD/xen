@@ -230,6 +230,18 @@ export function ensurePickupStyles() {
       border-radius: 0;
       transition: text-decoration-color 0.15s ease, text-decoration-thickness 0.15s ease;
     }
+    :root[data-xen-pickup-mode="vocab_infusion"] [data-pickup-lane="vocab_infusion"] .xen-pickup-token[data-pickup-original]::after {
+      content: attr(data-pickup-original);
+      margin-left: 2px;
+      font-size: 0.62em;
+      vertical-align: super;
+      text-decoration: none;
+      opacity: 0.7;
+      color: rgba(71, 85, 105, 0.9);
+    }
+    :root[data-xen-pickup-theme="dark"] [data-pickup-lane="vocab_infusion"] .xen-pickup-token[data-pickup-original]::after {
+      color: rgba(226, 232, 240, 0.85);
+    }
     .xen-pickup-three-lane {
       display: flex;
       flex-direction: column;

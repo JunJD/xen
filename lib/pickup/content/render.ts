@@ -44,35 +44,6 @@ const EMPTY_TEXT = '';
 const PLACEHOLDER_TRANSLATION = '[待翻译]';
 const TOKEN_AFFIX_PATTERN = /^([^A-Za-z0-9\u4e00-\u9fff]*)(.*?)([^A-Za-z0-9\u4e00-\u9fff]*)$/;
 
-const ZH_TO_EN_FALLBACK_MAP: Record<string, string> = {
-  这个: 'this',
-  创新的: 'innovative',
-  策略: 'strategy',
-  极大地: 'greatly',
-  提升: 'boost',
-  提升了: 'boosted',
-  公司: 'company',
-  收入: 'revenue',
-  做: 'do',
-  某事: 'something',
-  待办: 'todo',
-};
-
-const EN_TO_ZH_FALLBACK_MAP: Record<string, string> = {
-  this: '这个',
-  innovative: '创新的',
-  strategy: '策略',
-  greatly: '极大地',
-  boost: '提升',
-  boosted: '提升了',
-  company: '公司',
-  "company's": '公司的',
-  revenue: '收入',
-  do: '做',
-  something: '某事',
-  todo: '待办',
-};
-
 type RenderableToken = RenderToken & {
   start: number;
   end: number;
@@ -81,6 +52,7 @@ type RenderableToken = RenderToken & {
 
 type RenderedToken = RenderToken & {
   renderedText: string;
+  sourceText: string;
   element: HTMLSpanElement;
 };
 
@@ -93,6 +65,7 @@ type AnnotatedFragmentResult = {
 
 type UnitTranslationOverride = {
   vocabInfusionText: string;
+  vocabInfusionHint?: string;
   syntaxRebuildText: string;
 };
 
@@ -180,6 +153,15 @@ export function buildTokenSpan(token: RenderToken, tokenText: string) {
   wrapper.style.setProperty(PICKUP_SOFT_BG_VARIABLE, type.background);
   wrapper.setAttribute(PICKUP_IGNORE_ATTR, 'true');
   wrapper.setAttribute(PICKUP_CATEGORY_ATTR, token.kind ?? type.kind);
+  if (token.pos) {
+    wrapper.dataset.pickupPos = token.pos;
+  }
+  if (token.tag) {
+    wrapper.dataset.pickupTag = token.tag;
+  }
+  if (token.dep) {
+    wrapper.dataset.pickupDep = token.dep;
+  }
   wrapper.title = token.label ?? type.name;
   wrapper.textContent = tokenText;
   return wrapper;
@@ -198,7 +180,12 @@ function buildFallbackFragment(
     const renderedText = resolveTokenText(token) || token.text || EMPTY_TEXT;
     const element = buildTokenSpan(token, renderedText);
     fragment.appendChild(element);
-    renderedTokens.push({ ...token, renderedText, element });
+    renderedTokens.push({
+      ...token,
+      renderedText,
+      sourceText: token.text ?? EMPTY_TEXT,
+      element,
+    });
   });
   return { fragment, renderedTokens };
 }
@@ -237,7 +224,12 @@ function buildAnnotatedFragment(
     const mappedText = resolveTokenText(token) || token.renderedText || EMPTY_TEXT;
     const element = buildTokenSpan(token, mappedText);
     fragment.appendChild(element);
-    renderedTokens.push({ ...token, renderedText: mappedText, element });
+    renderedTokens.push({
+      ...token,
+      renderedText: mappedText,
+      sourceText: token.renderedText ?? EMPTY_TEXT,
+      element,
+    });
     cursor = token.end;
   });
 
@@ -328,6 +320,7 @@ function buildTranslationOverrideLookup(
     paragraphPreview.units.forEach((unitPreview) => {
       unitLookup.set(unitPreview.unitId, {
         vocabInfusionText: unitPreview.vocabInfusionText,
+        vocabInfusionHint: unitPreview.vocabInfusionHint,
         syntaxRebuildText: unitPreview.syntaxRebuildText,
       });
     });
@@ -342,7 +335,15 @@ function buildTranslationOverrideLookup(
 
 function resolveVocabInfusionTokenText(
   token: RenderableToken,
+  overrides?: Map<string, UnitTranslationOverride>,
 ) {
+  if (token.kind !== 'vocabulary') {
+    return token.renderedText;
+  }
+  const override = overrides?.get(token.id);
+  if (override?.vocabInfusionText?.trim()) {
+    return override.vocabInfusionText;
+  }
   return token.renderedText;
 }
 
@@ -392,7 +393,7 @@ function buildThreeLaneLayout(
   const vocabRender = buildAnnotatedFragment(
     tokens,
     sourceText,
-    token => resolveVocabInfusionTokenText(token),
+    token => resolveVocabInfusionTokenText(token, overrides?.units),
   );
   vocabLane.contentElement.appendChild(vocabRender.fragment);
   container.appendChild(vocabLane.laneElement);
@@ -420,10 +421,13 @@ function resolveVocabTooltipMeaning(
     return EMPTY_TEXT;
   }
   const override = overrides?.get(token.id);
-  if (!override?.vocabInfusionText?.trim()) {
-    return EMPTY_TEXT;
+  if (override?.vocabInfusionHint?.trim()) {
+    return override.vocabInfusionHint;
   }
-  return override.vocabInfusionText;
+  if (override?.vocabInfusionText?.trim()) {
+    return override.vocabInfusionText;
+  }
+  return EMPTY_TEXT;
 }
 
 function decorateRenderedTokens(
@@ -460,6 +464,14 @@ function decorateRenderedTokens(
       element.dataset.pickupMeaning = vocabMeaning;
     } else if (token.meaning) {
       element.dataset.pickupMeaning = token.meaning;
+    }
+    if (lane === LANE_VOCAB_INFUSION && token.kind === 'vocabulary') {
+      const override = overrides?.get(token.id);
+      const translated = override?.vocabInfusionText?.trim() ?? '';
+      const original = token.sourceText?.trim() ?? '';
+      if (translated && original && translated !== original) {
+        element.dataset.pickupOriginal = token.sourceText;
+      }
     }
 
     if (token.kind === 'grammar') {

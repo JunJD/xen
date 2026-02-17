@@ -4,7 +4,12 @@ const TOKEN_AFFIX_PATTERN = /^([^A-Za-z0-9\u4e00-\u9fff]*)(.*?)([^A-Za-z0-9\u4e0
 
 type RawDictEntry = Record<string, unknown>;
 
-type VocabDictionary = Map<string, string>;
+export type VocabDictionaryEntry = {
+  plain: string;
+  byPos?: Record<string, string[]>;
+};
+
+export type VocabDictionary = Map<string, VocabDictionaryEntry>;
 
 let cachedDictionary: VocabDictionary | null = null;
 let dictionaryPromise: Promise<VocabDictionary> | null = null;
@@ -56,6 +61,111 @@ function normalizeTranslationValue(value: unknown): string {
   return '';
 }
 
+function normalizeTranslationList(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value
+      .filter(item => typeof item === 'string')
+      .map(item => normalizeBlockText(item))
+      .filter(Boolean);
+  }
+  if (typeof value === 'string') {
+    const normalized = normalizeBlockText(value);
+    return normalized ? [normalized] : [];
+  }
+  return [];
+}
+
+function normalizePosKey(raw: string): string | null {
+  const normalized = raw
+    .toLowerCase()
+    .replace(/[.：:\s]/g, '')
+    .replace(/\s+/g, '')
+    .trim();
+  if (!normalized) {
+    return null;
+  }
+  const map: Record<string, string> = {
+    n: 'NOUN',
+    noun: 'NOUN',
+    名词: 'NOUN',
+    v: 'VERB',
+    vt: 'VERB',
+    vi: 'VERB',
+    verb: 'VERB',
+    动词: 'VERB',
+    adj: 'ADJ',
+    a: 'ADJ',
+    adjective: 'ADJ',
+    形容词: 'ADJ',
+    adv: 'ADV',
+    adverb: 'ADV',
+    副词: 'ADV',
+    prep: 'ADP',
+    preposition: 'ADP',
+    介词: 'ADP',
+    conj: 'CCONJ',
+    conjunction: 'CCONJ',
+    连词: 'CCONJ',
+    sconj: 'SCONJ',
+    subconj: 'SCONJ',
+    从属连词: 'SCONJ',
+    pron: 'PRON',
+    pronoun: 'PRON',
+    代词: 'PRON',
+    det: 'DET',
+    determiner: 'DET',
+    限定词: 'DET',
+    num: 'NUM',
+    numeral: 'NUM',
+    数词: 'NUM',
+    int: 'INTJ',
+    interj: 'INTJ',
+    interjection: 'INTJ',
+    感叹词: 'INTJ',
+    叹词: 'INTJ',
+    aux: 'AUX',
+    auxiliary: 'AUX',
+    助动词: 'AUX',
+    part: 'PART',
+    particle: 'PART',
+    助词: 'PART',
+    propn: 'PROPN',
+    propernoun: 'PROPN',
+    专有名词: 'PROPN',
+    sym: 'SYM',
+    symbol: 'SYM',
+    符号: 'SYM',
+    abbr: 'X',
+    abbrev: 'X',
+    abbrv: 'X',
+    phrase: 'X',
+    phr: 'X',
+    idiom: 'X',
+    modal: 'AUX',
+  };
+  return map[normalized] ?? null;
+}
+
+function normalizeTransByPos(raw: unknown): Record<string, string[]> | null {
+  if (!raw || typeof raw !== 'object') {
+    return null;
+  }
+  const record = raw as Record<string, unknown>;
+  const normalized: Record<string, string[]> = {};
+  Object.entries(record).forEach(([key, value]) => {
+    const posKey = normalizePosKey(key) ?? key.trim().toUpperCase();
+    if (!posKey) {
+      return;
+    }
+    const list = normalizeTranslationList(value);
+    if (list.length === 0) {
+      return;
+    }
+    normalized[posKey] = list;
+  });
+  return Object.keys(normalized).length > 0 ? normalized : null;
+}
+
 function extractTranslation(entry: RawDictEntry): string {
   if ('trans' in entry) {
     return normalizeTranslationValue(entry.trans);
@@ -77,13 +187,17 @@ function normalizeEntry(entry: RawDictEntry) {
   if (typeof rawName !== 'string' || rawName.trim().length === 0) {
     return null;
   }
-  const translation = extractTranslation(entry);
-  if (!translation) {
+  const plainTranslation = normalizeTranslationValue(entry.transPlain ?? extractTranslation(entry));
+  const byPos = normalizeTransByPos(entry.transByPos);
+  if (!plainTranslation && !byPos) {
     return null;
   }
   return {
     key: normalizeKey(rawName),
-    translation,
+    entry: {
+      plain: plainTranslation,
+      byPos,
+    },
   };
 }
 
@@ -145,7 +259,7 @@ async function loadDictionaryFile(path: string): Promise<VocabDictionary> {
       return;
     }
     if (!map.has(normalized.key)) {
-      map.set(normalized.key, normalized.translation);
+      map.set(normalized.key, normalized.entry);
     }
   });
   return map;
@@ -213,7 +327,30 @@ function buildLookupKeys(core: string): string[] {
   return Array.from(keys);
 }
 
-export function lookupVocabTranslation(text: string, dictionary: VocabDictionary): string | null {
+function resolvePosKey(pos?: string): string | null {
+  if (!pos) {
+    return null;
+  }
+  const direct = normalizePosKey(pos);
+  if (direct) {
+    return direct;
+  }
+  const upper = pos.toUpperCase().trim();
+  if (!upper) {
+    return null;
+  }
+  return upper;
+}
+
+function joinPosList(list: string[]): string {
+  return list.join('；');
+}
+
+export function lookupVocabTranslation(
+  text: string,
+  dictionary: VocabDictionary,
+  pos?: string,
+): string | null {
   if (!dictionary || dictionary.size === 0) {
     return null;
   }
@@ -223,10 +360,74 @@ export function lookupVocabTranslation(text: string, dictionary: VocabDictionary
   }
   const normalized = normalizeKey(core);
   const keys = buildLookupKeys(normalized);
+  const posKey = resolvePosKey(pos);
   for (const key of keys) {
-    const translation = dictionary.get(key);
-    if (translation) {
-      return `${prefix}${translation}${suffix}`;
+    const entry = dictionary.get(key);
+    if (!entry) {
+      continue;
+    }
+    if (posKey) {
+      if (entry.byPos?.[posKey]?.length) {
+        return `${prefix}${entry.byPos[posKey][0]}${suffix}`;
+      }
+      continue;
+    }
+    if (entry.plain) {
+      return `${prefix}${entry.plain}${suffix}`;
+    }
+    if (entry.byPos) {
+      const first = Object.values(entry.byPos).find(list => list.length > 0);
+      if (first && first.length > 0) {
+        return `${prefix}${joinPosList(first)}${suffix}`;
+      }
+    }
+  }
+  return null;
+}
+
+const POS_LABELS: Record<string, string> = {
+  NOUN: 'n.',
+  VERB: 'v.',
+  ADJ: 'adj.',
+  ADV: 'adv.',
+  ADP: 'prep.',
+  PRON: 'pron.',
+  DET: 'det.',
+  NUM: 'num.',
+  CCONJ: 'conj.',
+  SCONJ: 'conj.',
+  AUX: 'aux.',
+  PART: 'part.',
+  PROPN: 'propn.',
+  INTJ: 'int.',
+  SYM: 'sym.',
+  X: 'x.',
+};
+
+export function lookupVocabAllPos(text: string, dictionary: VocabDictionary): string | null {
+  if (!dictionary || dictionary.size === 0) {
+    return null;
+  }
+  const { core } = splitTokenAffixes(text);
+  if (!core.trim()) {
+    return null;
+  }
+  const normalized = normalizeKey(core);
+  const keys = buildLookupKeys(normalized);
+  for (const key of keys) {
+    const entry = dictionary.get(key);
+    if (!entry) {
+      continue;
+    }
+    if (entry.byPos && Object.keys(entry.byPos).length > 0) {
+      const lines = Object.entries(entry.byPos).map(([pos, list]) => {
+        const label = POS_LABELS[pos] ?? pos.toLowerCase();
+        return `${label} ${joinPosList(list)}`;
+      });
+      return lines.join('\n');
+    }
+    if (entry.plain) {
+      return entry.plain;
     }
   }
   return null;

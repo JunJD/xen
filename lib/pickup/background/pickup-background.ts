@@ -15,7 +15,12 @@ import {
   MESSAGE_TYPES,
   STATUS_ERROR_CODES,
 } from '@/lib/pickup/constants';
-import { loadVocabDictionary, lookupVocabTranslation } from '@/lib/pickup/vocab/dictionary';
+import {
+  loadVocabDictionary,
+  lookupVocabAllPos,
+  lookupVocabTranslation,
+  type VocabDictionary,
+} from '@/lib/pickup/vocab/dictionary';
 import {
   PICKUP_OFFSCREEN_ACTION_ANALYZE,
   PICKUP_OFFSCREEN_ACTION_STATUS,
@@ -228,12 +233,14 @@ async function annotateParagraphs(
 
 function buildUnitTranslationPreview(
   unit: PickupTranslateUnitInput,
-  dictionary: Map<string, string>,
+  dictionary: VocabDictionary,
 ): PickupTranslateUnitPreview {
-  const vocabTranslation = lookupVocabTranslation(unit.text, dictionary) ?? '';
+  const vocabTranslation = lookupVocabTranslation(unit.text, dictionary, unit.pos) ?? '';
+  const vocabHint = lookupVocabAllPos(unit.text, dictionary) ?? '';
   return {
     unitId: unit.unitId,
     vocabInfusionText: vocabTranslation,
+    vocabInfusionHint: vocabHint,
     syntaxRebuildText: '',
     context: unit,
   };

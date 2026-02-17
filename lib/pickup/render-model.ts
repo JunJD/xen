@@ -12,6 +12,10 @@ export type RenderToken = {
   meaning?: string;
   role?: string;
   groupId?: string;
+  pos?: string;
+  tag?: string;
+  dep?: string;
+  tokenIndex?: number;
 };
 
 export type RenderModel = {
@@ -56,6 +60,10 @@ function toRenderToken(unit: UnitAst, groupMap: Map<string, string>): RenderToke
     meaning: unit.meaning,
     role: unit.role,
     groupId: groupMap.get(unit.id),
+    pos: unit.pos,
+    tag: unit.tag,
+    dep: unit.dep,
+    tokenIndex: unit.tokenIndex,
   };
 }
 

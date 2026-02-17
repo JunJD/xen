@@ -47,6 +47,7 @@ export interface PickupTranslateParagraphInput {
 export interface PickupTranslateUnitPreview {
   unitId: string;
   vocabInfusionText: string;
+  vocabInfusionHint?: string;
   syntaxRebuildText: string;
   context: PickupTranslateUnitInput;
 }
