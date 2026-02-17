@@ -1,4 +1,4 @@
-import tippy, { type Props } from 'tippy.js';
+import tippy, { followCursor, type Props } from 'tippy.js';
 
 const TIPPY_THEME = 'xen-pickup';
 const TOKEN_SELECTOR = '.xen-pickup-token';
@@ -22,12 +22,22 @@ const BASE_TIPPY_PROPS: Partial<Props> = {
   arrow: false,
   placement: 'top',
   maxWidth: 320,
+  offset: [0, 8],
   delay: [120, 0],
   duration: [120, 80],
   interactive: true,
   hideOnClick: false,
+  followCursor: true,
+  plugins: [followCursor],
   appendTo: () => document.body,
   zIndex: 2147483000,
+  popperOptions: {
+    modifiers: [
+      { name: 'shift', options: { padding: 8 } },
+      { name: 'flip', options: { padding: 8, fallbackPlacements: ['bottom', 'right', 'left'] } },
+      { name: 'preventOverflow', options: { padding: 8, altAxis: true } },
+    ],
+  },
   onCreate(instance) {
     instance.popper.setAttribute('data-pickup-ui', 'true');
     instance.popper.setAttribute('data-pickup-ignore', 'true');

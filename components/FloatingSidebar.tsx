@@ -20,11 +20,15 @@ export function FloatingSidebar() {
   const [pickupMode, setPickupMode] = useState<PickupRenderMode>(PICKUP_RENDER_MODE_SYNTAX_REBUILD);
   const [dockSide, setDockSide] = useState<'left' | 'right'>('right');
   const [dockPosition, setDockPosition] = useState(0.5);
-  const [dragPosition, setDragPosition] = useState<number | null>(null);
+  const [dragPoint, setDragPoint] = useState<{ x: number; y: number } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const initialClientYRef = useRef<number | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const handleRef = useRef<HTMLDivElement | null>(null);
+  const handleOffsetRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const containerHeightRef = useRef<number>(0);
+  const dragSizeRef = useRef<number>(32);
   const initialClientXRef = useRef<number | null>(null);
-  const initialPositionRef = useRef<number>(0.5);
+  const initialClientYRef = useRef<number | null>(null);
 
   useEffect(() => {
     try {
@@ -37,7 +41,6 @@ export function FloatingSidebar() {
         const parsed = Number.parseFloat(storedPosition);
         if (Number.isFinite(parsed) && parsed > 0 && parsed < 1) {
           setDockPosition(parsed);
-          initialPositionRef.current = parsed;
         }
       }
     } catch {
@@ -79,14 +82,6 @@ export function FloatingSidebar() {
     }
   }, [dockPosition]);
 
-  useEffect(() => {
-    if (!isDragging && dragPosition !== null) {
-      setDockPosition(dragPosition);
-      setDragPosition(null);
-      initialPositionRef.current = dragPosition;
-    }
-  }, [dragPosition, isDragging]);
-
   const handleTogglePickup = () => {
     const detail: PickupControlDetail = { action: PICKUP_CONTROL_ACTION_TOGGLE };
     window.dispatchEvent(new CustomEvent(PICKUP_CONTROL_EVENT, { detail }));
@@ -105,18 +100,43 @@ export function FloatingSidebar() {
   const sidePosition = dockSide === 'right' ? 'right-0' : 'left-0';
   const handleRounded = dockSide === 'right' ? 'rounded-l-full border-r-0' : 'rounded-r-full border-l-0';
   const handlePadding = dockSide === 'right' ? 'pl-1' : 'pr-1';
-  const edgeMargin = dockSide === 'right' ? 'mr-2' : 'ml-2';
-  const currentPosition = dragPosition ?? dockPosition;
+  const handleJustify = dockSide === 'right' ? 'justify-start' : 'justify-end';
+  const edgeMargin = dockSide === 'right' ? 'mr-6' : 'ml-6';
+  const revealOnDrag = isDragging ? 'translate-x-0' : '';
+  const dragTransition = isDragging ? 'transition-none' : '';
+  const pickupIconSrc = (() => {
+    if (typeof chrome !== 'undefined' && chrome.runtime?.getURL) {
+      return chrome.runtime.getURL('wxt.svg');
+    }
+    return '/wxt.svg';
+  })();
+  const pickupIcon = (
+    <img src={pickupIconSrc} alt="" aria-hidden="true" className="h-6 w-6" />
+  );
 
-  const handleDragStart = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handleDragStart = (event: React.MouseEvent<HTMLDivElement>) => {
     event.preventDefault();
     initialClientYRef.current = event.clientY;
     initialClientXRef.current = event.clientX;
-    initialPositionRef.current = currentPosition;
+    const containerRect = containerRef.current?.getBoundingClientRect();
+    const handleRect = handleRef.current?.getBoundingClientRect();
+    const dragSize = handleRect
+      ? Math.max(handleRect.width, handleRect.height)
+      : dragSizeRef.current;
+    dragSizeRef.current = dragSize;
+    const dragRadius = dragSize / 2;
+    if (containerRect && handleRect) {
+      handleOffsetRef.current = {
+        x: handleRect.left + handleRect.width / 2 - containerRect.left,
+        y: handleRect.top + handleRect.height / 2 - containerRect.top,
+      };
+      containerHeightRef.current = containerRect.height;
+    } else {
+      handleOffsetRef.current = { x: dragRadius, y: dragRadius };
+      containerHeightRef.current = 120;
+    }
     let hasMoved = false;
-
-    setIsDragging(true);
-    document.body.style.userSelect = 'none';
+    let draggingActive = false;
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
       const deltaY = moveEvent.clientY - (initialClientYRef.current ?? moveEvent.clientY);
@@ -127,17 +147,25 @@ export function FloatingSidebar() {
       if (!hasMoved) {
         return;
       }
-      const initialY = initialPositionRef.current * window.innerHeight;
-      const maxY = Math.max(100, window.innerHeight - 200);
-      const nextY = Math.max(30, Math.min(maxY, initialY + deltaY));
-      setDragPosition(nextY / window.innerHeight);
+      if (!draggingActive) {
+        draggingActive = true;
+        setIsDragging(true);
+        document.body.style.userSelect = 'none';
+      }
+      const radius = dragSizeRef.current / 2;
+      const nextX = Math.max(radius, Math.min(window.innerWidth - radius, moveEvent.clientX));
+      const nextY = Math.max(radius, Math.min(window.innerHeight - radius, moveEvent.clientY));
+      setDragPoint({ x: nextX, y: nextY });
     };
 
     const handleMouseUp = (upEvent: MouseEvent) => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
-      document.body.style.userSelect = '';
+      if (draggingActive) {
+        document.body.style.userSelect = '';
+      }
       setIsDragging(false);
+      setDragPoint(null);
 
       if (!hasMoved) {
         handleTogglePickup();
@@ -145,70 +173,111 @@ export function FloatingSidebar() {
       }
       const nextSide = upEvent.clientX < window.innerWidth / 2 ? 'left' : 'right';
       setDockSide(nextSide);
+
+      const radius = dragSizeRef.current / 2;
+      const offsetY = handleOffsetRef.current.y || radius;
+      const containerHeight = containerHeightRef.current || 120;
+      const maxTop = Math.max(0, window.innerHeight - containerHeight);
+      const nextTop = Math.max(0, Math.min(maxTop, upEvent.clientY - offsetY));
+      setDockPosition(nextTop / window.innerHeight);
     };
 
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
   };
 
-  const handleHandleKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
+  const handleHandleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
       handleTogglePickup();
     }
   };
 
+  if (isDragging && dragPoint) {
+    return (
+      <div
+        className="fixed z-[2147483647] pointer-events-none"
+        style={{
+          left: `${dragPoint.x}px`,
+          top: `${dragPoint.y}px`,
+          transform: 'translate(-50%, -50%)',
+        }}
+      >
+        <div
+          className={`relative flex h-8 w-8 items-center justify-center rounded-full ${pickupActive ? 'bg-action-primary' : 'bg-gray-400'}`}
+        >
+          {pickupIcon}
+          {pickupActive && (
+            <span
+              aria-hidden
+              className={`pointer-events-none absolute -bottom-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-action-link text-white`}
+            >
+              <Check className="h-2.5 w-2.5" />
+            </span>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
+      ref={containerRef}
       className={`group fixed z-[2147483647] ${sidePosition}`}
-      style={{ top: `${currentPosition * 100}vh` }}
+      style={{ top: `${dockPosition * 100}vh` }}
     >
       <div className={`flex flex-col ${alignItems} gap-2 pr-0 pl-0`}>
-        <button
-          type="button"
-          aria-label={`切换模式（当前：${modeLabel}）`}
-          title={`点击切换模式（当前：${modeLabel}）`}
-          onClick={handleToggleMode}
-          className={`relative ${edgeMargin} flex h-10 w-10 items-center justify-center rounded-full border border-border-primary bg-background-quaternary text-text-secondary transition-transform duration-300 hover:bg-background-secondary group-hover:translate-x-0 group-focus-within:translate-x-0 ${hiddenTranslate}`}
-        >
-          {isVocabMode ? (
-            <SquareCode className="h-5 w-5 text-foreground" />
-          ) : (
-            <Languages className="h-5 w-5 text-foreground" />
-          )}
-        </button>
+        {!isDragging && (
+          <button
+            type="button"
+            aria-label={`切换模式（当前：${modeLabel}）`}
+            title={`点击切换模式（当前：${modeLabel}）`}
+            onClick={handleToggleMode}
+            className={`relative ${edgeMargin} flex h-8 w-8 items-center justify-center rounded-full border border-border-primary bg-background-quaternary text-text-secondary transition-transform duration-300 hover:bg-background-secondary group-hover:translate-x-0 group-focus-within:translate-x-0 ${hiddenTranslate} ${revealOnDrag} ${dragTransition}`}
+          >
+            {isVocabMode ? (
+              <SquareCode className="h-4 w-4 text-foreground" />
+            ) : (
+              <Languages className="h-4 w-4 text-foreground" />
+            )}
+          </button>
+        )}
 
-        <button
-          type="button"
-          aria-label="设置"
-          title="设置"
-          className={`${edgeMargin} flex h-10 w-10 items-center justify-center rounded-full border border-border-primary bg-background-quaternary text-text-secondary transition-transform duration-300 hover:bg-background-secondary group-hover:translate-x-0 group-focus-within:translate-x-0 ${hiddenTranslate}`}
-        >
-          <Settings className="h-5 w-5 text-icon-primary" />
-        </button>
+        {!isDragging && (
+          <button
+            type="button"
+            aria-label="设置"
+            title="设置"
+            className={`${edgeMargin} flex h-8 w-8 items-center justify-center rounded-full border border-border-primary bg-background-quaternary text-text-secondary transition-transform duration-300 hover:bg-background-secondary group-hover:translate-x-0 group-focus-within:translate-x-0 ${hiddenTranslate} ${revealOnDrag} ${dragTransition}`}
+          >
+            <Settings className="h-4 w-4 text-icon-primary" />
+          </button>
+        )}
 
-        <button
-          type="button"
-          aria-label={pickupActive ? '还原原文' : '开始处理'}
-          title={pickupActive ? '点击还原原文' : '点击开始处理'}
-          onMouseDown={handleDragStart}
-          onKeyDown={handleHandleKeyDown}
-          className={`relative flex h-10 w-[60px] items-center ${handlePadding} ${handleRounded} border border-border-primary bg-background-quaternary opacity-70 shadow-lg transition-all duration-300 hover:opacity-100 group-hover:opacity-100 group-hover:translate-x-0 group-focus-within:translate-x-0 ${handleTranslate} ${isDragging ? 'cursor-grabbing' : 'cursor-pointer'}`}
+        <div
+          className={`relative flex h-10 w-[60px] items-center ${handleJustify} ${handlePadding} ${handleRounded} border border-border-primary bg-background-quaternary opacity-70 shadow-lg transition-all duration-300 hover:opacity-100 group-hover:opacity-100 group-hover:translate-x-0 group-focus-within:translate-x-0 ${handleTranslate} ${dragTransition}`}
         >
           <div
-            className={`relative flex h-7 w-7 items-center justify-center rounded-full ${pickupActive ? 'bg-action-primary' : 'bg-gray-400'}`}
+            ref={handleRef}
+            role="button"
+            tabIndex={0}
+            aria-label={pickupActive ? '还原原文' : '开始处理'}
+            title={pickupActive ? '点击还原原文' : '点击开始处理'}
+            onMouseDown={handleDragStart}
+            onKeyDown={handleHandleKeyDown}
+            className={`relative flex h-8 w-8 items-center justify-center rounded-full ${pickupActive ? 'bg-action-primary' : 'bg-gray-400'} ${isDragging ? 'cursor-grabbing' : 'cursor-pointer'} outline-none`}
           >
-            <span className="text-[10px] font-semibold text-white">A</span>
+            {pickupIcon}
             {pickupActive && (
               <span
                 aria-hidden
-                className="absolute -bottom-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-action-link text-white"
+                className="pointer-events-none absolute -bottom-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-action-link text-white"
               >
                 <Check className="h-2.5 w-2.5" />
               </span>
             )}
           </div>
-        </button>
+        </div>
       </div>
     </div>
   );

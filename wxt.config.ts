@@ -12,5 +12,16 @@ export default defineConfig({
     content_security_policy: {
       extension_pages: "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';",
     },
+    web_accessible_resources: [
+      {
+        resources: ['content-scripts/pickupSidebar.css'],
+        use_dynamic_url: true,
+        matches: ['*://*/*'],
+      },
+      {
+        resources: ['wxt.svg', 'wxt-light.svg', 'icon/*.png'],
+        matches: ['*://*/*'],
+      },
+    ],
   },
 });
