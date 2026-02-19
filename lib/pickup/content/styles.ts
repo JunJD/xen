@@ -207,6 +207,8 @@ export function ensurePickupStyles() {
       --xen-pickup-error-outline: #ff4b4b;
       --xen-pickup-error-bg: #fff7f7;
       --xen-pickup-annotated-outline: rgba(14, 116, 144, 0.25);
+      --xen-pickup-highlight-opacity: 45%;
+      --xen-pickup-underline-opacity: 85%;
     }
     :root[data-xen-pickup-theme="dark"] {
       --xen-pickup-loading-outline: rgba(148, 163, 184, 0.55);
@@ -224,12 +226,18 @@ export function ensurePickupStyles() {
       line-height: inherit;
       text-decoration-line: underline;
       text-decoration-style: dashed;
-      text-decoration-color: #415ccc;
+      text-decoration-color: color-mix(in srgb, var(--xen-pickup-accent, #415ccc) var(--xen-pickup-underline-opacity, 85%), transparent);
       text-decoration-thickness: 1.5px;
       text-underline-offset: 2px;
-      background-color: transparent;
+      background-color: color-mix(in srgb, var(--xen-pickup-soft-bg, transparent) var(--xen-pickup-highlight-opacity, 45%), transparent);
       border-radius: 0;
       transition: text-decoration-color 0.15s ease, text-decoration-thickness 0.15s ease;
+    }
+    :root[data-xen-pickup-style="underline"] .xen-pickup-token {
+      background-color: transparent;
+    }
+    :root[data-xen-pickup-style="soft-bg"] .xen-pickup-token {
+      text-decoration-line: none;
     }
     :root[data-xen-pickup-mode="vocab_infusion"] [data-pickup-lane="vocab_infusion"] .xen-pickup-token[data-pickup-original]::after {
       content: attr(data-pickup-original);
@@ -309,12 +317,10 @@ export function ensurePickupStyles() {
       color: rgba(226, 232, 240, 0.68);
     }
     .xen-pickup-token:hover {
-      background-color: transparent;
-      text-decoration-color: #415ccc;
+      text-decoration-color: var(--xen-pickup-accent, #415ccc);
     }
     .xen-pickup-token[data-pickup-active="true"] {
-      background-color: transparent;
-      text-decoration-color: #415ccc;
+      text-decoration-color: var(--xen-pickup-accent, #415ccc);
       text-decoration-thickness: 2px;
       border-radius: 0;
     }

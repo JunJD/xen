@@ -3,6 +3,10 @@ import { DEFAULT_TRANSLATE_PROVIDER, isTranslateProvider } from '@/lib/pickup/tr
 
 const TRANSLATE_PROVIDER_STORAGE_KEY = 'xenTranslateProvider';
 const LLM_API_KEY_STORAGE_KEY = 'xenTranslateLlmApiKey';
+const LLM_MODEL_STORAGE_KEY = 'xenTranslateLlmModel';
+const LLM_MODEL_LIST_STORAGE_KEY = 'xenTranslateLlmModels';
+export const DEFAULT_LLM_MODEL = 'gpt-4o-mini';
+export const DEFAULT_LLM_MODEL_LIST = ['gpt-4o-mini', 'gpt-4o', 'gpt-4.1-mini'];
 
 function getStorageArea() {
   if (typeof chrome !== 'undefined' && chrome.storage?.local) {
@@ -68,10 +72,100 @@ export async function setStoredTranslateProvider(nextProvider: TranslateProvider
   return nextProvider;
 }
 
+export async function ensureTranslateModelStored(
+  fallbackModel: string = DEFAULT_LLM_MODEL,
+): Promise<string> {
+  const raw = await storageGet(LLM_MODEL_STORAGE_KEY);
+  if (typeof raw === 'string' && raw.trim()) {
+    return raw.trim();
+  }
+  await storageSet(LLM_MODEL_STORAGE_KEY, fallbackModel);
+  return fallbackModel;
+}
+
+function normalizeModelList(value: unknown): string[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  const cleaned: string[] = [];
+  value.forEach((item) => {
+    if (typeof item !== 'string') {
+      return;
+    }
+    const trimmed = item.trim();
+    if (!trimmed) {
+      return;
+    }
+    if (cleaned.includes(trimmed)) {
+      return;
+    }
+    cleaned.push(trimmed);
+  });
+  return cleaned;
+}
+
+export async function ensureTranslateModelListStored(
+  fallbackModels: string[] = DEFAULT_LLM_MODEL_LIST,
+): Promise<string[]> {
+  const raw = await storageGet(LLM_MODEL_LIST_STORAGE_KEY);
+  const normalized = normalizeModelList(raw);
+  if (normalized.length > 0) {
+    return normalized;
+  }
+  const fallback = normalizeModelList(fallbackModels);
+  await storageSet(LLM_MODEL_LIST_STORAGE_KEY, fallback);
+  return fallback;
+}
+
+export async function getStoredLlmModelList(): Promise<string[]> {
+  const raw = await storageGet(LLM_MODEL_LIST_STORAGE_KEY);
+  const normalized = normalizeModelList(raw);
+  if (normalized.length > 0) {
+    return normalized;
+  }
+  return ensureTranslateModelListStored(DEFAULT_LLM_MODEL_LIST);
+}
+
+export async function setStoredLlmModelList(nextModels: string[]): Promise<string[]> {
+  const normalized = normalizeModelList(nextModels);
+  if (normalized.length === 0) {
+    throw new Error('LLM model list is empty.');
+  }
+  await storageSet(LLM_MODEL_LIST_STORAGE_KEY, normalized);
+  return normalized;
+}
+
+export async function getStoredLlmModel(): Promise<string> {
+  const raw = await storageGet(LLM_MODEL_STORAGE_KEY);
+  if (typeof raw === 'string' && raw.trim()) {
+    return raw.trim();
+  }
+  return ensureTranslateModelStored(DEFAULT_LLM_MODEL);
+}
+
+export async function setStoredLlmModel(nextModel: string): Promise<string> {
+  const normalized = typeof nextModel === 'string' ? nextModel.trim() : '';
+  if (!normalized) {
+    throw new Error('LLM model is required.');
+  }
+  await storageSet(LLM_MODEL_STORAGE_KEY, normalized);
+  return normalized;
+}
+
 export async function getStoredLlmApiKey(): Promise<string> {
   const raw = await storageGet(LLM_API_KEY_STORAGE_KEY);
   if (typeof raw !== 'string' || !raw.trim()) {
     throw new Error('LLM API key not configured.');
   }
   return raw.trim();
+}
+
+export async function hasStoredLlmApiKey(): Promise<boolean> {
+  const raw = await storageGet(LLM_API_KEY_STORAGE_KEY);
+  return typeof raw === 'string' && raw.trim().length > 0;
+}
+
+export async function setStoredLlmApiKey(nextKey: string): Promise<void> {
+  const normalized = typeof nextKey === 'string' ? nextKey.trim() : '';
+  await storageSet(LLM_API_KEY_STORAGE_KEY, normalized);
 }

@@ -5,6 +5,7 @@ export const MESSAGE_TYPES = {
   translatePreview: 'pickupTranslatePreview',
   translateProviderGet: 'pickupTranslateProviderGet',
   translateProviderSet: 'pickupTranslateProviderSet',
+  openOptions: 'pickupOpenOptions',
 } as const;
 
 export const STATUS_ERROR_CODES = {

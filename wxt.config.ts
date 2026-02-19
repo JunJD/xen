@@ -4,7 +4,11 @@
 export default defineConfig({
   modules: ['@wxt-dev/module-react'],
   manifest: {
-    permissions: ['offscreen', 'storage'],
+    permissions: ['offscreen', 'storage', 'tabs'],
+    options_ui: {
+      page: 'options.html',
+      openInTab: true,
+    },
     host_permissions: [
       'https://translate.googleapis.com/*',
       'https://api.openai.com/*',

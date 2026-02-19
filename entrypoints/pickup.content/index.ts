@@ -20,14 +20,28 @@ import {
   togglePickupRenderMode,
   type PickupRenderMode,
 } from '@/lib/pickup/content/render-mode';
+import { applyPickupStyleSettings } from '@/lib/pickup/content/style-settings';
+import { DEFAULT_PICKUP_SETTINGS, getPickupSettings, isUrlIgnored } from '@/lib/pickup/settings';
 
 export default defineContentScript({
   matches: ['*://*/*'],
   runAt: 'document_idle',
-  main() {
+  async main() {
+    const settings = await getPickupSettings().catch(() => DEFAULT_PICKUP_SETTINGS);
+    if (isUrlIgnored(window.location.href, settings.ignoreList)) {
+      return;
+    }
     const runner = createPickupRunner();
     let currentMode: PickupRenderMode = initPickupRenderMode();
-    runner.start();
+    if (settings.defaultRenderMode && settings.defaultRenderMode !== currentMode) {
+      currentMode = settings.defaultRenderMode;
+      persistPickupRenderMode(currentMode);
+      applyPickupRenderMode(currentMode);
+    }
+    applyPickupStyleSettings(settings);
+    if (settings.enabled) {
+      runner.start();
+    }
 
     const emitState = () => {
       const detail: PickupStateDetail = { active: runner.isStarted(), mode: currentMode };

@@ -623,6 +623,7 @@ export async function applyAnnotations(
 
   if (translationInputs.length > 0) {
     try {
+      debugger
       const translations = await requestTranslationPreview(translationInputs);
       translationOverridesByParagraph = buildTranslationOverrideLookup(translations);
     }
@@ -651,6 +652,7 @@ export async function applyAnnotations(
       appliedIds.add(annotation.id);
       return;
     }
+    debugger
 
     const isInlineLayout = layoutDecision.layout === 'inline';
     const { container, renderedTokens } = isInlineLayout

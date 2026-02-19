@@ -1,0 +1,73 @@
+@import "tailwindcss";
+@import "../../styles/theme.css";
+
+@layer base {
+  :root {
+    --font-family-base: "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+
+    --white: #ffffff;
+    --black: #1f1a14;
+
+    --text-secondary: #2d2924;
+    --text-tertiary: #8b8071;
+    --text-quaternary: #e3dbd1;
+
+    --background-primary: #f3efe9;
+    --background-secondary: #f6f2ec;
+    --background-tertiary: #fbf9f6;
+    --background-quaternary: #ffffff;
+    --background-neutral: #f8f4ee;
+
+    --action-primary: #1f1a14;
+    --action-active: #4a4035;
+    --action-disabled: #b9ada0;
+    --action-secondary: #efe8df;
+    --action-link: #c48a2a;
+
+    --border-primary: #e7e0d6;
+    --border-secondary: #eee7dc;
+    --border-tertiary: #f3ede4;
+
+    --icon-primary: #7f7568;
+
+    --options-accent: #c48a2a;
+    --options-accent-muted: rgba(196, 138, 42, 0.7);
+    --options-accent-soft: rgba(196, 138, 42, 0.12);
+    --options-accent-border: rgba(196, 138, 42, 0.45);
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  html,
+  body,
+  #root {
+    width: 100%;
+    min-height: 100%;
+    margin: 0;
+  }
+
+  body {
+    background: var(--background-tertiary);
+    color: var(--foreground);
+  }
+}
+
+@layer utilities {
+  .options-accent-text {
+    color: var(--options-accent);
+  }
+
+  .options-accent-muted {
+    color: var(--options-accent-muted);
+  }
+
+  .options-accent-bg {
+    background-color: var(--options-accent-soft);
+  }
+
+  .options-accent-border {
+    border-color: var(--options-accent-border);
+  }
+}

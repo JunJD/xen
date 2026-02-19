@@ -37,6 +37,21 @@ export function resolvePickupRenderMode(): PickupRenderMode {
   return DEFAULT_RENDER_MODE;
 }
 
+export function getStoredPickupRenderMode(): PickupRenderMode | null {
+  if (typeof globalThis === 'undefined') {
+    return null;
+  }
+  try {
+    const stored = window.localStorage?.getItem(STORAGE_KEY);
+    if (stored === PICKUP_RENDER_MODE_VOCAB_INFUSION || stored === PICKUP_RENDER_MODE_SYNTAX_REBUILD) {
+      return stored;
+    }
+  } catch {
+    // Ignore storage access issues in restricted contexts.
+  }
+  return null;
+}
+
 export function persistPickupRenderMode(mode: PickupRenderMode) {
   if (typeof globalThis === 'undefined') {
     return;

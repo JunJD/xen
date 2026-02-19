@@ -5,7 +5,8 @@ import type { TranslateProviderAdapter } from '../types';
 type OpenAITranslateProviderOptions = {
   id?: 'llm';
   label?: string;
-  model: string;
+  model?: string;
+  resolveModel?: () => Promise<string>;
   targetLangName: string;
   resolveApiKey: () => Promise<string>;
 };
@@ -17,6 +18,7 @@ export function createOpenAITranslateProvider(
     id = 'llm',
     label = 'OpenAI Translate',
     model,
+    resolveModel,
     targetLangName,
     resolveApiKey,
   } = options;
@@ -29,11 +31,13 @@ export function createOpenAITranslateProvider(
       if (!apiKey) {
         throw new Error('LLM translate requires an API key.');
       }
+      const resolvedModel = resolveModel ? await resolveModel() : model;
+      const modelId = resolvedModel?.trim() || 'gpt-4o-mini';
 
       const openai = createOpenAI({ apiKey });
       const promptTarget = request.targetLangName ?? targetLangName;
       const { text } = await generateText({
-        model: openai(model),
+        model: openai(modelId),
         system: 'You are a translation engine. Translate accurately and return only the translation.',
         prompt: `Translate the following text into ${promptTarget}.\n\n${request.text}`,
         temperature: 0,

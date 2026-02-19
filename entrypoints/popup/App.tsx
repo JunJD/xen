@@ -22,6 +22,33 @@ const INITIAL_MODEL_STATUS: PickupModelStatus = {
   stage: '等待初始化',
 };
 
+async function openOptionsPage() {
+  try {
+    const response = await sendMessage(MESSAGE_TYPES.openOptions);
+    if (response?.ok) {
+      return;
+    }
+  } catch {
+    // Ignore and fallback.
+  }
+  try {
+    if (typeof chrome !== 'undefined' && chrome.tabs?.create && chrome.runtime?.getURL) {
+      await chrome.tabs.create({ url: chrome.runtime.getURL('options.html#general') });
+      return;
+    }
+  } catch {
+    // Ignore and fallback to location-based navigation.
+  }
+  try {
+    if (typeof chrome !== 'undefined' && chrome.runtime?.openOptionsPage) {
+      await chrome.runtime.openOptionsPage();
+      return;
+    }
+  } catch {
+    // Ignore.
+  }
+}
+
 function App() {
   const [isLoggedIn] = useState(true);
   const [notificationCount, setNotificationCount] = useState(2);
@@ -192,7 +219,10 @@ function App() {
         <div className="border-t border-border-primary bg-background-quaternary p-4">
           <div className="flex items-center justify-between">
             <div className="flex gap-2">
-              <button className="flex items-center gap-1.5 rounded bg-action-secondary px-3 py-1.5 text-xs text-black transition-colors hover:bg-text-quaternary">
+              <button
+                className="flex items-center gap-1.5 rounded bg-action-secondary px-3 py-1.5 text-xs text-black transition-colors hover:bg-text-quaternary"
+                onClick={() => void openOptionsPage()}
+              >
                 <Settings className="h-3.5 w-3.5 text-icon-primary" />
                 <span>设置</span>
               </button>

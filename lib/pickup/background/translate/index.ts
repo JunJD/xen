@@ -1,7 +1,13 @@
 import { registerTranslateProvider } from './service';
 import { googleTranslateProvider } from './providers/google';
 import { createOpenAITranslateProvider } from './providers/openai';
-import { getStoredLlmApiKey, ensureTranslateProviderStored } from './storage';
+import {
+  getStoredLlmApiKey,
+  getStoredLlmModel,
+  ensureTranslateModelListStored,
+  ensureTranslateModelStored,
+  ensureTranslateProviderStored,
+} from './storage';
 import { DEFAULT_TRANSLATE_PROVIDER, isTranslateProvider } from '@/lib/pickup/translate/options';
 
 let providersRegistered = false;
@@ -13,9 +19,9 @@ export function ensureTranslateProvidersRegistered() {
   registerTranslateProvider(googleTranslateProvider);
   registerTranslateProvider(
     createOpenAITranslateProvider({
-      model: 'gpt-4o-mini',
       targetLangName: 'Simplified Chinese',
       resolveApiKey: getStoredLlmApiKey,
+      resolveModel: getStoredLlmModel,
     }),
   );
   providersRegistered = true;
@@ -23,6 +29,8 @@ export function ensureTranslateProvidersRegistered() {
 
 export async function ensureTranslateProviderConfig() {
   await ensureTranslateProviderStored(DEFAULT_TRANSLATE_PROVIDER);
+  await ensureTranslateModelStored();
+  await ensureTranslateModelListStored();
 }
 
 export * from './service';

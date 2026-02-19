@@ -14,6 +14,7 @@ import {
   PICKUP_RENDER_MODE_VOCAB_INFUSION,
   type PickupRenderMode,
 } from '@/lib/pickup/content/render-mode';
+import { sendMessage, MESSAGE_TYPES } from '@/lib/pickup/messaging';
 
 export function FloatingSidebar() {
   const [pickupActive, setPickupActive] = useState(true);
@@ -90,6 +91,11 @@ export function FloatingSidebar() {
   const handleToggleMode = () => {
     const detail: PickupControlDetail = { action: PICKUP_CONTROL_ACTION_TOGGLE_MODE };
     window.dispatchEvent(new CustomEvent(PICKUP_CONTROL_EVENT, { detail }));
+  };
+
+  const handleOpenOptions = () => {
+    void sendMessage(MESSAGE_TYPES.openOptions)
+      .catch(() => undefined);
   };
 
   const isVocabMode = pickupMode === PICKUP_RENDER_MODE_VOCAB_INFUSION;
@@ -248,6 +254,7 @@ export function FloatingSidebar() {
             type="button"
             aria-label="设置"
             title="设置"
+            onClick={handleOpenOptions}
             className={`${edgeMargin} flex h-8 w-8 items-center justify-center rounded-full border border-border-primary bg-background-quaternary text-text-secondary transition-transform duration-300 hover:bg-background-secondary group-hover:translate-x-0 group-focus-within:translate-x-0 ${hiddenTranslate} ${revealOnDrag} ${dragTransition}`}
           >
             <Settings className="h-4 w-4 text-icon-primary" />

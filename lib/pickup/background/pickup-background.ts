@@ -36,6 +36,7 @@ import { onMessage } from '@/lib/pickup/messaging';
 import {
   ensureTranslateProviderConfig,
   ensureTranslateProvidersRegistered,
+  getStoredLlmModel,
   getStoredTranslateProvider,
   isTranslateProvider,
   setStoredTranslateProvider,
@@ -73,8 +74,12 @@ export type PickupBackgroundOptions = {
   modelKey?: string | (() => string);
 };
 
-function resolveTranslationModelKey(provider: TranslateProvider) {
-  return `translate:${provider}`;
+async function resolveTranslationModelKey(provider: TranslateProvider) {
+  if (provider !== 'llm') {
+    return `translate:${provider}`;
+  }
+  const model = await getStoredLlmModel().catch(() => 'gpt-4o-mini');
+  return `translate:${provider}:${model}`;
 }
 
 const translationCaches = new Map<string, TranslationCache>();
@@ -295,7 +300,8 @@ async function buildTranslationPreviews(
   if (paragraphs.length === 0) {
     return [];
   }
-  const translationCache = getTranslationCache(resolveTranslationModelKey(provider));
+  const modelKey = await resolveTranslationModelKey(provider);
+  const translationCache = getTranslationCache(modelKey);
   const dictionary = await loadVocabDictionary();
   const previews: PickupTranslateParagraphPreview[] = [];
   let wroteCache = false;
@@ -393,6 +399,29 @@ export function setupPickupBackground(options: PickupBackgroundOptions = {}) {
     }
     const provider = await setStoredTranslateProvider(nextProvider);
     return { provider };
+  });
+
+  onMessage(MESSAGE_TYPES.openOptions, async () => {
+    const optionsUrl = chrome?.runtime?.getURL
+      ? chrome.runtime.getURL('options.html#general')
+      : null;
+    try {
+      if (chrome?.tabs?.create && optionsUrl) {
+        await chrome.tabs.create({ url: optionsUrl });
+        return { ok: true };
+      }
+    } catch (error) {
+      console.warn('Open options page failed:', error);
+    }
+    try {
+      if (chrome?.runtime?.openOptionsPage) {
+        await chrome.runtime.openOptionsPage();
+        return { ok: true };
+      }
+    } catch (error) {
+      console.warn('Fallback openOptionsPage failed:', error);
+    }
+    return { ok: false };
   });
 
   onMessage(MESSAGE_TYPES.translatePreview, async (message) => {
