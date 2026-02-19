@@ -10,7 +10,7 @@ const PICKUP_LANE_ATTR = 'data-pickup-lane';
 const PICKUP_LANE_SYNTAX = 'syntax_rebuild';
 
 const TOOLTIP_FALLBACK_DESC = '暂无解释';
-const MOCK_MEANING_PREFIX_PATTERN = /^(语法|词汇)释义（mock）：?/;
+const PHONE_LINE_PATTERN = /(美式\(US\)|英式\(UK\))/;
 
 let hoverHandlersReady = false;
 let activeGroupId: string | null = null;
@@ -108,7 +108,7 @@ function clampTooltipText(value: string) {
 
 function resolveMeaningDescription(reference: HTMLElement) {
   const raw = String(reference.dataset.pickupMeaning ?? '');
-  const meaning = normalizeTooltipText(raw.replace(MOCK_MEANING_PREFIX_PATTERN, ''));
+  const meaning = normalizeTooltipText(raw);
   if (!meaning) {
     return TOOLTIP_FALLBACK_DESC;
   }
@@ -120,14 +120,28 @@ function createTooltipContent(reference: HTMLElement) {
   root.className = 'xen-pickup-tooltip';
   root.setAttribute('data-pickup-ui', 'true');
 
-  const descriptionLine = document.createElement('div');
-  descriptionLine.className = 'xen-pickup-tooltip-line xen-pickup-tooltip-line-desc';
-  descriptionLine.setAttribute('data-pickup-ui', 'true');
+  const linesRoot = document.createElement('div');
+  linesRoot.className = 'xen-pickup-tooltip-lines';
+  linesRoot.setAttribute('data-pickup-ui', 'true');
 
-  root.append(descriptionLine);
+  root.append(linesRoot);
 
   const update = () => {
-    descriptionLine.textContent = clampTooltipText(resolveMeaningDescription(reference));
+    const content = clampTooltipText(resolveMeaningDescription(reference));
+    const lines = content.split('\n').map(line => line.trim()).filter(Boolean);
+    linesRoot.textContent = '';
+    lines.forEach((line) => {
+      const lineEl = document.createElement('div');
+      lineEl.className = 'xen-pickup-tooltip-line';
+      lineEl.setAttribute('data-pickup-ui', 'true');
+      if (PHONE_LINE_PATTERN.test(line)) {
+        lineEl.classList.add('xen-pickup-tooltip-line-phone');
+      } else {
+        lineEl.classList.add('xen-pickup-tooltip-line-desc');
+      }
+      lineEl.textContent = line;
+      linesRoot.append(lineEl);
+    });
   };
 
   root.addEventListener('pointerdown', (event) => {

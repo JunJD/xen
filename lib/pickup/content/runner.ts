@@ -58,6 +58,7 @@ export function createPickupRunner() {
   }
 
   function collectAndObserve(root: ParentNode = document) {
+    // 第 1 步：解析 DOM → 采集段落 → 建立 elementMap，并把元素挂到 IntersectionObserver。
     const { paragraphs, elementMap } = collectParagraphs(root);
     if (paragraphs.length === 0) {
       return;
@@ -95,6 +96,7 @@ export function createPickupRunner() {
     const batchIds = Array.from(readyQueue);
     readyQueue.clear();
 
+    // 第 2 步：视口命中后批量请求标注 → 渲染 → 决策布局。
     const batch: PendingParagraph[] = [];
     for (const id of batchIds) {
       const item = pending.get(id);

@@ -56,16 +56,11 @@ export type GrammarPointBuilderInput = {
   annotation: PickupAnnotation;
   unitIdsByTokenIndex: Map<number, string>;
   text: string;
-  buildMockMeaning: (token: PickupToken, surface: string) => string;
-  resolveSurface: (token: PickupToken, text: string) => string;
 };
 
 export function buildGrammarPointsFromTokens({
   annotation,
   unitIdsByTokenIndex,
-  text,
-  buildMockMeaning,
-  resolveSurface,
 }: GrammarPointBuilderInput): GrammarPointAst[] {
   const tokenByIndex = new Map<number, PickupToken>();
   const childrenByHead = new Map<number, number[]>();
@@ -199,12 +194,11 @@ export function buildGrammarPointsFromTokens({
       return;
     }
     const subtree = collectSubtree(token.tokenIndex);
-    const surface = resolveSurface(token, text);
     addGrammarPoint(
       `gp:${annotation.id}:pp:${token.tokenIndex}`,
       '介词短语',
       subtree,
-      token.meaning ?? buildMockMeaning(token, surface),
+      token.meaning ?? undefined,
     );
   });
 

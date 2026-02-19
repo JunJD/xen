@@ -9,12 +9,19 @@ export type PageAst = {
   diagnostics: DiagnosticAst[];
 };
 
+// SentenceAst：单句级语法结构（token + 关系 + 语法点），用于渲染与布局判断。
 export type SentenceAst = {
+  /** 句子内部唯一 ID（通常来自 annotation.id） */
   id: string;
+  /** 原始来源 ID（和 DOM 段落/annotation 对齐） */
   sourceId: string;
+  /** 原句文本 */
   text: string;
+  /** 语法单位：token / phrase / clause */
   units: UnitAst[];
+  /** 单位之间的关系：依存 / 短语 / 从句 */
   relations: RelationAst[];
+  /** 从单位关系中抽取的语法点（如被动、从句等） */
   grammarPoints: GrammarPointAst[];
 };
 

@@ -7,6 +7,8 @@ type RawDictEntry = Record<string, unknown>;
 export type VocabDictionaryEntry = {
   plain: string;
   byPos?: Record<string, string[]>;
+  usphone?: string;
+  ukphone?: string;
 };
 
 export type VocabDictionary = Map<string, VocabDictionaryEntry>;
@@ -73,6 +75,13 @@ function normalizeTranslationList(value: unknown): string[] {
     return normalized ? [normalized] : [];
   }
   return [];
+}
+
+function normalizePhoneValue(value: unknown): string {
+  if (typeof value !== 'string') {
+    return '';
+  }
+  return value.trim();
 }
 
 function normalizePosKey(raw: string): string | null {
@@ -189,7 +198,11 @@ function normalizeEntry(entry: RawDictEntry) {
   }
   const plainTranslation = normalizeTranslationValue(entry.transPlain ?? extractTranslation(entry));
   const byPos = normalizeTransByPos(entry.transByPos);
-  if (!plainTranslation && !byPos) {
+  const usphone = normalizePhoneValue(entry.usphone);
+  const ukphone = normalizePhoneValue(entry.ukphone);
+  const hasTranslation = Boolean(plainTranslation) || Boolean(byPos);
+  const hasPhone = Boolean(usphone) || Boolean(ukphone);
+  if (!hasTranslation && !hasPhone) {
     return null;
   }
   return {
@@ -197,6 +210,8 @@ function normalizeEntry(entry: RawDictEntry) {
     entry: {
       plain: plainTranslation,
       byPos,
+      usphone: usphone || undefined,
+      ukphone: ukphone || undefined,
     },
   };
 }
@@ -428,6 +443,36 @@ export function lookupVocabAllPos(text: string, dictionary: VocabDictionary): st
     }
     if (entry.plain) {
       return entry.plain;
+    }
+  }
+  return null;
+}
+
+export function lookupVocabPhones(
+  text: string,
+  dictionary: VocabDictionary,
+): { usphone?: string; ukphone?: string } | null {
+  if (!dictionary || dictionary.size === 0) {
+    return null;
+  }
+  const { core } = splitTokenAffixes(text);
+  if (!core.trim()) {
+    return null;
+  }
+  const normalized = normalizeKey(core);
+  const keys = buildLookupKeys(normalized);
+  for (const key of keys) {
+    const entry = dictionary.get(key);
+    if (!entry) {
+      continue;
+    }
+    const usphone = entry.usphone?.trim() ?? '';
+    const ukphone = entry.ukphone?.trim() ?? '';
+    if (usphone || ukphone) {
+      return {
+        usphone: usphone || undefined,
+        ukphone: ukphone || undefined,
+      };
     }
   }
   return null;

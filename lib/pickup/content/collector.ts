@@ -85,6 +85,7 @@ function walkAndCollectParagraphElements(
   element: HTMLElement,
   paragraphCandidates: Set<HTMLElement>,
 ): WalkResult {
+  // 递归遍历：用“是否含可翻译文本 + 是否是块级结构”组合推断“段落候选”。
   if (!isWalkableElement(element)) {
     return {
       forceBlock: false,
@@ -189,6 +190,7 @@ function collectTopLevelParagraphElements(root: ParentNode) {
 }
 
 export function collectParagraphs(root: ParentNode = document) {
+  // 采集入口：先做“整页英文”判定，非英文页面直接不采集（常见的“段落没加上”原因之一）。
   if (!isPageEnglish()) {
     return { paragraphs: [], elementMap: new Map<string, Element>() };
   }
@@ -199,9 +201,10 @@ export function collectParagraphs(root: ParentNode = document) {
   const elementMap = new Map<string, Element>();
   const timestamp = Date.now();
   let index = 0;
-
+  
   elements.forEach((element) => {
     const text = extractTextContent(element).replace(WHITESPACE_PATTERN, ' ').trim();
+    // 段落级二次筛选：短文本放宽规则，否则必须判定为英文。
     if (text.length < MIN_TEXT_LENGTH) {
       if (!isShortEnglishText(text)) {
         return;

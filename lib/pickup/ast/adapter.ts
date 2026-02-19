@@ -20,14 +20,6 @@ function resolveSpan(token: PickupToken, text: string): [number, number] | null 
   return null;
 }
 
-function buildMockMeaning(token: PickupToken, surface: string) {
-  const category = token.kind === 'grammar' ? '语法' : '词汇';
-  if (surface.trim()) {
-    return `${category}释义（mock）：${surface.trim()}`;
-  }
-  return `${category}释义（mock）`;
-}
-
 function buildUnitId(sentenceId: string, tokenIndex: number | undefined, fallbackIndex: number) {
   const index = typeof tokenIndex === 'number' ? tokenIndex : fallbackIndex;
   return `u:${sentenceId}:${index}`;
@@ -40,6 +32,7 @@ export function buildSentenceAstFromTokens(
     buildGrammarPoints?: (input: GrammarPointBuilderInput) => GrammarPointAst[];
   } = {},
 ): SentenceAst {
+  // 解析阶段：把标注 token（含位置信息）转成 SentenceAst，供后续 render/model & layout 使用。
   const sentenceId = annotation.id;
   const unitIdsByTokenIndex = new Map<number, string>();
 
@@ -61,7 +54,7 @@ export function buildSentenceAstFromTokens(
       dep: token.dep,
       typeId: token.typeId,
       category: token.kind,
-      meaning: token.meaning ?? buildMockMeaning(token, surface),
+      meaning: token.meaning,
       role: resolveRole(token),
     };
   });
@@ -88,8 +81,6 @@ export function buildSentenceAstFromTokens(
     annotation,
     unitIdsByTokenIndex,
     text,
-    buildMockMeaning,
-    resolveSurface,
   });
 
   return {

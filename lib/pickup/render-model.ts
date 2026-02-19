@@ -68,6 +68,7 @@ function toRenderToken(unit: UnitAst, groupMap: Map<string, string>): RenderToke
 }
 
 export function buildRenderModelFromSentenceAst(sentence: SentenceAst): RenderModel {
+  // AST → 渲染模型：把 token 单位转为可渲染的 RenderToken，并按原文顺序排序。
   const groupMap = collectGroupMap(sentence);
   const tokens = sentence.units
     .filter(unit => unit.kind === 'token')

@@ -19,6 +19,7 @@ import {
 import {
   loadVocabDictionary,
   lookupVocabAllPos,
+  lookupVocabPhones,
   lookupVocabTranslation,
   type VocabDictionary,
 } from '@/lib/pickup/vocab/dictionary';
@@ -262,10 +263,13 @@ function buildUnitTranslationPreview(
 ): PickupTranslateUnitPreview {
   const vocabTranslation = lookupVocabTranslation(unit.text, dictionary, unit.pos) ?? '';
   const vocabHint = lookupVocabAllPos(unit.text, dictionary) ?? '';
+  const phones = lookupVocabPhones(unit.text, dictionary);
   return {
     unitId: unit.unitId,
     vocabInfusionText: vocabTranslation,
     vocabInfusionHint: vocabHint,
+    usphone: phones?.usphone,
+    ukphone: phones?.ukphone,
     syntaxRebuildText: '',
     context: unit,
   };

@@ -11,6 +11,9 @@ import { attachPickupInteractions } from './interactions';
 import { requestTranslationPreview } from './transport';
 import { GRAMMAR_ROLE_MEANINGS } from './grammar-role-meanings';
 import type { GrammarPointAst } from '@/lib/pickup/ast/types';
+import { buildLayoutContext } from './layout-rules/context';
+import { decideLayout } from './layout-rules/decide-layout';
+import { DEFAULT_LAYOUT_RULES } from './layout-rules/rules';
 
 const PICKUP_IGNORE_ATTR = 'data-pickup-ignore';
 const PICKUP_CATEGORY_ATTR = 'data-pickup-category';
@@ -29,25 +32,6 @@ const STRUCTURE_ROLE_LABELS = new Set([
   '开放补语',
   '并列分句',
 ]);
-const INLINE_LAYOUT_TAGS = new Set([
-  'SPAN',
-  'A',
-  'B',
-  'STRONG',
-  'EM',
-  'I',
-  'U',
-  'S',
-  'SMALL',
-  'LABEL',
-  'MARK',
-  'ABBR',
-  'CITE',
-  'Q',
-  'CODE',
-  'KBD',
-]);
-const MAX_INLINE_LAYOUT_TEXT_LENGTH = 80;
 
 const LANE_ORIGINAL = 'original';
 const LANE_TARGET = 'target';
@@ -59,7 +43,6 @@ type PickupLane =
   | typeof LANE_VOCAB_INFUSION
   | typeof LANE_SYNTAX_REBUILD;
 
-const MOCK_MEANING_PREFIX_PATTERN = /^(语法|词汇)释义（mock）：/;
 const EMPTY_TEXT = '';
 const TOKEN_AFFIX_PATTERN = /^([^A-Za-z0-9\u4e00-\u9fff]*)(.*?)([^A-Za-z0-9\u4e00-\u9fff]*)$/;
 
@@ -85,6 +68,8 @@ type AnnotatedFragmentResult = {
 type UnitTranslationOverride = {
   vocabInfusionText: string;
   vocabInfusionHint?: string;
+  usphone?: string;
+  ukphone?: string;
   syntaxRebuildText: string;
 };
 
@@ -142,6 +127,7 @@ function buildRenderableTokens(
   let cursor = 0;
 
   tokens.forEach((token) => {
+    // 难点：DOM 归一化后 token 偏移可能漂移，因此只接受单调递增且落在原文范围内的 span。
     const span = resolveTokenSpan(token, sourceText, cursor);
     if (!span) {
       return;
@@ -215,6 +201,7 @@ function buildAnnotatedFragment(
   resolveTokenText: TokenTextResolver = token => token.renderedText,
 ): AnnotatedFragmentResult {
   if (!sourceText) {
+    // 难点：原文为空或丢失时降级为 token-only 渲染，保留注释信息且不破坏 DOM。
     return buildFallbackFragment(tokens, (token) => {
       const fallbackToken: RenderableToken = {
         ...token,
@@ -228,6 +215,7 @@ function buildAnnotatedFragment(
 
   const renderableTokens = buildRenderableTokens(tokens, sourceText);
   if (renderableTokens.length === 0) {
+    // 没有可靠 span：保持原文不改动，避免破坏布局。
     const fallback = document.createDocumentFragment();
     fallback.appendChild(document.createTextNode(sourceText));
     return { fragment: fallback, renderedTokens: [] };
@@ -264,7 +252,6 @@ function normalizeMeaning(rawMeaning: string | undefined) {
     return EMPTY_TEXT;
   }
   return rawMeaning
-    .replace(MOCK_MEANING_PREFIX_PATTERN, EMPTY_TEXT)
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -340,6 +327,8 @@ function buildTranslationOverrideLookup(
       unitLookup.set(unitPreview.unitId, {
         vocabInfusionText: unitPreview.vocabInfusionText,
         vocabInfusionHint: unitPreview.vocabInfusionHint,
+        usphone: unitPreview.usphone,
+        ukphone: unitPreview.ukphone,
         syntaxRebuildText: unitPreview.syntaxRebuildText,
       });
     });
@@ -391,6 +380,7 @@ function buildThreeLaneLayout(
   sourceText: string,
   overrides?: ParagraphTranslationOverride,
 ) {
+  // 核心布局：分层 lane 让原文/译文/词汇/语法互不干扰，方便样式控制。
   const container = document.createElement('div');
   container.className = PICKUP_THREE_LANE_CLASS;
   container.setAttribute(PICKUP_IGNORE_ATTR, 'true');
@@ -466,28 +456,36 @@ function resolveVocabTooltipMeaning(
     return EMPTY_TEXT;
   }
   const override = overrides?.get(token.id);
-  if (override?.vocabInfusionHint?.trim()) {
-    return override.vocabInfusionHint;
+  const meaning = override?.vocabInfusionHint?.trim()
+    || override?.vocabInfusionText?.trim()
+    || EMPTY_TEXT;
+  const lines: string[] = [];
+  const formatPhone = (value: string) => {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return '';
+    }
+    if (trimmed.startsWith('[') || trimmed.startsWith('/')) {
+      return trimmed;
+    }
+    return `/${trimmed}/`;
+  };
+  const usphone = formatPhone(override?.usphone ?? '');
+  const ukphone = formatPhone(override?.ukphone ?? '');
+  const phoneParts: string[] = [];
+  if (usphone) {
+    phoneParts.push(`美式(US) ${usphone}`);
   }
-  if (override?.vocabInfusionText?.trim()) {
-    return override.vocabInfusionText;
+  if (ukphone) {
+    phoneParts.push(`英式(UK) ${ukphone}`);
   }
-  return EMPTY_TEXT;
-}
-
-function shouldUseInlineLayout(element: HTMLElement, sourceText: string) {
-  const style = window.getComputedStyle(element);
-  if (style.display.includes('inline')) {
-    return true;
+  if (phoneParts.length > 0) {
+    lines.push(phoneParts.join('  '));
   }
-  if (sourceText.length > MAX_INLINE_LAYOUT_TEXT_LENGTH) {
-    return false;
+  if (meaning) {
+    lines.push(meaning);
   }
-  const isTruncated = style.whiteSpace === 'nowrap' || style.textOverflow === 'ellipsis';
-  if (INLINE_LAYOUT_TAGS.has(element.tagName) || isTruncated) {
-    return true;
-  }
-  return false;
+  return lines.join('\n');
 }
 
 function decorateRenderedTokens(
@@ -610,6 +608,7 @@ export async function applyAnnotations(
 
     const htmlElement = element as HTMLElement;
     const sourceText = htmlElement.dataset.pickupOriginal ?? htmlElement.textContent ?? EMPTY_TEXT;
+    // 解析：annotation + 原文 → SentenceAst（后续转换成渲染 token）。
     const sentenceAst = buildSentenceAst({ annotation, text: sourceText });
     entries.push({
       annotation,
@@ -634,8 +633,26 @@ export async function applyAnnotations(
 
   entries.forEach(({ annotation, element, sourceText, sentenceAst }) => {
     const overrides = translationOverridesByParagraph.get(annotation.id);
+    // 渲染模型：SentenceAst → RenderModel（token 顺序 + 语法分组）。
     const renderModel = buildRenderModelFromSentenceAst(sentenceAst);
-    const isInlineLayout = shouldUseInlineLayout(element, sourceText);
+    const translationText = overrides?.paragraphText?.trim() || undefined;
+    // 布局上下文：读取元素尺寸/样式 + 文本长度等指标，供规则匹配。
+    const layoutContext = buildLayoutContext({ element, sourceText, translationText });
+    // 规则判定：从多个规则里挑最高优先级的布局决策。
+    const layoutDecision = decideLayout(layoutContext, DEFAULT_LAYOUT_RULES);
+
+    if (layoutDecision.layout === 'ellipsis' && translationText) {
+      element.dataset.pickupMeaning = translationText;
+      element.dataset.pickupLayout = 'ellipsis';
+      element.dataset.pickupProcessed = 'true';
+      element.dataset.pickupStatus = 'done';
+      element.dataset.pickupAnnotated = 'true';
+      attachPickupInteractions([element]);
+      appliedIds.add(annotation.id);
+      return;
+    }
+
+    const isInlineLayout = layoutDecision.layout === 'inline';
     const { container, renderedTokens } = isInlineLayout
       ? buildInlineLayout(sourceText, overrides)
       : buildThreeLaneLayout(renderModel.tokens, sourceText, overrides);

@@ -1,7 +1,8 @@
 import { franc } from 'franc';
 import { getArticleText } from './article';
 
-const ENGLISH_LANG = 'eng';
+// franc 偶尔会把英文判成 Scots（sco），这里按英文处理，避免漏抓。
+const ENGLISH_LANG_CODES = new Set(['eng', 'sco']);
 const MIN_LENGTH_FOR_FRANC = 50;
 const MIN_ALPHA_COUNT = 6;
 const MIN_ENGLISH_RATIO = 0.55;
@@ -37,16 +38,17 @@ export function isEnglishText(text: string) {
   if (code === 'und') {
     return fallbackEnglishHeuristic(text);
   }
-  return code === ENGLISH_LANG;
+  return ENGLISH_LANG_CODES.has(code);
 }
 
 export function isPageEnglish() {
+  // 全局语言门槛：用整页文本做判定，结果会影响后续是否采集任何段落。
   if (cachedPageLang && cachedPageLang.url === window.location.href) {
     return cachedPageLang.isEnglish;
   }
   const articleText = getArticleText();
   const code = detectWithFranc(articleText);
-  const isEnglish = code === ENGLISH_LANG || (code === 'und' && fallbackEnglishHeuristic(articleText));
+  const isEnglish = ENGLISH_LANG_CODES.has(code) || (code === 'und' && fallbackEnglishHeuristic(articleText));
   cachedPageLang = {
     url: window.location.href,
     isEnglish,

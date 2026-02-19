@@ -266,7 +266,6 @@ export function ensurePickupStyles() {
       display: inline;
     }
     .xen-pickup-lane + .xen-pickup-lane {
-      border-top: 1px solid rgba(148, 163, 184, 0.25);
       padding-top: 4px;
     }
     .xen-pickup-inline .xen-pickup-lane + .xen-pickup-lane {
@@ -349,6 +348,12 @@ export function ensurePickupStyles() {
     }
     .xen-pickup-tooltip-line-desc {
       opacity: 0.92;
+    }
+    .xen-pickup-tooltip-line-phone {
+      font-size: 11px;
+      line-height: 1.3;
+      opacity: 0.78;
+      letter-spacing: 0.02em;
     }
     .xen-pickup-tooltip-actions {
       display: inline-flex;
