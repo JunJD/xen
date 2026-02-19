@@ -197,7 +197,7 @@ function normalizeEntry(entry: RawDictEntry) {
     return null;
   }
   const plainTranslation = normalizeTranslationValue(entry.transPlain ?? extractTranslation(entry));
-  const byPos = normalizeTransByPos(entry.transByPos);
+  const byPos = normalizeTransByPos(entry.transByPos) ?? undefined;
   const usphone = normalizePhoneValue(entry.usphone);
   const ukphone = normalizePhoneValue(entry.ukphone);
   const hasTranslation = Boolean(plainTranslation) || Boolean(byPos);
