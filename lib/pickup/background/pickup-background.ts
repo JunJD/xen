@@ -308,7 +308,7 @@ async function buildTranslationPreviews(
       const cached = await translationCache.get(sourceHash);
       const cachedValue = cached?.value?.trim() ?? '';
       if (cachedValue) {
-        paragraphText = cached.value;
+        paragraphText = cached!.value;
       } else {
         paragraphText = await translateText(provider, { text: cleanText });
         if (paragraphText.trim()) {
