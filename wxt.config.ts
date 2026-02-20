@@ -4,6 +4,9 @@
 export default defineConfig({
   modules: ['@wxt-dev/module-react'],
   manifest: {
+    name: 'Xen',
+    description: '沉浸式网页翻译与语法/词汇高亮，支持双模式、忽略名单与 LLM 模型。',
+    version: '0.1.0',
     permissions: ['offscreen', 'storage', 'tabs'],
     options_ui: {
       page: 'options.html',
@@ -27,5 +30,9 @@ export default defineConfig({
         matches: ['*://*/*'],
       },
     ],
+    action: {
+      default_title: 'Xen',
+      default_popup: 'popup.html',
+    },
   },
 });
