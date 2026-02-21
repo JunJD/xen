@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Check, Languages, Settings, SquareCode } from 'lucide-react';
+import { Check, Eye, EyeOff, Languages, Settings, SquareCode } from 'lucide-react';
 import {
   PICKUP_CONTROL_ACTION_QUERY,
   PICKUP_CONTROL_ACTION_TOGGLE_MODE,
@@ -9,16 +9,19 @@ import {
   type PickupControlDetail,
   type PickupStateDetail,
 } from '@/lib/pickup/content/control-events';
+import { applyPickupStyleSettings } from '@/lib/pickup/content/style-settings';
 import {
   PICKUP_RENDER_MODE_SYNTAX_REBUILD,
   PICKUP_RENDER_MODE_VOCAB_INFUSION,
   type PickupRenderMode,
 } from '@/lib/pickup/content/render-mode';
 import { sendMessage, MESSAGE_TYPES } from '@/lib/pickup/messaging';
+import { getPickupSettings, setPickupSettings } from '@/lib/pickup/settings';
 
 export function FloatingSidebar() {
   const [pickupActive, setPickupActive] = useState(true);
   const [pickupMode, setPickupMode] = useState<PickupRenderMode>(PICKUP_RENDER_MODE_SYNTAX_REBUILD);
+  const [translationBlurEnabled, setTranslationBlurEnabled] = useState(false);
   const [dockSide, setDockSide] = useState<'left' | 'right'>('right');
   const [dockPosition, setDockPosition] = useState(0.5);
   const [dragPoint, setDragPoint] = useState<{ x: number; y: number } | null>(null);
@@ -68,6 +71,24 @@ export function FloatingSidebar() {
   }, []);
 
   useEffect(() => {
+    let active = true;
+    const load = async () => {
+      try {
+        const settings = await getPickupSettings();
+        if (active) {
+          setTranslationBlurEnabled(settings.translationBlurEnabled);
+        }
+      } catch {
+        // Ignore load failures.
+      }
+    };
+    void load();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
     try {
       window.localStorage?.setItem('xenPickupSidebarDockSide', dockSide);
     } catch {
@@ -93,6 +114,19 @@ export function FloatingSidebar() {
     window.dispatchEvent(new CustomEvent(PICKUP_CONTROL_EVENT, { detail }));
   };
 
+  const handleToggleTranslationBlur = () => {
+    const nextValue = !translationBlurEnabled;
+    setTranslationBlurEnabled(nextValue);
+    void setPickupSettings({ translationBlurEnabled: nextValue })
+      .then((next) => {
+        setTranslationBlurEnabled(next.translationBlurEnabled);
+        applyPickupStyleSettings(next);
+      })
+      .catch(() => {
+        setTranslationBlurEnabled(prev => !prev);
+      });
+  };
+
   const handleOpenOptions = () => {
     void sendMessage(MESSAGE_TYPES.openOptions)
       .catch(() => undefined);
@@ -100,6 +134,7 @@ export function FloatingSidebar() {
 
   const isVocabMode = pickupMode === PICKUP_RENDER_MODE_VOCAB_INFUSION;
   const modeLabel = isVocabMode ? '原生语法' : '翻译语法';
+  const blurLabel = translationBlurEnabled ? '已开启' : '已关闭';
   const hiddenTranslate = dockSide === 'right' ? 'translate-x-12' : '-translate-x-12';
   const handleTranslate = dockSide === 'right' ? 'translate-x-5' : '-translate-x-5';
   const alignItems = dockSide === 'right' ? 'items-end' : 'items-start';
@@ -245,6 +280,22 @@ export function FloatingSidebar() {
               <SquareCode className="h-4 w-4 text-foreground" />
             ) : (
               <Languages className="h-4 w-4 text-foreground" />
+            )}
+          </button>
+        )}
+
+        {!isDragging && (
+          <button
+            type="button"
+            aria-label={`译文蒙层（${blurLabel}）`}
+            title={`点击切换译文蒙层（${blurLabel}）`}
+            onClick={handleToggleTranslationBlur}
+            className={`relative ${edgeMargin} flex h-8 w-8 items-center justify-center rounded-full border border-border-primary bg-background-quaternary text-text-secondary transition-transform duration-300 hover:bg-background-secondary group-hover:translate-x-0 group-focus-within:translate-x-0 ${hiddenTranslate} ${revealOnDrag} ${dragTransition}`}
+          >
+            {translationBlurEnabled ? (
+              <EyeOff className="h-4 w-4 text-foreground" />
+            ) : (
+              <Eye className="h-4 w-4 text-foreground" />
             )}
           </button>
         )}

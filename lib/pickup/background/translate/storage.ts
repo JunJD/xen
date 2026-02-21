@@ -22,7 +22,7 @@ async function storageGet(key: string): Promise<unknown> {
   if (!storage || !storage.get) {
     throw new Error('Storage unavailable.');
   }
-  const storageGet = storage.get;
+  const storageGet = storage.get.bind(storage);
   return new Promise((resolve, reject) => {
     try {
       storageGet([key], (result) => resolve(result?.[key]));
@@ -37,7 +37,7 @@ async function storageSet(key: string, value: unknown): Promise<void> {
   if (!storage || !storage.set) {
     throw new Error('Storage unavailable.');
   }
-  const storageSet = storage.set;
+  const storageSet = storage.set.bind(storage);
   return new Promise((resolve, reject) => {
     try {
       storageSet({ [key]: value }, () => resolve());

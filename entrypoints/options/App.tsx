@@ -655,6 +655,18 @@ export default function App() {
                   onValueChange={handleOpacityChange}
                 />
               </div>
+
+              <Separator />
+
+              <SettingRow
+                title="译文模糊蒙层"
+                description="给第二语言加上模糊遮罩，避免一眼看到译文。"
+              >
+                <Switch
+                  checked={settings.translationBlurEnabled}
+                  onCheckedChange={(value) => updateSettings({ translationBlurEnabled: value })}
+                />
+              </SettingRow>
             </SectionCard>
 
             <SectionCard

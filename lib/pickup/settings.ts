@@ -12,6 +12,7 @@ export type PickupSettings = {
   ignoreList: string[];
   stylePreset: PickupStylePreset;
   highlightOpacity: number;
+  translationBlurEnabled: boolean;
   floatingSidebarEnabled: boolean;
 };
 
@@ -24,6 +25,7 @@ export const DEFAULT_PICKUP_SETTINGS: PickupSettings = {
   ignoreList: [],
   stylePreset: 'underline-soft',
   highlightOpacity: 45,
+  translationBlurEnabled: false,
   floatingSidebarEnabled: true,
 };
 
@@ -41,7 +43,7 @@ async function storageGet(key: string): Promise<unknown> {
   if (!storage || !storage.get) {
     throw new Error('Storage unavailable.');
   }
-  const storageGet = storage.get;
+  const storageGet = storage.get.bind(storage);
   return new Promise((resolve, reject) => {
     try {
       storageGet([key], (result) => resolve(result?.[key]));
@@ -56,7 +58,7 @@ async function storageSet(key: string, value: unknown): Promise<void> {
   if (!storage || !storage.set) {
     throw new Error('Storage unavailable.');
   }
-  const storageSet = storage.set;
+  const storageSet = storage.set.bind(storage);
   return new Promise((resolve, reject) => {
     try {
       storageSet({ [key]: value }, () => resolve());
@@ -115,6 +117,9 @@ export function normalizePickupSettings(input?: Partial<PickupSettings> | null):
       100,
       DEFAULT_PICKUP_SETTINGS.highlightOpacity,
     ),
+    translationBlurEnabled: typeof input?.translationBlurEnabled === 'boolean'
+      ? input.translationBlurEnabled
+      : DEFAULT_PICKUP_SETTINGS.translationBlurEnabled,
     floatingSidebarEnabled: typeof input?.floatingSidebarEnabled === 'boolean'
       ? input.floatingSidebarEnabled
       : DEFAULT_PICKUP_SETTINGS.floatingSidebarEnabled,

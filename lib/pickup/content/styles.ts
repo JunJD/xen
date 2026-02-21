@@ -264,6 +264,46 @@ export function ensurePickupStyles() {
     .xen-pickup-lane-content {
       line-height: inherit;
     }
+    :root[data-xen-pickup-translation-blur="true"] [data-pickup-lane="target"] .xen-pickup-lane-content {
+      position: relative;
+      filter: blur(4px) saturate(0.6) grayscale(0.28);
+      opacity: 0.6;
+      transition: filter 0.18s ease, opacity 0.18s ease;
+    }
+    :root[data-xen-pickup-translation-blur="true"] [data-pickup-lane="target"] .xen-pickup-lane-content::after {
+      content: '';
+      position: absolute;
+      inset: -1px -2px;
+      pointer-events: none;
+      border-radius: 4px;
+      opacity: 0.9;
+      background: linear-gradient(120deg,
+        color-mix(in srgb, var(--xen-pickup-soft-bg, rgba(248, 250, 252, 0.88)) 68%, transparent),
+        color-mix(in srgb, var(--xen-pickup-soft-bg, rgba(248, 250, 252, 0.88)) 78%, transparent));
+      backdrop-filter: blur(8px) saturate(0.7);
+      -webkit-backdrop-filter: blur(8px) saturate(0.7);
+      transition: opacity 0.18s ease;
+    }
+    :root[data-xen-pickup-theme="dark"][data-xen-pickup-translation-blur="true"] [data-pickup-lane="target"] .xen-pickup-lane-content::after {
+      background: linear-gradient(120deg,
+        color-mix(in srgb, rgba(15, 23, 42, 0.82) 68%, transparent),
+        color-mix(in srgb, rgba(15, 23, 42, 0.86) 78%, transparent));
+    }
+    @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+      :root[data-xen-pickup-translation-blur="true"] [data-pickup-lane="target"] .xen-pickup-lane-content {
+        filter: blur(4.5px) saturate(0.55);
+        opacity: 0.55;
+      }
+    }
+    :root[data-xen-pickup-translation-blur="true"] [data-pickup-lane="target"] .xen-pickup-lane-content:hover,
+    :root[data-xen-pickup-translation-blur="true"] [data-pickup-lane="target"] .xen-pickup-lane-content:focus-within {
+      filter: none;
+      opacity: 1;
+    }
+    :root[data-xen-pickup-translation-blur="true"] [data-pickup-lane="target"] .xen-pickup-lane-content:hover::after,
+    :root[data-xen-pickup-translation-blur="true"] [data-pickup-lane="target"] .xen-pickup-lane-content:focus-within::after {
+      opacity: 0;
+    }
     .xen-pickup-inline {
       display: inline;
     }
