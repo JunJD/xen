@@ -31,19 +31,20 @@ function getStorageArea() {
   if (typeof chrome !== 'undefined' && chrome.storage?.local) {
     return chrome.storage.local;
   }
-  const browserStorage = (globalThis as { browser?: { storage?: { local?: chrome.storage.StorageArea } } })
+  const browserStorage = (globalThis as { browser?: { storage?: { local?: ChromeStorageAreaLike } } })
     .browser?.storage?.local;
   return browserStorage ?? null;
 }
 
 async function storageGet(key: string): Promise<unknown> {
   const storage = getStorageArea();
-  if (!storage) {
+  if (!storage || !storage.get) {
     throw new Error('Storage unavailable.');
   }
+  const storageGet = storage.get;
   return new Promise((resolve, reject) => {
     try {
-      storage.get([key], (result) => resolve(result?.[key]));
+      storageGet([key], (result) => resolve(result?.[key]));
     } catch (error) {
       reject(error);
     }
@@ -52,12 +53,13 @@ async function storageGet(key: string): Promise<unknown> {
 
 async function storageSet(key: string, value: unknown): Promise<void> {
   const storage = getStorageArea();
-  if (!storage) {
+  if (!storage || !storage.set) {
     throw new Error('Storage unavailable.');
   }
+  const storageSet = storage.set;
   return new Promise((resolve, reject) => {
     try {
-      storage.set({ [key]: value }, () => resolve());
+      storageSet({ [key]: value }, () => resolve());
     } catch (error) {
       reject(error);
     }

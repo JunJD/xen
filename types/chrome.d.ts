@@ -18,6 +18,7 @@ interface ChromeRuntimeLike {
   getURL?: (path: string) => string;
   sendMessage?: <TResponse = unknown>(message: unknown) => Promise<TResponse>;
   getContexts?: (query: ChromeRuntimeContextQuery) => Promise<ChromeRuntimeContext[]>;
+  openOptionsPage?: () => Promise<void> | void;
   onInstalled?: { addListener: (callback: () => void) => void };
   onStartup?: { addListener: (callback: () => void) => void };
   onMessage?: { addListener: (callback: ChromeRuntimeMessageListener) => void };
@@ -38,11 +39,14 @@ type ChromeStorageChange = {
 };
 
 interface ChromeStorageAreaLike {
-  get?: (keys?: string | string[] | Record<string, unknown> | null) => Promise<Record<string, unknown>>;
-  set?: (items: Record<string, unknown>) => Promise<void>;
-  remove?: (keys: string | string[]) => Promise<void>;
-  clear?: () => Promise<void>;
-  getBytesInUse?: (keys?: string | string[] | null) => Promise<number>;
+  get?: (
+    keys?: string | string[] | Record<string, unknown> | null,
+    callback?: (items: Record<string, unknown>) => void,
+  ) => Promise<Record<string, unknown>> | void;
+  set?: (items: Record<string, unknown>, callback?: () => void) => Promise<void> | void;
+  remove?: (keys: string | string[], callback?: () => void) => Promise<void> | void;
+  clear?: (callback?: () => void) => Promise<void> | void;
+  getBytesInUse?: (keys?: string | string[] | null, callback?: (bytesInUse: number) => void) => Promise<number> | void;
 }
 
 interface ChromeStorageLike {

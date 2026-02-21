@@ -280,8 +280,8 @@ export default function App() {
     void updateSettings({ stylePreset: preset });
   };
 
-  const handleOpacityChange = (value: number[]) => {
-    const nextValue = value[0];
+  const handleOpacityChange = (value: number | readonly number[]) => {
+    const nextValue = Array.isArray(value) ? value[0] : value;
     if (typeof nextValue !== 'number') {
       return;
     }
@@ -294,14 +294,16 @@ export default function App() {
     setIgnoreText(parsed.join('\n'));
   };
 
-  const handleProviderChange = async (nextProvider: string) => {
-    if (!TRANSLATE_PROVIDERS.includes(nextProvider as typeof TRANSLATE_PROVIDERS[number])) {
+  const handleProviderChange = async (
+    nextProvider: (typeof TRANSLATE_PROVIDERS)[number] | null,
+  ) => {
+    if (!nextProvider) {
       return;
     }
     setSaveStatus('saving');
     try {
-      await setStoredTranslateProvider(nextProvider as typeof TRANSLATE_PROVIDERS[number]);
-      setTranslateProvider(nextProvider as typeof TRANSLATE_PROVIDERS[number]);
+      await setStoredTranslateProvider(nextProvider);
+      setTranslateProvider(nextProvider);
       setSaveStatus('saved');
       window.setTimeout(() => setSaveStatus('idle'), 1200);
     } catch {
@@ -480,7 +482,7 @@ export default function App() {
                             {item.description}
                           </span>
                         </div>
-                        {item.badge ? (
+                        {'badge' in item && item.badge ? (
                           <Badge variant="outline" className="text-[10px] options-accent-text options-accent-border">
                             {item.badge}
                           </Badge>

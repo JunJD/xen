@@ -1,4 +1,4 @@
-import Dexie, { type Table } from 'dexie';
+import Dexie, { type Table, type UpdateSpec } from 'dexie';
 import type { CacheEntry, CacheLayer, CachePruneOptions, CachePruneReport } from '../types';
 
 type DexieCacheOptions = {
@@ -114,7 +114,7 @@ export function createDexieCacheLayer<T>(options: DexieCacheOptions): CacheLayer
       return report;
     },
     async touch(hash, lastAccessed) {
-      await table().update(hash, { lastAccessed });
+      await table().update(hash, { lastAccessed } as UpdateSpec<CacheEntry<T>>);
     },
   };
 }
