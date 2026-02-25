@@ -313,33 +313,10 @@ export async function loadVocabDictionary(): Promise<VocabDictionary> {
 }
 
 function buildLookupKeys(core: string): string[] {
-  const keys = new Set<string>();
   if (!core) {
     return [];
   }
-  keys.add(core);
-  if (core.endsWith("'s")) {
-    keys.add(core.slice(0, -2));
-  }
-  if (core.endsWith('’s')) {
-    keys.add(core.slice(0, -2));
-  }
-  if (core.endsWith('ies') && core.length > 3) {
-    keys.add(`${core.slice(0, -3)}y`);
-  }
-  if (core.endsWith('es') && core.length > 2) {
-    keys.add(core.slice(0, -2));
-  }
-  if (core.endsWith('s') && core.length > 1) {
-    keys.add(core.slice(0, -1));
-  }
-  if (core.endsWith('ing') && core.length > 3) {
-    keys.add(core.slice(0, -3));
-  }
-  if (core.endsWith('ed') && core.length > 2) {
-    keys.add(core.slice(0, -2));
-  }
-  return Array.from(keys);
+  return [core];
 }
 
 function resolvePosKey(pos?: string): string | null {
@@ -357,10 +334,6 @@ function resolvePosKey(pos?: string): string | null {
   return upper;
 }
 
-function joinPosList(list: string[]): string {
-  return list.join('；');
-}
-
 export function lookupVocabTranslation(
   text: string,
   dictionary: VocabDictionary,
@@ -374,50 +347,23 @@ export function lookupVocabTranslation(
     return null;
   }
   const normalized = normalizeKey(core);
-  const keys = buildLookupKeys(normalized);
   const posKey = resolvePosKey(pos);
-  for (const key of keys) {
-    const entry = dictionary.get(key);
-    if (!entry) {
-      continue;
+  const keys = buildLookupKeys(normalized);
+  const entry = keys.length > 0 ? dictionary.get(keys[0]) : undefined;
+  if (!entry) {
+    return null;
+  }
+  if (posKey) {
+    if (entry.byPos?.[posKey]?.length) {
+      return `${prefix}${entry.byPos[posKey][0]}${suffix}`;
     }
-    if (posKey) {
-      if (entry.byPos?.[posKey]?.length) {
-        return `${prefix}${entry.byPos[posKey][0]}${suffix}`;
-      }
-      continue;
-    }
-    if (entry.plain) {
-      return `${prefix}${entry.plain}${suffix}`;
-    }
-    if (entry.byPos) {
-      const first = Object.values(entry.byPos).find(list => list.length > 0);
-      if (first && first.length > 0) {
-        return `${prefix}${joinPosList(first)}${suffix}`;
-      }
-    }
+    return null;
+  }
+  if (entry.plain) {
+    return `${prefix}${entry.plain}${suffix}`;
   }
   return null;
 }
-
-const POS_LABELS: Record<string, string> = {
-  NOUN: 'n.',
-  VERB: 'v.',
-  ADJ: 'adj.',
-  ADV: 'adv.',
-  ADP: 'prep.',
-  PRON: 'pron.',
-  DET: 'det.',
-  NUM: 'num.',
-  CCONJ: 'conj.',
-  SCONJ: 'conj.',
-  AUX: 'aux.',
-  PART: 'part.',
-  PROPN: 'propn.',
-  INTJ: 'int.',
-  SYM: 'sym.',
-  X: 'x.',
-};
 
 export function lookupVocabAllPos(text: string, dictionary: VocabDictionary): string | null {
   if (!dictionary || dictionary.size === 0) {
@@ -429,21 +375,12 @@ export function lookupVocabAllPos(text: string, dictionary: VocabDictionary): st
   }
   const normalized = normalizeKey(core);
   const keys = buildLookupKeys(normalized);
-  for (const key of keys) {
-    const entry = dictionary.get(key);
-    if (!entry) {
-      continue;
-    }
-    if (entry.byPos && Object.keys(entry.byPos).length > 0) {
-      const lines = Object.entries(entry.byPos).map(([pos, list]) => {
-        const label = POS_LABELS[pos] ?? pos.toLowerCase();
-        return `${label} ${joinPosList(list)}`;
-      });
-      return lines.join('\n');
-    }
-    if (entry.plain) {
-      return entry.plain;
-    }
+  const entry = keys.length > 0 ? dictionary.get(keys[0]) : undefined;
+  if (!entry) {
+    return null;
+  }
+  if (entry.plain) {
+    return entry.plain;
   }
   return null;
 }
@@ -461,19 +398,17 @@ export function lookupVocabPhones(
   }
   const normalized = normalizeKey(core);
   const keys = buildLookupKeys(normalized);
-  for (const key of keys) {
-    const entry = dictionary.get(key);
-    if (!entry) {
-      continue;
-    }
-    const usphone = entry.usphone?.trim() ?? '';
-    const ukphone = entry.ukphone?.trim() ?? '';
-    if (usphone || ukphone) {
-      return {
-        usphone: usphone || undefined,
-        ukphone: ukphone || undefined,
-      };
-    }
+  const entry = keys.length > 0 ? dictionary.get(keys[0]) : undefined;
+  if (!entry) {
+    return null;
+  }
+  const usphone = entry.usphone?.trim() ?? '';
+  const ukphone = entry.ukphone?.trim() ?? '';
+  if (usphone || ukphone) {
+    return {
+      usphone: usphone || undefined,
+      ukphone: ukphone || undefined,
+    };
   }
   return null;
 }

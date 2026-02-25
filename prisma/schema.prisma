@@ -1,0 +1,389 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum SourceType {
+  page
+  video
+  pdf
+}
+
+enum SegmentType {
+  sentence
+  paragraph
+  subtitle
+}
+
+enum VocabState {
+  new
+  learning
+  known
+  ignored
+}
+
+enum SubscriptionStatus {
+  trialing
+  active
+  past_due
+  paused
+  canceled
+}
+
+enum TranslationEngine {
+  system
+  openai
+  deepL
+  google
+  azure
+  youdao
+  baidu
+}
+
+model User {
+  id              String            @id @default(uuid())
+  email           String            @unique
+  passwordHash    String?
+  locale          String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  devices         Device[]
+  subscriptions   Subscription[]
+  billingEvents   BillingEvent[]
+  sources         Source[]
+  readingSessions ReadingSession[]
+  highlights      Highlight[]
+  settings        UserSetting[]
+  shortcuts       UserShortcut[]
+  vocab           UserVocab[]
+  reviews         Review[]
+  reviewSchedule  ReviewSchedule[]
+  usageCounters   UsageCounter[]
+}
+
+model Device {
+  id         String   @id @default(uuid())
+  userId     String
+  browser    String
+  installId  String
+  lastSeenAt DateTime?
+  createdAt  DateTime @default(now())
+
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@unique([userId, installId])
+}
+
+model Subscription {
+  id               String             @id @default(uuid())
+  userId           String
+  plan             String
+  status           SubscriptionStatus
+  currentPeriodEnd DateTime?
+  providerRef      String?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  user             User               @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+model BillingEvent {
+  id        String   @id @default(uuid())
+  userId    String
+  type      String
+  payload   Json
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+model Language {
+  id        String   @id @default(uuid())
+  code      String   @unique
+  name      String
+  createdAt DateTime @default(now())
+
+  lexemes   Lexeme[]
+  sources   Source[]
+  settings  UserSetting[]
+}
+
+model Lexeme {
+  id          String   @id @default(uuid())
+  languageId  String
+  lemma       String
+  pos         String?
+  lemmaNorm   String
+  createdAt   DateTime @default(now())
+
+  language    Language @relation(fields: [languageId], references: [id])
+  senses      Sense[]
+  occurrences Occurrence[]
+  vocab       UserVocab[]
+  wordLists   LexemeWordList[]
+
+  @@index([languageId])
+  @@unique([languageId, lemmaNorm])
+}
+
+model Sense {
+  id           String   @id @default(uuid())
+  lexemeId     String
+  definition   String
+  domain       String?
+  example      String?
+  createdAt    DateTime @default(now())
+
+  lexeme       Lexeme   @relation(fields: [lexemeId], references: [id])
+  translations Translation[]
+
+  @@index([lexemeId])
+}
+
+model Translation {
+  id               String   @id @default(uuid())
+  senseId          String
+  targetLanguageId String
+  text             String
+  createdAt        DateTime @default(now())
+
+  sense            Sense    @relation(fields: [senseId], references: [id])
+  targetLanguage   Language @relation(fields: [targetLanguageId], references: [id])
+
+  @@index([senseId])
+  @@index([targetLanguageId])
+}
+
+model WordList {
+  id         String   @id @default(uuid())
+  languageId String
+  name       String
+  level      String?
+  createdAt  DateTime @default(now())
+
+  language   Language @relation(fields: [languageId], references: [id])
+  lexemes    LexemeWordList[]
+
+  @@index([languageId])
+}
+
+model LexemeWordList {
+  lexemeId   String
+  wordListId String
+
+  lexeme     Lexeme   @relation(fields: [lexemeId], references: [id])
+  wordList   WordList @relation(fields: [wordListId], references: [id])
+
+  @@id([lexemeId, wordListId])
+}
+
+model Source {
+  id              String     @id @default(uuid())
+  userId          String
+  type            SourceType
+  url             String
+  urlHash         String
+  title           String?
+  domain          String?
+  languageId      String?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  user            User       @relation(fields: [userId], references: [id])
+  language        Language?  @relation(fields: [languageId], references: [id])
+  segments        Segment[]
+  occurrences     Occurrence[]
+  readingSessions ReadingSession[]
+  highlights      Highlight[]
+
+  @@index([userId])
+  @@index([languageId])
+  @@unique([userId, urlHash])
+}
+
+model Segment {
+  id           String     @id @default(uuid())
+  sourceId     String
+  type         SegmentType
+  startMs      Int?
+  endMs        Int?
+  text         String
+  textHash     String
+  createdAt    DateTime   @default(now())
+
+  source       Source     @relation(fields: [sourceId], references: [id])
+  translations SegmentTranslation[]
+  occurrences  Occurrence[]
+  highlights   Highlight[]
+
+  @@index([sourceId, type])
+  @@unique([sourceId, type, textHash, startMs, endMs])
+}
+
+model SegmentTranslation {
+  id               String            @id @default(uuid())
+  segmentId        String
+  engine           TranslationEngine
+  targetLanguageId String
+  text             String
+  createdAt        DateTime          @default(now())
+
+  segment          Segment           @relation(fields: [segmentId], references: [id])
+  targetLanguage   Language          @relation(fields: [targetLanguageId], references: [id])
+
+  @@index([segmentId])
+  @@index([targetLanguageId])
+  @@unique([segmentId, targetLanguageId, engine])
+}
+
+model Occurrence {
+  id          String  @id @default(uuid())
+  sourceId    String
+  segmentId   String?
+  lexemeId    String
+  startOffset Int
+  endOffset   Int
+
+  source      Source  @relation(fields: [sourceId], references: [id])
+  segment     Segment? @relation(fields: [segmentId], references: [id])
+  lexeme      Lexeme  @relation(fields: [lexemeId], references: [id])
+
+  @@index([sourceId, lexemeId])
+  @@index([segmentId])
+}
+
+model UserVocab {
+  userId      String
+  lexemeId    String
+  state       VocabState
+  familiarity Int       @default(0)
+  lastSeenAt  DateTime?
+  timesSeen   Int       @default(0)
+
+  user        User      @relation(fields: [userId], references: [id])
+  lexeme      Lexeme    @relation(fields: [lexemeId], references: [id])
+
+  @@id([userId, lexemeId])
+}
+
+model Review {
+  id         String   @id @default(uuid())
+  userId     String
+  lexemeId   String
+  result     String
+  ease       Float?
+  reviewedAt DateTime @default(now())
+
+  user       User     @relation(fields: [userId], references: [id])
+  lexeme     Lexeme   @relation(fields: [lexemeId], references: [id])
+
+  @@index([userId])
+  @@index([lexemeId])
+}
+
+model ReviewSchedule {
+  userId   String
+  lexemeId String
+  dueAt    DateTime
+  interval Int
+  ease     Float?
+
+  user     User      @relation(fields: [userId], references: [id])
+  lexeme   Lexeme    @relation(fields: [lexemeId], references: [id])
+
+  @@id([userId, lexemeId])
+}
+
+model ReadingSession {
+  id        String   @id @default(uuid())
+  userId    String
+  sourceId  String
+  startedAt DateTime @default(now())
+  endedAt   DateTime?
+  progress  Float?
+
+  user      User     @relation(fields: [userId], references: [id])
+  source    Source   @relation(fields: [sourceId], references: [id])
+
+  @@index([userId])
+  @@index([sourceId])
+}
+
+model Highlight {
+  id        String   @id @default(uuid())
+  userId    String
+  sourceId  String
+  segmentId String?
+  note      String?
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+  source    Source   @relation(fields: [sourceId], references: [id])
+  segment   Segment? @relation(fields: [segmentId], references: [id])
+
+  @@index([userId])
+  @@index([sourceId])
+}
+
+model UserSetting {
+  id             String   @id @default(uuid())
+  userId         String
+  languageId     String?
+  highlightLevel String?
+  theme          String?
+  showSubtitles  Boolean  @default(true)
+  updatedAt      DateTime @updatedAt
+
+  user           User     @relation(fields: [userId], references: [id])
+  language       Language? @relation(fields: [languageId], references: [id])
+
+  @@unique([userId, languageId])
+}
+
+model UserShortcut {
+  id        String   @id @default(uuid())
+  userId    String
+  action    String
+  keys      String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, action])
+}
+
+model TranslationCache {
+  id         String            @id @default(uuid())
+  textHash   String
+  sourceLang String
+  targetLang String
+  engine     TranslationEngine
+  result     String
+  createdAt  DateTime          @default(now())
+
+  @@unique([textHash, sourceLang, targetLang, engine])
+}
+
+model UsageCounter {
+  id           String   @id @default(uuid())
+  userId       String
+  period       String
+  translations Int      @default(0)
+  subtitles    Int      @default(0)
+  pdfPages     Int      @default(0)
+  updatedAt    DateTime @updatedAt
+
+  user         User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, period])
+}

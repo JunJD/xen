@@ -456,9 +456,7 @@ function resolveVocabTooltipMeaning(
     return EMPTY_TEXT;
   }
   const override = overrides?.get(token.id);
-  const meaning = override?.vocabInfusionHint?.trim()
-    || override?.vocabInfusionText?.trim()
-    || EMPTY_TEXT;
+  const meaning = override?.vocabInfusionHint?.trim() || EMPTY_TEXT;
   const lines: string[] = [];
   const formatPhone = (value: string) => {
     const trimmed = value.trim();
@@ -623,7 +621,6 @@ export async function applyAnnotations(
 
   if (translationInputs.length > 0) {
     try {
-      debugger
       const translations = await requestTranslationPreview(translationInputs);
       translationOverridesByParagraph = buildTranslationOverrideLookup(translations);
     }
@@ -652,7 +649,7 @@ export async function applyAnnotations(
       appliedIds.add(annotation.id);
       return;
     }
-    debugger
+    
 
     const isInlineLayout = layoutDecision.layout === 'inline';
     const { container, renderedTokens } = isInlineLayout
