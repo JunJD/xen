@@ -1,29 +1,32 @@
 import {
-  PICKUP_RENDER_MODE_SYNTAX_REBUILD,
+  PICKUP_RENDER_MODE_VOCAB_INFUSION,
   isPickupRenderMode,
   type PickupRenderMode,
 } from '@/lib/pickup/content/render-mode';
 
-export type PickupStylePreset = 'underline' | 'soft-bg' | 'underline-soft';
+export type PickupAnnotationStyle = 'top' | 'right' | 'none';
+export type PickupHighlightStyle = 'underline' | 'marker' | 'text-color';
 
 export type PickupSettings = {
   enabled: boolean;
   defaultRenderMode: PickupRenderMode;
   ignoreList: string[];
-  stylePreset: PickupStylePreset;
+  annotationStyle: PickupAnnotationStyle;
+  highlightStyle: PickupHighlightStyle;
   highlightOpacity: number;
   translationBlurEnabled: boolean;
   floatingSidebarEnabled: boolean;
 };
 
-const STORAGE_KEY = 'xenPickupSettings';
+export const PICKUP_SETTINGS_STORAGE_KEY = 'xenPickupSettings';
 const MAX_IGNORE_ITEMS = 200;
 
 export const DEFAULT_PICKUP_SETTINGS: PickupSettings = {
   enabled: true,
-  defaultRenderMode: PICKUP_RENDER_MODE_SYNTAX_REBUILD,
+  defaultRenderMode: PICKUP_RENDER_MODE_VOCAB_INFUSION,
   ignoreList: [],
-  stylePreset: 'underline-soft',
+  annotationStyle: 'top',
+  highlightStyle: 'marker',
   highlightOpacity: 45,
   translationBlurEnabled: false,
   floatingSidebarEnabled: true,
@@ -96,11 +99,18 @@ function normalizeIgnoreList(value: unknown): string[] {
   return cleaned.slice(0, MAX_IGNORE_ITEMS);
 }
 
-function normalizeStylePreset(value: unknown): PickupStylePreset {
-  if (value === 'underline' || value === 'soft-bg' || value === 'underline-soft') {
+function normalizeAnnotationStyle(value: unknown): PickupAnnotationStyle {
+  if (value === 'top' || value === 'right' || value === 'none') {
     return value;
   }
-  return DEFAULT_PICKUP_SETTINGS.stylePreset;
+  return DEFAULT_PICKUP_SETTINGS.annotationStyle;
+}
+
+function normalizeHighlightStyle(value: unknown): PickupHighlightStyle {
+  if (value === 'underline' || value === 'marker' || value === 'text-color') {
+    return value;
+  }
+  return DEFAULT_PICKUP_SETTINGS.highlightStyle;
 }
 
 export function normalizePickupSettings(input?: Partial<PickupSettings> | null): PickupSettings {
@@ -110,7 +120,8 @@ export function normalizePickupSettings(input?: Partial<PickupSettings> | null):
       ? input.defaultRenderMode
       : DEFAULT_PICKUP_SETTINGS.defaultRenderMode,
     ignoreList: normalizeIgnoreList(input?.ignoreList),
-    stylePreset: normalizeStylePreset(input?.stylePreset),
+    annotationStyle: normalizeAnnotationStyle(input?.annotationStyle),
+    highlightStyle: normalizeHighlightStyle(input?.highlightStyle),
     highlightOpacity: clampNumber(
       input?.highlightOpacity,
       0,
@@ -127,19 +138,19 @@ export function normalizePickupSettings(input?: Partial<PickupSettings> | null):
 }
 
 export async function getPickupSettings(): Promise<PickupSettings> {
-  const raw = await storageGet(STORAGE_KEY);
+  const raw = await storageGet(PICKUP_SETTINGS_STORAGE_KEY);
   return normalizePickupSettings(raw as Partial<PickupSettings> | null);
 }
 
 export async function setPickupSettings(next: Partial<PickupSettings>): Promise<PickupSettings> {
   const current = await getPickupSettings().catch(() => DEFAULT_PICKUP_SETTINGS);
   const merged = normalizePickupSettings({ ...current, ...next });
-  await storageSet(STORAGE_KEY, merged);
+  await storageSet(PICKUP_SETTINGS_STORAGE_KEY, merged);
   return merged;
 }
 
 export async function resetPickupSettings(): Promise<PickupSettings> {
-  await storageSet(STORAGE_KEY, DEFAULT_PICKUP_SETTINGS);
+  await storageSet(PICKUP_SETTINGS_STORAGE_KEY, DEFAULT_PICKUP_SETTINGS);
   return DEFAULT_PICKUP_SETTINGS;
 }
 

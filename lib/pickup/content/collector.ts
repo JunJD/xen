@@ -18,7 +18,7 @@ import {
   isTextNode,
   isWalkableElement,
 } from './dom';
-import { isEnglishText, isPageEnglish } from './language';
+import { isEnglishText } from './language';
 
 type WalkResult = {
   forceBlock: boolean;
@@ -190,11 +190,6 @@ function collectTopLevelParagraphElements(root: ParentNode) {
 }
 
 export function collectParagraphs(root: ParentNode = document) {
-  // 采集入口：先做“整页英文”判定，非英文页面直接不采集（常见的“段落没加上”原因之一）。
-  if (!isPageEnglish()) {
-    return { paragraphs: [], elementMap: new Map<string, Element>() };
-  }
-
   const elements = collectTopLevelParagraphElements(root);
 
   const paragraphs: PickupParagraph[] = [];

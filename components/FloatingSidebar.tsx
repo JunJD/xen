@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { Check, Eye, EyeOff, Languages, Settings, SquareCode } from 'lucide-react';
+import { Check, Eye, EyeOff, Languages, Settings } from 'lucide-react';
 import {
   PICKUP_CONTROL_ACTION_QUERY,
-  PICKUP_CONTROL_ACTION_TOGGLE_MODE,
+  PICKUP_CONTROL_ACTION_TOGGLE_TRANSLATION,
   PICKUP_CONTROL_ACTION_TOGGLE,
   PICKUP_CONTROL_EVENT,
   PICKUP_STATE_EVENT,
@@ -10,17 +10,12 @@ import {
   type PickupStateDetail,
 } from '@/lib/pickup/content/control-events';
 import { applyPickupStyleSettings } from '@/lib/pickup/content/style-settings';
-import {
-  PICKUP_RENDER_MODE_SYNTAX_REBUILD,
-  PICKUP_RENDER_MODE_VOCAB_INFUSION,
-  type PickupRenderMode,
-} from '@/lib/pickup/content/render-mode';
 import { sendMessage, MESSAGE_TYPES } from '@/lib/pickup/messaging';
 import { getPickupSettings, setPickupSettings } from '@/lib/pickup/settings';
 
 export function FloatingSidebar() {
   const [pickupActive, setPickupActive] = useState(true);
-  const [pickupMode, setPickupMode] = useState<PickupRenderMode>(PICKUP_RENDER_MODE_SYNTAX_REBUILD);
+  const [translationEnabled, setTranslationEnabled] = useState(false);
   const [translationBlurEnabled, setTranslationBlurEnabled] = useState(false);
   const [dockSide, setDockSide] = useState<'left' | 'right'>('right');
   const [dockPosition, setDockPosition] = useState(0.5);
@@ -56,8 +51,8 @@ export function FloatingSidebar() {
       if (typeof customEvent.detail?.active === 'boolean') {
         setPickupActive(customEvent.detail.active);
       }
-      if (customEvent.detail?.mode) {
-        setPickupMode(customEvent.detail.mode);
+      if (typeof customEvent.detail?.translationEnabled === 'boolean') {
+        setTranslationEnabled(customEvent.detail.translationEnabled);
       }
     };
 
@@ -109,8 +104,8 @@ export function FloatingSidebar() {
     window.dispatchEvent(new CustomEvent(PICKUP_CONTROL_EVENT, { detail }));
   };
 
-  const handleToggleMode = () => {
-    const detail: PickupControlDetail = { action: PICKUP_CONTROL_ACTION_TOGGLE_MODE };
+  const handleToggleTranslation = () => {
+    const detail: PickupControlDetail = { action: PICKUP_CONTROL_ACTION_TOGGLE_TRANSLATION };
     window.dispatchEvent(new CustomEvent(PICKUP_CONTROL_EVENT, { detail }));
   };
 
@@ -132,10 +127,9 @@ export function FloatingSidebar() {
       .catch(() => undefined);
   };
 
-  const isVocabMode = pickupMode === PICKUP_RENDER_MODE_VOCAB_INFUSION;
-  const modeLabel = isVocabMode ? '原生语法' : '翻译语法';
-  const blurLabel = translationBlurEnabled ? '已开启' : '已关闭';
-  const hiddenTranslate = dockSide === 'right' ? 'translate-x-12' : '-translate-x-12';
+  const translationLabel = translationEnabled ? '翻译已开启' : '翻译已关闭';
+  const blurLabel = translationBlurEnabled ? '蒙层已开启' : '蒙层已关闭';
+  const hiddenTranslate = dockSide === 'right' ? 'translate-x-16' : '-translate-x-16';
   const handleTranslate = dockSide === 'right' ? 'translate-x-5' : '-translate-x-5';
   const alignItems = dockSide === 'right' ? 'items-end' : 'items-start';
   const sidePosition = dockSide === 'right' ? 'right-0' : 'left-0';
@@ -143,6 +137,8 @@ export function FloatingSidebar() {
   const handlePadding = dockSide === 'right' ? 'pl-1' : 'pr-1';
   const handleJustify = dockSide === 'right' ? 'justify-start' : 'justify-end';
   const edgeMargin = dockSide === 'right' ? 'mr-6' : 'ml-6';
+  const actionCollapsed = `${hiddenTranslate} opacity-0 pointer-events-none`;
+  const actionExpanded = 'group-hover:translate-x-0 group-focus-within:translate-x-0 group-hover:opacity-100 group-focus-within:opacity-100 group-hover:pointer-events-auto group-focus-within:pointer-events-auto';
   const revealOnDrag = isDragging ? 'translate-x-0' : '';
   const dragTransition = isDragging ? 'transition-none' : '';
   const pickupIconSrc = (() => {
@@ -271,16 +267,12 @@ export function FloatingSidebar() {
         {!isDragging && (
           <button
             type="button"
-            aria-label={`切换模式（当前：${modeLabel}）`}
-            title={`点击切换模式（当前：${modeLabel}）`}
-            onClick={handleToggleMode}
-            className={`relative ${edgeMargin} flex h-8 w-8 items-center justify-center rounded-full border border-border-primary bg-background-quaternary text-text-secondary transition-transform duration-300 hover:bg-background-secondary group-hover:translate-x-0 group-focus-within:translate-x-0 ${hiddenTranslate} ${revealOnDrag} ${dragTransition}`}
+            aria-label={`切换翻译（当前：${translationLabel}）`}
+            title={`点击切换翻译（当前：${translationLabel}）`}
+            onClick={handleToggleTranslation}
+            className={`relative ${edgeMargin} flex h-8 w-8 items-center justify-center rounded-full border text-text-secondary transition-all duration-300 hover:bg-background-secondary ${translationEnabled ? 'border-action-link bg-action-link/10' : 'border-border-primary bg-background-quaternary'} ${actionCollapsed} ${actionExpanded} ${revealOnDrag} ${dragTransition}`}
           >
-            {isVocabMode ? (
-              <SquareCode className="h-4 w-4 text-foreground" />
-            ) : (
-              <Languages className="h-4 w-4 text-foreground" />
-            )}
+            <Languages className={`h-4 w-4 ${translationEnabled ? 'text-action-link' : 'text-foreground'}`} />
           </button>
         )}
 
@@ -290,7 +282,7 @@ export function FloatingSidebar() {
             aria-label={`译文蒙层（${blurLabel}）`}
             title={`点击切换译文蒙层（${blurLabel}）`}
             onClick={handleToggleTranslationBlur}
-            className={`relative ${edgeMargin} flex h-8 w-8 items-center justify-center rounded-full border border-border-primary bg-background-quaternary text-text-secondary transition-transform duration-300 hover:bg-background-secondary group-hover:translate-x-0 group-focus-within:translate-x-0 ${hiddenTranslate} ${revealOnDrag} ${dragTransition}`}
+            className={`relative ${edgeMargin} flex h-8 w-8 items-center justify-center rounded-full border border-border-primary bg-background-quaternary text-text-secondary transition-all duration-300 hover:bg-background-secondary ${actionCollapsed} ${actionExpanded} ${revealOnDrag} ${dragTransition}`}
           >
             {translationBlurEnabled ? (
               <EyeOff className="h-4 w-4 text-foreground" />
@@ -306,7 +298,7 @@ export function FloatingSidebar() {
             aria-label="设置"
             title="设置"
             onClick={handleOpenOptions}
-            className={`${edgeMargin} flex h-8 w-8 items-center justify-center rounded-full border border-border-primary bg-background-quaternary text-text-secondary transition-transform duration-300 hover:bg-background-secondary group-hover:translate-x-0 group-focus-within:translate-x-0 ${hiddenTranslate} ${revealOnDrag} ${dragTransition}`}
+            className={`${edgeMargin} flex h-8 w-8 items-center justify-center rounded-full border border-border-primary bg-background-quaternary text-text-secondary transition-all duration-300 hover:bg-background-secondary ${actionCollapsed} ${actionExpanded} ${revealOnDrag} ${dragTransition}`}
           >
             <Settings className="h-4 w-4 text-icon-primary" />
           </button>

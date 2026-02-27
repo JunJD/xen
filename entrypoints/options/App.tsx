@@ -50,7 +50,8 @@ import {
   DEFAULT_PICKUP_SETTINGS,
   getPickupSettings,
   setPickupSettings,
-  type PickupStylePreset,
+  type PickupAnnotationStyle,
+  type PickupHighlightStyle,
 } from '@/lib/pickup/settings';
 import {
   DEFAULT_LLM_MODEL,
@@ -70,16 +71,25 @@ import {
   TRANSLATE_PROVIDER_LABELS,
 } from '@/lib/pickup/translate/options';
 
-const STYLE_PRESETS: Array<{
-  id: PickupStylePreset;
+const ANNOTATION_STYLE_OPTIONS: Array<{
+  id: PickupAnnotationStyle;
   title: string;
   description: string;
 }> = [
-  { id: 'underline', title: '线条', description: '只保留下划线，保持轻量提示。' },
-  { id: 'soft-bg', title: '柔和底色', description: '背景轻提示，阅读更柔和。' },
-  { id: 'underline-soft', title: '线条 + 底色', description: '双重提示，结构最清晰。' },
+  { id: 'top', title: '顶部注解', description: '译文显示在原文上方。' },
+  { id: 'right', title: '右侧注解', description: '译文显示在原文右侧。' },
+  { id: 'none', title: '无注解', description: '只显示原文，不展示译文注解。' },
 ];
 
+const HIGHLIGHT_STYLE_OPTIONS: Array<{
+  id: PickupHighlightStyle;
+  title: string;
+  description: string;
+}> = [
+  { id: 'underline', title: '下划线', description: '用强调下划线标注命中词。' },
+  { id: 'marker', title: '马克笔', description: '用底部渐变高亮标注命中词。' },
+  { id: 'text-color', title: '字体颜色', description: '用文字颜色突出命中词。' },
+];
 const MODE_OPTIONS: Array<{ id: PickupRenderMode; label: string; hint: string }> = [
   { id: PICKUP_RENDER_MODE_SYNTAX_REBUILD, label: '翻译语法', hint: '默认显示结构化译文。' },
   { id: PICKUP_RENDER_MODE_VOCAB_INFUSION, label: '原生语法', hint: '强调原文结构与词汇。' },
@@ -94,8 +104,8 @@ const NAV_ITEMS = [
   },
   {
     id: 'style',
-    title: '译文样式',
-    description: '高亮风格与透明度',
+    title: '注解样式',
+    description: '注解位置与高亮方式',
     icon: SlidersHorizontal,
   },
   {
@@ -202,7 +212,6 @@ export default function App() {
   const [cacheStatus, setCacheStatus] = useState<'idle' | 'clearing' | 'done' | 'error'>('idle');
   const scrollTargetRef = useRef<HTMLDivElement | null>(null);
 
-  const grammarColor = useMemo(() => PICKUP_TYPES[0], []);
   const vocabColor = useMemo(() => PICKUP_TYPES[1], []);
 
   useEffect(() => {
@@ -276,8 +285,12 @@ export default function App() {
     void updateSettings({ defaultRenderMode: mode });
   };
 
-  const handleStyleChange = (preset: PickupStylePreset) => {
-    void updateSettings({ stylePreset: preset });
+  const handleAnnotationStyleChange = (style: PickupAnnotationStyle) => {
+    void updateSettings({ annotationStyle: style });
+  };
+
+  const handleHighlightStyleChange = (style: PickupHighlightStyle) => {
+    void updateSettings({ highlightStyle: style });
   };
 
   const handleOpacityChange = (value: number | readonly number[]) => {
@@ -396,19 +409,19 @@ export default function App() {
     }
   };
 
-  const cacheActionLabel = cacheStatus === 'clearing' ? '清理中…' : '清除缓存';
+  const cacheActionLabel = cacheStatus === 'clearing' ? '清理中...' : '清除缓存';
   const cacheBadge =
     cacheStatus === 'done'
       ? { label: '已清除', variant: 'secondary' as const }
       : cacheStatus === 'error'
         ? { label: '清理失败', variant: 'destructive' as const }
         : cacheStatus === 'clearing'
-          ? { label: '清理中…', variant: 'outline' as const }
+          ? { label: '清理中...', variant: 'outline' as const }
           : { label: '释放空间', variant: 'outline' as const };
 
   const saveBadge =
     saveStatus === 'saving'
-      ? { label: '保存中…', variant: 'secondary' as const }
+      ? { label: '保存中...', variant: 'secondary' as const }
       : saveStatus === 'saved'
         ? { label: '已保存', variant: 'outline' as const }
         : saveStatus === 'error'
@@ -507,7 +520,7 @@ export default function App() {
             >
               <SettingRow
                 title="启用翻译渲染"
-                description="关闭后不再解析页面，但仍保留配置。"
+                description="关闭后不再解析页面，但会保留配置。"
               >
                 <Switch
                   checked={settings.enabled}
@@ -567,7 +580,7 @@ export default function App() {
 
               <SettingRow
                 title="缓存管理"
-                description="清理缓存会移除已解析的语法与译文记录。"
+                description="清理缓存会移除已缓存的语法与译文记录。"
               >
                 <div className="flex flex-wrap items-center gap-2">
                   <Button
@@ -586,50 +599,70 @@ export default function App() {
 
             <SectionCard
               id="style"
-              title="译文显示样式"
-              subtitle="控制高亮方式与透明度"
+              title="注解样式"
+              subtitle="配置注解位置与高亮方式"
               icon={<SlidersHorizontal className="h-4 w-4" />}
             >
               <div className="grid gap-3">
-                <div className="text-sm font-medium text-foreground">高亮方式</div>
+                <div className="text-sm font-medium text-foreground">注解样式</div>
                 <RadioGroup
-                  value={settings.stylePreset}
-                  onValueChange={(value) => handleStyleChange(value as PickupStylePreset)}
+                  value={settings.annotationStyle}
+                  onValueChange={(value) => handleAnnotationStyleChange(value as PickupAnnotationStyle)}
                 >
-                  {STYLE_PRESETS.map(preset => (
+                  {ANNOTATION_STYLE_OPTIONS.map(option => (
                     <label
-                      key={preset.id}
+                      key={option.id}
+                      className={cn(
+                        'flex items-start gap-3 rounded-md border border-border-primary bg-background-quaternary px-3 py-2 transition-colors',
+                        settings.annotationStyle === option.id
+                          ? 'options-accent-border options-accent-bg'
+                          : 'hover:bg-background-secondary'
+                      )}
+                    >
+                      <RadioGroupItem value={option.id} />
+                      <div>
+                        <div className="text-sm font-medium text-foreground">{option.title}</div>
+                        <div className="text-xs text-text-tertiary">{option.description}</div>
+                      </div>
+                    </label>
+                  ))}
+                </RadioGroup>
+              </div>
+
+              <Separator />
+
+              <div className="grid gap-3">
+                <div className="text-sm font-medium text-foreground">高亮样式</div>
+                <RadioGroup
+                  value={settings.highlightStyle}
+                  onValueChange={(value) => handleHighlightStyleChange(value as PickupHighlightStyle)}
+                >
+                  {HIGHLIGHT_STYLE_OPTIONS.map(option => (
+                    <label
+                      key={option.id}
                       className={cn(
                         'flex items-start justify-between gap-3 rounded-md border border-border-primary bg-background-quaternary px-3 py-2 transition-colors',
-                        settings.stylePreset === preset.id
+                        settings.highlightStyle === option.id
                           ? 'options-accent-border options-accent-bg'
                           : 'hover:bg-background-secondary'
                       )}
                     >
                       <div className="flex items-start gap-3">
-                        <RadioGroupItem value={preset.id} />
+                        <RadioGroupItem value={option.id} />
                         <div>
-                          <div className="text-sm font-medium text-foreground">{preset.title}</div>
-                          <div className="text-xs text-text-tertiary">{preset.description}</div>
+                          <div className="text-sm font-medium text-foreground">{option.title}</div>
+                          <div className="text-xs text-text-tertiary">{option.description}</div>
                         </div>
                       </div>
                       <div className="mt-1 flex items-center gap-2 text-[10px] text-text-tertiary">
                         <span
                           className="rounded px-2 py-1"
                           style={{
-                            backgroundColor: preset.id !== 'underline' ? grammarColor.background : 'transparent',
-                            textDecoration: preset.id !== 'soft-bg' ? 'underline dashed' : 'none',
-                            textDecorationColor: grammarColor.border,
-                          }}
-                        >
-                          GR
-                        </span>
-                        <span
-                          className="rounded px-2 py-1"
-                          style={{
-                            backgroundColor: preset.id !== 'underline' ? vocabColor.background : 'transparent',
-                            textDecoration: preset.id !== 'soft-bg' ? 'underline dashed' : 'none',
+                            backgroundColor: option.id === 'marker' ? vocabColor.background : 'transparent',
+                            textDecoration: option.id === 'underline' ? 'underline solid' : 'none',
                             textDecorationColor: vocabColor.border,
+                            color: option.id === 'text-color' ? vocabColor.border : undefined,
+                            fontWeight: option.id === 'text-color' ? 600 : 500,
                           }}
                         >
                           VOC
@@ -660,7 +693,7 @@ export default function App() {
 
               <SettingRow
                 title="译文模糊蒙层"
-                description="给第二语言加上模糊遮罩，避免一眼看到译文。"
+                description="开启后会给译文增加模糊遮罩，减少提前看到译文。"
               >
                 <Switch
                   checked={settings.translationBlurEnabled}
@@ -672,7 +705,7 @@ export default function App() {
             <SectionCard
               id="ignore"
               title="站点忽略名单"
-              subtitle="在这些网站上不进行翻译"
+              subtitle="在这些网站上不进行翻译。"
               icon={<Globe className="h-4 w-4" />}
             >
               <div className="grid gap-3">
@@ -699,14 +732,14 @@ export default function App() {
             >
               <SettingRow
                 title="启用悬浮球"
-                description="关闭后页面不再显示浮标。"
+                description="关闭后页面不再显示悬浮标。"
               >
                 <Switch
                   checked={settings.floatingSidebarEnabled}
                   onCheckedChange={(value) => updateSettings({ floatingSidebarEnabled: value })}
                 />
               </SettingRow>
-              <div className="text-xs text-text-tertiary">悬浮球位置仍保留，可随时重新开启。</div>
+              <div className="text-xs text-text-tertiary">悬浮球位置会保留，可随时重新开启。</div>
             </SectionCard>
 
             <SectionCard

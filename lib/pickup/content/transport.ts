@@ -3,6 +3,7 @@ import type {
   PickupParagraph,
   PickupTranslateParagraphInput,
   PickupTranslateParagraphPreview,
+  TranslateProvider,
 } from '@/lib/pickup/messages';
 import { sendMessage, MESSAGE_TYPES } from '@/lib/pickup/messaging';
 
@@ -11,8 +12,20 @@ export async function requestAnnotations(paragraphs: PickupParagraph[]) {
   return (response?.annotations ?? []) as PickupAnnotation[];
 }
 
-export async function requestTranslationPreview(paragraphs: PickupTranslateParagraphInput[]) {
-  const response = await sendMessage(MESSAGE_TYPES.translatePreview, { paragraphs });
+type RequestTranslationPreviewOptions = {
+  provider?: TranslateProvider;
+  includeParagraphTranslation?: boolean;
+};
+
+export async function requestTranslationPreview(
+  paragraphs: PickupTranslateParagraphInput[],
+  options: RequestTranslationPreviewOptions = {},
+) {
+  const response = await sendMessage(MESSAGE_TYPES.translatePreview, {
+    paragraphs,
+    provider: options.provider,
+    includeParagraphTranslation: options.includeParagraphTranslation,
+  });
   if (!response?.translations) {
     throw new Error('Translation preview failed.');
   }

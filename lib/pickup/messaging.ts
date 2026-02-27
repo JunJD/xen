@@ -14,6 +14,7 @@ interface PickupProtocolMap {
   [MESSAGE_TYPES.translatePreview]: (data: {
     paragraphs: PickupTranslateParagraphInput[];
     provider?: TranslateProvider;
+    includeParagraphTranslation?: boolean;
   }) => Promise<{ translations: PickupTranslateParagraphPreview[] }>;
   [MESSAGE_TYPES.modelWarmup]: () => Promise<{ status: PickupModelStatus }>;
   [MESSAGE_TYPES.modelStatus]: () => Promise<{ status: PickupModelStatus }>;

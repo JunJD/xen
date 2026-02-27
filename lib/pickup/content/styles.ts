@@ -219,43 +219,26 @@ export function ensurePickupStyles() {
       --xen-pickup-error-bg: rgba(127, 29, 29, 0.25);
       --xen-pickup-annotated-outline: rgba(56, 189, 248, 0.25);
     }
-    .xen-pickup-token {
+    xen-pickup-token-wc {
       display: inline;
       color: inherit;
       font: inherit;
       line-height: inherit;
-      text-decoration-line: underline;
-      text-decoration-style: dashed;
-      text-decoration-color: color-mix(in srgb, var(--xen-pickup-accent, #415ccc) var(--xen-pickup-underline-opacity, 85%), transparent);
-      text-decoration-thickness: 1.5px;
-      text-underline-offset: 2px;
-      background-color: color-mix(in srgb, var(--xen-pickup-soft-bg, transparent) var(--xen-pickup-highlight-opacity, 45%), transparent);
-      border-radius: 0;
-      transition: text-decoration-color 0.15s ease, text-decoration-thickness 0.15s ease;
-    }
-    :root[data-xen-pickup-style="underline"] .xen-pickup-token {
-      background-color: transparent;
-    }
-    :root[data-xen-pickup-style="soft-bg"] .xen-pickup-token {
-      text-decoration-line: none;
-    }
-    :root[data-xen-pickup-mode="vocab_infusion"] [data-pickup-lane="vocab_infusion"] .xen-pickup-token[data-pickup-original]::after {
-      content: attr(data-pickup-original);
-      margin-left: 2px;
-      font-size: 0.62em;
-      vertical-align: super;
-      text-decoration: none;
-      cursor: help;
-      opacity: 0.7;
-      color: rgba(71, 85, 105, 0.9);
-    }
-    :root[data-xen-pickup-theme="dark"] [data-pickup-lane="vocab_infusion"] .xen-pickup-token[data-pickup-original]::after {
-      color: rgba(226, 232, 240, 0.85);
     }
     .xen-pickup-three-lane {
       display: flex;
       flex-direction: column;
       gap: 4px;
+      position: relative;
+    }
+    :root[data-xen-pickup-translation-line-enabled="false"] .xen-pickup-three-lane .xen-pickup-lane-target {
+      display: none;
+    }
+    :root[data-xen-pickup-word-line-enabled="false"] .xen-pickup-three-lane .xen-pickup-lane-vocab-infusion {
+      display: none;
+    }
+    .xen-pickup-three-lane .xen-pickup-lane-syntax-rebuild {
+      display: none;
     }
     .xen-pickup-lane {
       margin: 0;
@@ -264,13 +247,13 @@ export function ensurePickupStyles() {
     .xen-pickup-lane-content {
       line-height: inherit;
     }
-    :root[data-xen-pickup-translation-blur="true"] [data-pickup-lane="target"] .xen-pickup-lane-content {
+    :root[data-xen-pickup-translation-blur="true"] .xen-pickup-lane-target .xen-pickup-lane-content.xen-pickup-paragraph-translation {
       position: relative;
       filter: blur(4px) saturate(0.6) grayscale(0.28);
       opacity: 0.6;
       transition: filter 0.18s ease, opacity 0.18s ease;
     }
-    :root[data-xen-pickup-translation-blur="true"] [data-pickup-lane="target"] .xen-pickup-lane-content::after {
+    :root[data-xen-pickup-translation-blur="true"] .xen-pickup-lane-target .xen-pickup-lane-content.xen-pickup-paragraph-translation::after {
       content: '';
       position: absolute;
       inset: -1px -2px;
@@ -284,24 +267,24 @@ export function ensurePickupStyles() {
       -webkit-backdrop-filter: blur(8px) saturate(0.7);
       transition: opacity 0.18s ease;
     }
-    :root[data-xen-pickup-theme="dark"][data-xen-pickup-translation-blur="true"] [data-pickup-lane="target"] .xen-pickup-lane-content::after {
+    :root[data-xen-pickup-theme="dark"][data-xen-pickup-translation-blur="true"] .xen-pickup-lane-target .xen-pickup-lane-content.xen-pickup-paragraph-translation::after {
       background: linear-gradient(120deg,
         color-mix(in srgb, rgba(15, 23, 42, 0.82) 68%, transparent),
         color-mix(in srgb, rgba(15, 23, 42, 0.86) 78%, transparent));
     }
     @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-      :root[data-xen-pickup-translation-blur="true"] [data-pickup-lane="target"] .xen-pickup-lane-content {
+      :root[data-xen-pickup-translation-blur="true"] .xen-pickup-lane-target .xen-pickup-lane-content.xen-pickup-paragraph-translation {
         filter: blur(4.5px) saturate(0.55);
         opacity: 0.55;
       }
     }
-    :root[data-xen-pickup-translation-blur="true"] [data-pickup-lane="target"] .xen-pickup-lane-content:hover,
-    :root[data-xen-pickup-translation-blur="true"] [data-pickup-lane="target"] .xen-pickup-lane-content:focus-within {
+    :root[data-xen-pickup-translation-blur="true"] .xen-pickup-lane-target .xen-pickup-lane-content.xen-pickup-paragraph-translation:hover,
+    :root[data-xen-pickup-translation-blur="true"] .xen-pickup-lane-target .xen-pickup-lane-content.xen-pickup-paragraph-translation:focus-within {
       filter: none;
       opacity: 1;
     }
-    :root[data-xen-pickup-translation-blur="true"] [data-pickup-lane="target"] .xen-pickup-lane-content:hover::after,
-    :root[data-xen-pickup-translation-blur="true"] [data-pickup-lane="target"] .xen-pickup-lane-content:focus-within::after {
+    :root[data-xen-pickup-translation-blur="true"] .xen-pickup-lane-target .xen-pickup-lane-content.xen-pickup-paragraph-translation:hover::after,
+    :root[data-xen-pickup-translation-blur="true"] .xen-pickup-lane-target .xen-pickup-lane-content.xen-pickup-paragraph-translation:focus-within::after {
       opacity: 0;
     }
     .xen-pickup-inline {
@@ -321,12 +304,6 @@ export function ensurePickupStyles() {
       padding-top: 0;
       margin-left: 4px;
     }
-    :root[data-xen-pickup-mode="vocab_infusion"] .xen-pickup-three-lane [data-pickup-lane="syntax_rebuild"] {
-      display: none;
-    }
-    :root[data-xen-pickup-mode="syntax_rebuild"] .xen-pickup-three-lane [data-pickup-lane="vocab_infusion"] {
-      display: none;
-    }
     :root[data-xen-pickup-mode="vocab_infusion"] .xen-pickup-role-badge {
       display: none;
     }
@@ -339,30 +316,22 @@ export function ensurePickupStyles() {
       vertical-align: super;
       cursor: help;
     }
-    .xen-pickup-role-badge[data-pickup-badge="structure"] {
+    .xen-pickup-role-badge.xen-pickup-role-badge-structure {
       color: rgba(14, 116, 144, 0.9);
       font-weight: 700;
     }
-    .xen-pickup-role-badge[data-pickup-badge="token"] {
+    .xen-pickup-role-badge.xen-pickup-role-badge-token {
       color: rgba(71, 85, 105, 0.72);
       font-weight: 600;
     }
     :root[data-xen-pickup-theme="dark"] .xen-pickup-role-badge {
       color: rgba(226, 232, 240, 0.78);
     }
-    :root[data-xen-pickup-theme="dark"] .xen-pickup-role-badge[data-pickup-badge="structure"] {
+    :root[data-xen-pickup-theme="dark"] .xen-pickup-role-badge.xen-pickup-role-badge-structure {
       color: rgba(56, 189, 248, 0.9);
     }
-    :root[data-xen-pickup-theme="dark"] .xen-pickup-role-badge[data-pickup-badge="token"] {
+    :root[data-xen-pickup-theme="dark"] .xen-pickup-role-badge.xen-pickup-role-badge-token {
       color: rgba(226, 232, 240, 0.68);
-    }
-    .xen-pickup-token:hover {
-      text-decoration-color: var(--xen-pickup-accent, #415ccc);
-    }
-    .xen-pickup-token[data-pickup-active="true"] {
-      text-decoration-color: var(--xen-pickup-accent, #415ccc);
-      text-decoration-thickness: 2px;
-      border-radius: 0;
     }
     [data-pickup-annotated="true"] {
       outline: none;
@@ -376,65 +345,190 @@ export function ensurePickupStyles() {
       z-index: 1;
     }
     .xen-pickup-tooltip {
+      width: min(304px, 72vw);
       display: flex;
-      align-items: flex-start;
+      flex-direction: column;
       gap: 8px;
     }
-    .xen-pickup-tooltip-lines {
+    .xen-pickup-tooltip-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .xen-pickup-tooltip-title-wrap {
       min-width: 0;
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: 6px;
     }
     .xen-pickup-tooltip-line {
-      max-width: 280px;
+      max-width: 100%;
       white-space: pre-line;
       overflow: visible;
       text-overflow: clip;
     }
-    .xen-pickup-tooltip-line-desc {
-      opacity: 0.92;
+    .xen-pickup-tooltip-line-main {
+      font-size: 31px;
+      line-height: 1;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: #2f2a24;
+      text-transform: none;
     }
     .xen-pickup-tooltip-line-phone {
-      font-size: 11px;
-      line-height: 1.3;
-      opacity: 0.78;
-      letter-spacing: 0.02em;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      font-size: 12px;
+      line-height: 1.2;
+      color: #5f5243;
+    }
+    .xen-pickup-tooltip-phone-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      border-radius: 8px;
+      border: 1px solid #e6dac8;
+      background: #f3eee6;
+      padding: 2px 6px;
+    }
+    .xen-pickup-tooltip-phone-region {
+      font-weight: 600;
+      color: #685948;
+    }
+    .xen-pickup-tooltip-phone-value {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      letter-spacing: 0.01em;
+      color: #4a3f34;
+    }
+    .xen-pickup-tooltip-divider {
+      height: 1px;
+      background: linear-gradient(90deg, #ff8d2b 0%, rgba(255, 141, 43, 0.26) 100%);
+    }
+    .xen-pickup-tooltip-line-desc {
+      font-size: 14px;
+      line-height: 1.55;
+      color: #2d2a26;
+      white-space: pre-wrap;
+    }
+    .xen-pickup-tooltip-line-words {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 2px;
+    }
+    .xen-pickup-tooltip-word {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 8px;
+      border: 1px solid #e7ddcf;
+      background: #f8f4ed;
+      color: #6b5b49;
+      font-size: 12px;
+      line-height: 1.2;
+      padding: 3px 8px;
+      transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+      cursor: default;
+    }
+    .xen-pickup-tooltip-word:hover {
+      background: #fff1e3;
+      border-color: rgba(255, 122, 0, 0.52);
+      color: #b44a00;
+      transform: translateY(-1px);
     }
     .xen-pickup-tooltip-actions {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      margin-left: 2px;
+      gap: 6px;
       pointer-events: auto;
     }
     .xen-pickup-tooltip-action {
-      border: 0;
-      border-radius: 4px;
-      padding: 1px 6px;
+      border: 1px solid #d9d2c6;
+      border-radius: 999px;
+      width: 22px;
+      height: 22px;
+      padding: 0;
       font: inherit;
       font-size: 11px;
-      line-height: 1.4;
-      color: #e2e8f0;
-      background: rgba(148, 163, 184, 0.24);
+      line-height: 1;
+      font-weight: 600;
+      color: #6d5f50;
+      background: rgba(255, 255, 255, 0.82);
       cursor: pointer;
-      transition: background-color 0.15s ease, color 0.15s ease;
+      transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    }
+    .xen-pickup-tooltip-action:hover {
+      border-color: rgba(255, 122, 0, 0.46);
+      color: #b44a00;
+      background: #fff3e8;
+    }
+    .xen-pickup-tooltip-action:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
     }
     .xen-pickup-tooltip-action[data-pickup-active="true"] {
-      color: #f8fafc;
-      background: rgba(56, 189, 248, 0.38);
+      color: #fff7ef;
+      border-color: #ff8d2b;
+      background: linear-gradient(180deg, #ff9b47 0%, #ff7a00 100%);
     }
     .tippy-box[data-theme~="xen-pickup"] {
-      background: rgba(15, 23, 42, 0.92);
-      color: #f8fafc;
-      border-radius: 6px;
-      font-size: 12px;
-      line-height: 1.4;
-      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.18);
+      background: #f5f1e9;
+      color: #2d2a26;
+      border: 1px solid #e7ddce;
+      border-radius: 12px;
+      font-size: 13px;
+      line-height: 1.45;
+      box-shadow: 0 12px 34px rgba(84, 60, 27, 0.16);
       pointer-events: auto;
     }
     .tippy-box[data-theme~="xen-pickup"] .tippy-content {
-      padding: 6px 8px;
+      padding: 10px 12px;
+    }
+    :root[data-xen-pickup-theme="dark"] .tippy-box[data-theme~="xen-pickup"] {
+      background: #1f2430;
+      color: #e2e8f0;
+      border-color: rgba(226, 232, 240, 0.18);
+      box-shadow: 0 14px 36px rgba(2, 6, 23, 0.45);
+    }
+    :root[data-xen-pickup-theme="dark"] .xen-pickup-tooltip-line-main {
+      color: #f8fafc;
+    }
+    :root[data-xen-pickup-theme="dark"] .xen-pickup-tooltip-line-desc {
+      color: rgba(241, 245, 249, 0.94);
+    }
+    :root[data-xen-pickup-theme="dark"] .xen-pickup-tooltip-line-phone {
+      color: rgba(226, 232, 240, 0.86);
+    }
+    :root[data-xen-pickup-theme="dark"] .xen-pickup-tooltip-phone-chip {
+      border-color: rgba(226, 232, 240, 0.2);
+      background: rgba(148, 163, 184, 0.18);
+    }
+    :root[data-xen-pickup-theme="dark"] .xen-pickup-tooltip-phone-region {
+      color: rgba(248, 250, 252, 0.92);
+    }
+    :root[data-xen-pickup-theme="dark"] .xen-pickup-tooltip-phone-value {
+      color: rgba(226, 232, 240, 0.9);
+    }
+    :root[data-xen-pickup-theme="dark"] .xen-pickup-tooltip-divider {
+      background: linear-gradient(90deg, rgba(255, 149, 64, 0.95) 0%, rgba(255, 149, 64, 0.24) 100%);
+    }
+    :root[data-xen-pickup-theme="dark"] .xen-pickup-tooltip-word {
+      border-color: rgba(255, 170, 96, 0.36);
+      background: rgba(255, 170, 96, 0.14);
+      color: rgba(255, 229, 198, 0.95);
+    }
+    :root[data-xen-pickup-theme="dark"] .xen-pickup-tooltip-word:hover {
+      border-color: rgba(255, 170, 96, 0.62);
+      background: rgba(255, 170, 96, 0.24);
+      color: #fff4e8;
+    }
+    :root[data-xen-pickup-theme="dark"] .xen-pickup-tooltip-action {
+      border-color: rgba(226, 232, 240, 0.22);
+      color: rgba(226, 232, 240, 0.9);
+      background: rgba(148, 163, 184, 0.2);
     }
     [data-pickup-status="loading"] {
       position: relative;

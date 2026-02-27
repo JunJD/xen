@@ -1,7 +1,7 @@
 import type { PickupParagraph } from '@/lib/pickup/messages';
 import { REQUEST_TIMEOUT_MS } from './constants';
 import { collectParagraphs } from './collector';
-import { applyAnnotations } from './render';
+import { applyAnnotations, requestAnnotationTranslationPreview } from './render';
 import { ensurePickupStyles } from './styles';
 import { requestAnnotations } from './transport';
 
@@ -18,8 +18,13 @@ const INITIAL_COLLECT_DELAY_MS = 300;
 const INITIAL_COLLECT_RETRY_COUNT = 2;
 const INITIAL_COLLECT_RETRY_INTERVAL_MS = 1000;
 const READY_STATE_COMPLETE = 'complete';
+const DEFAULT_TRANSLATION_PREVIEW_ENABLED = false;
 
-export function createPickupRunner() {
+type PickupRunnerOptions = {
+  translationPreviewEnabled?: boolean;
+};
+
+export function createPickupRunner(options: PickupRunnerOptions = {}) {
   let isApplying = false;
   let mutationTimer: number | undefined;
   let initialCollectTimer: number | undefined;
@@ -35,6 +40,8 @@ export function createPickupRunner() {
   let contextInvalidated = false;
   let loggedInvalidated = false;
   let started = false;
+  let refreshRequested = false;
+  let translationPreviewEnabled = options.translationPreviewEnabled ?? DEFAULT_TRANSLATION_PREVIEW_ENABLED;
 
   function isExtensionContextInvalidated(error: unknown) {
     const message = error instanceof Error ? error.message : String(error ?? '');
@@ -158,7 +165,12 @@ export function createPickupRunner() {
         });
         return;
       }
-      await applyAnnotations(annotations, elementMap);
+      const translationOverridesByParagraph = await requestAnnotationTranslationPreview(
+        annotations,
+        elementMap,
+        { includeParagraphTranslation: translationPreviewEnabled },
+      );
+      await applyAnnotations(annotations, elementMap, { translationOverridesByParagraph });
     }
     catch (error) {
       window.clearTimeout(timeoutId);
@@ -174,6 +186,11 @@ export function createPickupRunner() {
     finally {
       batch.forEach(item => pending.delete(item.id));
       isApplying = false;
+      if (refreshRequested) {
+        refreshRequested = false;
+        refresh();
+        return;
+      }
       if (readyQueue.size > 0) {
         void processQueue();
       }
@@ -274,6 +291,29 @@ export function createPickupRunner() {
     });
   }
 
+  function refresh() {
+    if (!started || contextInvalidated) {
+      return;
+    }
+    if (isApplying) {
+      refreshRequested = true;
+      return;
+    }
+    if (mutationTimer) {
+      window.clearTimeout(mutationTimer);
+      mutationTimer = undefined;
+    }
+    pending.clear();
+    readyQueue.clear();
+    intersectionObserver?.disconnect();
+    restoreAnnotatedContent();
+    if (!isCollectionEnabled) {
+      hasDeferredCollect = true;
+      return;
+    }
+    collectAndObserve();
+  }
+
   function start() {
     if (started) {
       return;
@@ -318,6 +358,7 @@ export function createPickupRunner() {
     intersectionObserver = null;
     isCollectionEnabled = false;
     hasDeferredCollect = false;
+    refreshRequested = false;
     pending.clear();
     readyQueue.clear();
   }
@@ -326,6 +367,16 @@ export function createPickupRunner() {
     start,
     stop,
     restore: restoreAnnotatedContent,
+    refresh,
+    isTranslationPreviewEnabled: () => translationPreviewEnabled,
+    setTranslationPreviewEnabled: (enabled: boolean) => {
+      if (translationPreviewEnabled === enabled) {
+        return false;
+      }
+      translationPreviewEnabled = enabled;
+      refresh();
+      return true;
+    },
     isStarted: () => started,
   };
 }

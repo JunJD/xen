@@ -296,13 +296,18 @@ function buildParagraphTranslationPreview(
 async function buildTranslationPreviews(
   paragraphs: PickupTranslateParagraphInput[],
   provider: TranslateProvider,
+  options: { includeParagraphTranslation?: boolean } = {},
 ): Promise<PickupTranslateParagraphPreview[]> {
   if (paragraphs.length === 0) {
     return [];
   }
+  const includeParagraphTranslation = options.includeParagraphTranslation !== false;
+  const dictionary = await loadVocabDictionary();
+  if (!includeParagraphTranslation) {
+    return paragraphs.map(paragraph => buildParagraphTranslationPreview(paragraph, dictionary, ''));
+  }
   const modelKey = await resolveTranslationModelKey(provider);
   const translationCache = getTranslationCache(modelKey);
-  const dictionary = await loadVocabDictionary();
   const previews: PickupTranslateParagraphPreview[] = [];
   let wroteCache = false;
   for (const paragraph of paragraphs) {
@@ -429,7 +434,10 @@ export function setupPickupBackground(options: PickupBackgroundOptions = {}) {
     const provider = isTranslateProvider(message.data?.provider)
       ? message.data.provider
       : await getStoredTranslateProvider();
-    const translations = await buildTranslationPreviews(paragraphs, provider);
+    const includeParagraphTranslation = message.data?.includeParagraphTranslation !== false;
+    const translations = await buildTranslationPreviews(paragraphs, provider, {
+      includeParagraphTranslation,
+    });
     return { translations };
   });
 }

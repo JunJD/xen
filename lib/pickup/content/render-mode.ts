@@ -5,7 +5,7 @@ export type PickupRenderMode =
   | typeof PICKUP_RENDER_MODE_VOCAB_INFUSION
   | typeof PICKUP_RENDER_MODE_SYNTAX_REBUILD;
 
-const DEFAULT_RENDER_MODE = PICKUP_RENDER_MODE_SYNTAX_REBUILD;
+const DEFAULT_RENDER_MODE = PICKUP_RENDER_MODE_VOCAB_INFUSION;
 const GLOBAL_MODE_KEY = '__xenPickupRenderMode';
 const STORAGE_KEY = 'xenPickupRenderMode';
 const DATASET_KEY = 'xenPickupMode';

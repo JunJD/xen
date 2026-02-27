@@ -389572,7 +389572,12 @@
     ],
     "usphone": "ˈvɜːʃənz",
     "ukphone": "ˈvɜrʒənz",
-    "transPlain": "版本"
+    "transPlain": "版本",
+    "transByPos": {
+      "NOUN": [
+        "版本"
+      ]
+    }
   },
   {
     "name": "assumptions",

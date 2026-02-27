@@ -6,6 +6,7 @@ import {
   PICKUP_CONTROL_ACTION_STOP,
   PICKUP_CONTROL_ACTION_TOGGLE,
   PICKUP_CONTROL_ACTION_TOGGLE_MODE,
+  PICKUP_CONTROL_ACTION_TOGGLE_TRANSLATION,
   PICKUP_CONTROL_EVENT,
   PICKUP_STATE_EVENT,
   type PickupControlDetail,
@@ -21,7 +22,25 @@ import {
   type PickupRenderMode,
 } from '@/lib/pickup/content/render-mode';
 import { applyPickupStyleSettings } from '@/lib/pickup/content/style-settings';
-import { DEFAULT_PICKUP_SETTINGS, getPickupSettings, isUrlIgnored } from '@/lib/pickup/settings';
+import {
+  applyPickupTranslationPreviewEnabled,
+  initPickupTranslationPreviewEnabled,
+  persistPickupTranslationPreviewEnabled,
+} from '@/lib/pickup/content/translation-preview-mode';
+import {
+  DEFAULT_PICKUP_SETTINGS,
+  PICKUP_SETTINGS_STORAGE_KEY,
+  getPickupSettings,
+  isUrlIgnored,
+  normalizePickupSettings,
+  type PickupSettings,
+} from '@/lib/pickup/settings';
+
+type StorageChangeRecord = Record<string, { newValue?: unknown }>;
+type StorageOnChangedLike = {
+  addListener?: (callback: (changes: StorageChangeRecord, areaName?: string) => void) => void;
+  removeListener?: (callback: (changes: StorageChangeRecord, areaName?: string) => void) => void;
+};
 
 export default defineContentScript({
   matches: ['*://*/*'],
@@ -31,7 +50,8 @@ export default defineContentScript({
     if (isUrlIgnored(window.location.href, settings.ignoreList)) {
       return;
     }
-    const runner = createPickupRunner();
+    let translationEnabled = initPickupTranslationPreviewEnabled();
+    const runner = createPickupRunner({ translationPreviewEnabled: translationEnabled });
     let currentMode: PickupRenderMode = initPickupRenderMode();
     if (settings.defaultRenderMode && settings.defaultRenderMode !== currentMode) {
       currentMode = settings.defaultRenderMode;
@@ -39,12 +59,34 @@ export default defineContentScript({
       applyPickupRenderMode(currentMode);
     }
     applyPickupStyleSettings(settings);
+
+    const safeStartRunner = () => {
+      try {
+        runner.start();
+      } catch (error) {
+        console.error('Pickup runner start failed:', error);
+      }
+    };
+
+    const safeStopRunner = () => {
+      try {
+        runner.stop();
+        runner.restore();
+      } catch (error) {
+        console.error('Pickup runner stop failed:', error);
+      }
+    };
+
     if (settings.enabled) {
-      runner.start();
+      safeStartRunner();
     }
 
     const emitState = () => {
-      const detail: PickupStateDetail = { active: runner.isStarted(), mode: currentMode };
+      const detail: PickupStateDetail = {
+        active: runner.isStarted(),
+        mode: currentMode,
+        translationEnabled,
+      };
       window.dispatchEvent(new CustomEvent(PICKUP_STATE_EVENT, { detail }));
     };
 
@@ -61,24 +103,22 @@ export default defineContentScript({
       }
 
       if (action === PICKUP_CONTROL_ACTION_START) {
-        runner.start();
+        safeStartRunner();
         emitState();
         return;
       }
 
       if (action === PICKUP_CONTROL_ACTION_STOP) {
-        runner.stop();
-        runner.restore();
+        safeStopRunner();
         emitState();
         return;
       }
 
       if (action === PICKUP_CONTROL_ACTION_TOGGLE) {
         if (runner.isStarted()) {
-          runner.stop();
-          runner.restore();
+          safeStopRunner();
         } else {
-          runner.start();
+          safeStartRunner();
         }
         emitState();
         return;
@@ -104,9 +144,58 @@ export default defineContentScript({
         emitState();
         return;
       }
+
+      if (action === PICKUP_CONTROL_ACTION_TOGGLE_TRANSLATION) {
+        translationEnabled = !translationEnabled;
+        persistPickupTranslationPreviewEnabled(translationEnabled);
+        applyPickupTranslationPreviewEnabled(translationEnabled);
+        runner.setTranslationPreviewEnabled(translationEnabled);
+        emitState();
+      }
     };
 
     window.addEventListener(PICKUP_CONTROL_EVENT, handleControl as EventListener);
+
+    const storageOnChanged: StorageOnChangedLike | undefined = (typeof chrome !== 'undefined' && chrome.storage?.onChanged)
+      ? chrome.storage.onChanged
+      : (globalThis as { browser?: { storage?: { onChanged?: StorageOnChangedLike } } })
+          .browser?.storage?.onChanged;
+
+    const handleSettingsStorageChanged = (changes: StorageChangeRecord, areaName?: string) => {
+      if (areaName && areaName !== 'local') {
+        return;
+      }
+      const change = changes[PICKUP_SETTINGS_STORAGE_KEY];
+      if (!change || typeof change !== 'object') {
+        return;
+      }
+
+      const nextSettings = normalizePickupSettings(change.newValue as Partial<PickupSettings>);
+      if (isUrlIgnored(window.location.href, nextSettings.ignoreList)) {
+        if (runner.isStarted()) {
+          safeStopRunner();
+          emitState();
+        }
+        return;
+      }
+
+      applyPickupStyleSettings(nextSettings);
+
+      if (nextSettings.enabled && !runner.isStarted()) {
+        safeStartRunner();
+      } else if (!nextSettings.enabled && runner.isStarted()) {
+        safeStopRunner();
+      }
+      emitState();
+    };
+
+    storageOnChanged?.addListener?.(handleSettingsStorageChanged);
+    window.addEventListener(
+      'pagehide',
+      () => storageOnChanged?.removeListener?.(handleSettingsStorageChanged),
+      { once: true },
+    );
+
     emitState();
   },
 });
