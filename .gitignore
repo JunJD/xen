@@ -8,10 +8,13 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
+**/node_modules
 .output
+**/.output
+.wxt
+**/.wxt
 stats.html
 stats-*.json
-.wxt
 web-ext.config.ts
 
 # Editor directories and files
