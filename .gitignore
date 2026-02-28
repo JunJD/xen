@@ -11,6 +11,8 @@ node_modules
 **/node_modules
 .output
 **/.output
+.next
+**/.next
 .wxt
 **/.wxt
 stats.html

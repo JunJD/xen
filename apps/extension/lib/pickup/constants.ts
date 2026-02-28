@@ -6,6 +6,9 @@ export const MESSAGE_TYPES = {
   translateProviderGet: 'pickupTranslateProviderGet',
   translateProviderSet: 'pickupTranslateProviderSet',
   authTokenGet: 'pickupAuthTokenGet',
+  authStatusGet: 'pickupAuthStatusGet',
+  authSignOut: 'pickupAuthSignOut',
+  authOpen: 'pickupAuthOpen',
   openOptions: 'pickupOpenOptions',
 } as const;
 

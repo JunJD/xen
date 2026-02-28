@@ -42,6 +42,40 @@ type StorageOnChangedLike = {
   removeListener?: (callback: (changes: StorageChangeRecord, areaName?: string) => void) => void;
 };
 
+const PAGE_ENABLED_STORAGE_PREFIX = 'xenPickupPageEnabled:';
+
+function getPageEnabledStorageKey() {
+  try {
+    const parsed = new URL(window.location.href);
+    return `${PAGE_ENABLED_STORAGE_PREFIX}${parsed.hostname.toLowerCase()}`;
+  } catch {
+    return `${PAGE_ENABLED_STORAGE_PREFIX}${window.location.hostname || window.location.href}`;
+  }
+}
+
+function resolveStoredPageEnabled(defaultValue = true) {
+  try {
+    const stored = window.localStorage?.getItem(getPageEnabledStorageKey());
+    if (stored === 'true') {
+      return true;
+    }
+    if (stored === 'false') {
+      return false;
+    }
+  } catch {
+    // Ignore storage access issues in restricted contexts.
+  }
+  return defaultValue;
+}
+
+function persistPageEnabled(enabled: boolean) {
+  try {
+    window.localStorage?.setItem(getPageEnabledStorageKey(), enabled ? 'true' : 'false');
+  } catch {
+    // Ignore storage access issues in restricted contexts.
+  }
+}
+
 export default defineContentScript({
   matches: ['*://*/*'],
   runAt: 'document_idle',
@@ -51,6 +85,7 @@ export default defineContentScript({
       return;
     }
     let translationEnabled = initPickupTranslationPreviewEnabled();
+    let pageEnabled = resolveStoredPageEnabled(true);
     const runner = createPickupRunner({ translationPreviewEnabled: translationEnabled });
     let currentMode: PickupRenderMode = initPickupRenderMode();
     if (settings.defaultRenderMode && settings.defaultRenderMode !== currentMode) {
@@ -77,7 +112,7 @@ export default defineContentScript({
       }
     };
 
-    if (settings.enabled) {
+    if (settings.enabled && pageEnabled) {
       safeStartRunner();
     }
 
@@ -104,12 +139,16 @@ export default defineContentScript({
 
       if (action === PICKUP_CONTROL_ACTION_START) {
         safeStartRunner();
+        pageEnabled = true;
+        persistPageEnabled(pageEnabled);
         emitState();
         return;
       }
 
       if (action === PICKUP_CONTROL_ACTION_STOP) {
         safeStopRunner();
+        pageEnabled = false;
+        persistPageEnabled(pageEnabled);
         emitState();
         return;
       }
@@ -120,6 +159,8 @@ export default defineContentScript({
         } else {
           safeStartRunner();
         }
+        pageEnabled = runner.isStarted();
+        persistPageEnabled(pageEnabled);
         emitState();
         return;
       }
@@ -181,9 +222,9 @@ export default defineContentScript({
 
       applyPickupStyleSettings(nextSettings);
 
-      if (nextSettings.enabled && !runner.isStarted()) {
+      if (nextSettings.enabled && pageEnabled && !runner.isStarted()) {
         safeStartRunner();
-      } else if (!nextSettings.enabled && runner.isStarted()) {
+      } else if ((!nextSettings.enabled || !pageEnabled) && runner.isStarted()) {
         safeStopRunner();
       }
       emitState();

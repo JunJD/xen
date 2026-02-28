@@ -21,6 +21,9 @@ interface PickupProtocolMap {
   [MESSAGE_TYPES.translateProviderGet]: () => Promise<{ provider: TranslateProvider }>;
   [MESSAGE_TYPES.translateProviderSet]: (data: { provider: TranslateProvider }) => Promise<{ provider: TranslateProvider }>;
   [MESSAGE_TYPES.authTokenGet]: () => Promise<{ token: string | null }>;
+  [MESSAGE_TYPES.authStatusGet]: () => Promise<{ enabled: boolean; authenticated: boolean; userId: string | null }>;
+  [MESSAGE_TYPES.authSignOut]: () => Promise<{ ok: boolean }>;
+  [MESSAGE_TYPES.authOpen]: (data: { mode: 'sign-in' | 'sign-up' }) => Promise<{ ok: boolean; tabId: number }>;
   [MESSAGE_TYPES.openOptions]: () => Promise<{ ok: boolean }>;
 }
 

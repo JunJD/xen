@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "pnpm --filter @xen/extension dev",
     "dev:extension": "pnpm --filter @xen/extension dev",
+    "dev:web": "pnpm --filter @xen/web dev",
     "build": "pnpm -r build",
+    "build:web": "pnpm --filter @xen/web build",
     "compile": "pnpm -r compile",
     "test": "pnpm -r test"
   },

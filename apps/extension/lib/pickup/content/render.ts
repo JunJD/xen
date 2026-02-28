@@ -8,6 +8,7 @@ import type { SentenceAst, UnitAst } from '@/lib/pickup/ast/types';
 import { buildRenderModelFromSentenceAst, type RenderToken } from '@/lib/pickup/render-model';
 import { getPickupTypeById } from '@/lib/pickup/pickup-types';
 import { attachPickupInteractions, type PickupInteractionTarget } from './interactions';
+import { extractTextContentWithSegments } from './dom';
 import {
   applyPickupTokenRuby,
   createPickupTokenElement,
@@ -19,12 +20,7 @@ const PICKUP_IGNORE_ATTR = 'data-pickup-ignore';
 const PICKUP_ACCENT_VARIABLE = '--xen-pickup-accent';
 const PICKUP_SOFT_BG_VARIABLE = '--xen-pickup-soft-bg';
 const PICKUP_TOKEN_TRANSLATED_CLASS = 'xen-pickup-token-translated';
-const PICKUP_THREE_LANE_CLASS = 'xen-pickup-three-lane';
-const PICKUP_LANE_CLASS = 'xen-pickup-lane';
-const PICKUP_LANE_CONTENT_CLASS = 'xen-pickup-lane-content';
-const PICKUP_SOURCE_LANE_CLASS = 'xen-pickup-lane-vocab-infusion';
-const PICKUP_TARGET_LANE_CLASS = 'xen-pickup-lane-target';
-const PICKUP_PARAGRAPH_TRANSLATION_CONTENT_CLASS = 'xen-pickup-paragraph-translation';
+const PICKUP_TOKEN_ORIGINAL_TEXT_ATTR = 'data-pickup-token-original';
 
 const EMPTY_TEXT = '';
 
@@ -42,9 +38,19 @@ type RenderedToken = RenderToken & {
 
 type TokenTextResolver = (token: RenderableToken) => string;
 
-type AnnotatedFragmentResult = {
-  fragment: DocumentFragment;
-  renderedTokens: RenderedToken[];
+type ElementTextSegment = {
+  node: Text;
+  start: number;
+  end: number;
+  nodeOffsetStart: number;
+};
+
+type NodeTokenPlacement = {
+  token: RenderableToken;
+  localStart: number;
+  localEnd: number;
+  mappedText: string;
+  sourceText: string;
 };
 
 type UnitTranslationOverride = {
@@ -148,50 +154,158 @@ export function buildTokenSpan(token: RenderToken, tokenText: string) {
   return wrapper;
 }
 
-function buildAnnotatedFragment(
+function buildElementTextSegments(
+  element: HTMLElement,
+  sourceText: string,
+) {
+  const extracted = extractTextContentWithSegments(element);
+  const rawText = extracted.text;
+  const trimmedText = rawText.trim();
+  if (!trimmedText || trimmedText !== sourceText) {
+    return [];
+  }
+
+  const trimStart = rawText.length - rawText.trimStart().length;
+  const trimEnd = rawText.trimEnd().length;
+  const segments: ElementTextSegment[] = [];
+
+  extracted.segments.forEach((segment) => {
+    const overlapStart = Math.max(segment.start, trimStart);
+    const overlapEnd = Math.min(segment.end, trimEnd);
+    if (overlapEnd <= overlapStart) {
+      return;
+    }
+    segments.push({
+      node: segment.node,
+      start: overlapStart - trimStart,
+      end: overlapEnd - trimStart,
+      nodeOffsetStart: overlapStart - segment.start,
+    });
+  });
+
+  return segments;
+}
+
+function findSegmentByOffset(segments: ElementTextSegment[], offset: number) {
+  for (const segment of segments) {
+    if (offset >= segment.start && offset < segment.end) {
+      return segment;
+    }
+  }
+  return null;
+}
+
+function buildTokenPlacementByNode(
+  renderableTokens: RenderableToken[],
+  segments: ElementTextSegment[],
+  resolveTokenText: TokenTextResolver,
+) {
+  const placementsByNode = new Map<Text, NodeTokenPlacement[]>();
+
+  renderableTokens.forEach((token) => {
+    if (token.end <= token.start) {
+      return;
+    }
+    const startSegment = findSegmentByOffset(segments, token.start);
+    const endSegment = findSegmentByOffset(segments, token.end - 1);
+    if (!startSegment || !endSegment || startSegment.node !== endSegment.node) {
+      return;
+    }
+    const localStart = startSegment.nodeOffsetStart + (token.start - startSegment.start);
+    const localEnd = startSegment.nodeOffsetStart + (token.end - startSegment.start);
+    if (!Number.isFinite(localStart) || !Number.isFinite(localEnd) || localEnd <= localStart) {
+      return;
+    }
+    const mappedText = resolveTokenText(token) || token.renderedText || EMPTY_TEXT;
+    const placements = placementsByNode.get(startSegment.node) ?? [];
+    placements.push({
+      token,
+      localStart,
+      localEnd,
+      mappedText,
+      sourceText: token.renderedText ?? EMPTY_TEXT,
+    });
+    placementsByNode.set(startSegment.node, placements);
+  });
+
+  return placementsByNode;
+}
+
+function applyTokenPlacements(
+  placementsByNode: Map<Text, NodeTokenPlacement[]>,
+) {
+  const renderedTokens: RenderedToken[] = [];
+
+  placementsByNode.forEach((placements, textNode) => {
+    if (placements.length === 0 || !textNode.isConnected) {
+      return;
+    }
+    const originalNodeText = textNode.textContent ?? EMPTY_TEXT;
+    if (!originalNodeText) {
+      return;
+    }
+    const sorted = [...placements].sort((a, b) => a.localStart - b.localStart);
+    const fragment = document.createDocumentFragment();
+    let cursor = 0;
+    let applied = false;
+
+    sorted.forEach((placement) => {
+      const start = Math.max(cursor, placement.localStart);
+      const end = Math.min(originalNodeText.length, placement.localEnd);
+      if (end <= start) {
+        return;
+      }
+      if (start > cursor) {
+        fragment.appendChild(document.createTextNode(originalNodeText.slice(cursor, start)));
+      }
+      const element = buildTokenSpan(placement.token, placement.mappedText);
+      element.setAttribute(PICKUP_TOKEN_ORIGINAL_TEXT_ATTR, placement.sourceText);
+      fragment.appendChild(element);
+      renderedTokens.push({
+        ...placement.token,
+        renderedText: placement.mappedText,
+        sourceText: placement.sourceText,
+        element,
+      });
+      cursor = end;
+      applied = true;
+    });
+
+    if (!applied) {
+      return;
+    }
+    if (cursor < originalNodeText.length) {
+      fragment.appendChild(document.createTextNode(originalNodeText.slice(cursor)));
+    }
+    textNode.replaceWith(fragment);
+  });
+
+  return renderedTokens;
+}
+
+function annotateElementWithTokens(
+  element: HTMLElement,
   tokens: RenderToken[],
   sourceText: string,
   resolveTokenText: TokenTextResolver = token => token.renderedText,
-): AnnotatedFragmentResult {
+) {
   if (!sourceText) {
-    const fragment = document.createDocumentFragment();
-    const fallbackText = tokens.map(token => token.text).filter(Boolean).join(' ');
-    fragment.appendChild(document.createTextNode(fallbackText));
-    return { fragment, renderedTokens: [] };
+    return [];
   }
 
   const renderableTokens = buildRenderableTokens(tokens, sourceText);
   if (renderableTokens.length === 0) {
-    // 没有可靠 span 时保留原文，避免破坏布局。
-    const fallback = document.createDocumentFragment();
-    fallback.appendChild(document.createTextNode(sourceText));
-    return { fragment: fallback, renderedTokens: [] };
+    return [];
   }
-
-  const fragment = document.createDocumentFragment();
-  const renderedTokens: RenderedToken[] = [];
-  let cursor = 0;
-  renderableTokens.forEach((token) => {
-    if (token.start > cursor) {
-      fragment.appendChild(document.createTextNode(sourceText.slice(cursor, token.start)));
-    }
-    const mappedText = resolveTokenText(token) || token.renderedText || EMPTY_TEXT;
-    const element = buildTokenSpan(token, mappedText);
-    fragment.appendChild(element);
-    renderedTokens.push({
-      ...token,
-      renderedText: mappedText,
-      sourceText: token.renderedText ?? EMPTY_TEXT,
-      element,
-    });
-    cursor = token.end;
-  });
-
-  if (cursor < sourceText.length) {
-    fragment.appendChild(document.createTextNode(sourceText.slice(cursor)));
+  const segments = buildElementTextSegments(element, sourceText);
+  if (segments.length === 0) {
+    return [];
   }
-
-  return { fragment, renderedTokens };
+  const placementsByNode = buildTokenPlacementByNode(renderableTokens, segments, resolveTokenText);
+  if (placementsByNode.size === 0) {
+    return [];
+  }
+  return applyTokenPlacements(placementsByNode);
 }
 
 function normalizeMeaning(rawMeaning: string | undefined) {
@@ -335,52 +449,6 @@ function decorateRenderedTokens(
   attachPickupInteractions(interactionTargets);
 }
 
-function buildLaneContentElement() {
-  const laneContentElement = document.createElement('span');
-  laneContentElement.className = PICKUP_LANE_CONTENT_CLASS;
-  laneContentElement.setAttribute(PICKUP_IGNORE_ATTR, 'true');
-  return laneContentElement;
-}
-
-function buildLaneElement(variantClassName: string) {
-  const laneElement = document.createElement('span');
-  laneElement.className = `${PICKUP_LANE_CLASS} ${variantClassName}`;
-  laneElement.setAttribute(PICKUP_IGNORE_ATTR, 'true');
-  return laneElement;
-}
-
-function mountAnnotatedParagraph(
-  element: HTMLElement,
-  inlineFragment: DocumentFragment,
-  paragraphTranslationText: string,
-) {
-  element.textContent = EMPTY_TEXT;
-
-  const cleanTranslation = paragraphTranslationText.trim();
-  if (!cleanTranslation) {
-    element.appendChild(inlineFragment);
-    return;
-  }
-
-  const container = document.createElement('span');
-  container.className = PICKUP_THREE_LANE_CLASS;
-  container.setAttribute(PICKUP_IGNORE_ATTR, 'true');
-
-  const sourceLane = buildLaneElement(PICKUP_SOURCE_LANE_CLASS);
-  const sourceLaneContent = buildLaneContentElement();
-  sourceLaneContent.appendChild(inlineFragment);
-  sourceLane.appendChild(sourceLaneContent);
-
-  const targetLane = buildLaneElement(PICKUP_TARGET_LANE_CLASS);
-  const targetLaneContent = buildLaneContentElement();
-  targetLaneContent.classList.add(PICKUP_PARAGRAPH_TRANSLATION_CONTENT_CLASS);
-  targetLaneContent.textContent = cleanTranslation;
-  targetLane.appendChild(targetLaneContent);
-
-  container.append(sourceLane, targetLane);
-  element.appendChild(container);
-}
-
 type ApplyAnnotationsOptions = {
   translationOverridesByParagraph?: Map<string, ParagraphTranslationOverride>;
 };
@@ -458,21 +526,17 @@ export async function applyAnnotations(
   entries.forEach(({ annotation, element, sourceText, sentenceAst }) => {
     const overrides = translationOverridesByParagraph.get(annotation.id);
     const renderModel = buildRenderModelFromSentenceAst(sentenceAst);
-    const inlineRender = buildAnnotatedFragment(
+    const renderedTokens = annotateElementWithTokens(
+      element,
       renderModel.tokens,
       sourceText,
       token => resolveVocabInfusionTokenText(token, overrides?.units),
     );
 
-    mountAnnotatedParagraph(
-      element,
-      inlineRender.fragment,
-      overrides?.paragraphText ?? EMPTY_TEXT,
-    );
     element.dataset.pickupProcessed = 'true';
     element.dataset.pickupStatus = 'done';
     element.dataset.pickupAnnotated = 'true';
-    decorateRenderedTokens(inlineRender.renderedTokens, overrides?.units);
+    decorateRenderedTokens(renderedTokens, overrides?.units);
     appliedIds.add(annotation.id);
   });
 

@@ -10,7 +10,9 @@ import {
   Check,
   DatabaseZap,
   Globe,
+  LogOut,
   Orbit,
+  ShieldCheck,
   SlidersHorizontal,
   Sparkles,
   Wand2,
@@ -39,7 +41,9 @@ import {
 } from '@/components/reui/frame';
 import { Scrollspy } from '@/components/reui/scrollspy';
 import { cn } from '@/lib/utils';
+import { openAuthWindow } from '@/lib/auth/clerk';
 import { clearPickupCaches } from '@/lib/pickup/cache/clear';
+import { sendMessage, MESSAGE_TYPES } from '@/lib/pickup/messaging';
 import {
   PICKUP_RENDER_MODE_SYNTAX_REBUILD,
   PICKUP_RENDER_MODE_VOCAB_INFUSION,
@@ -129,6 +133,16 @@ const NAV_ITEMS = [
   },
 ] as const;
 
+type OptionsAuthStatus = {
+  authenticated: boolean;
+  userId: string | null;
+};
+
+const INITIAL_AUTH_STATUS: OptionsAuthStatus = {
+  authenticated: false,
+  userId: null,
+};
+
 function normalizeIgnoreList(raw: string) {
   return raw
     .split(/\r?\n/)
@@ -208,6 +222,8 @@ export default function App() {
   const [newModelInput, setNewModelInput] = useState('');
   const [llmKeyInput, setLlmKeyInput] = useState('');
   const [hasApiKey, setHasApiKey] = useState(false);
+  const [authStatus, setAuthStatus] = useState<OptionsAuthStatus>(INITIAL_AUTH_STATUS);
+  const [authLoading, setAuthLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [cacheStatus, setCacheStatus] = useState<'idle' | 'clearing' | 'done' | 'error'>('idle');
   const scrollTargetRef = useRef<HTMLDivElement | null>(null);
@@ -249,6 +265,45 @@ export default function App() {
     if (!window.location.hash) {
       window.history.replaceState(null, '', '#general');
     }
+  }, []);
+
+  useEffect(() => {
+    let disposed = false;
+    let timerId: number | undefined;
+
+    const refreshAuthStatus = async () => {
+      const response = await sendMessage(MESSAGE_TYPES.authStatusGet);
+      if (disposed) {
+        return;
+      }
+      setAuthStatus({
+        authenticated: Boolean(response?.authenticated),
+        userId: typeof response?.userId === 'string' ? response.userId : null,
+      });
+      setAuthLoading(false);
+      timerId = window.setTimeout(() => {
+        void refreshAuthStatus();
+      }, 2200);
+    };
+
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        void refreshAuthStatus();
+      }
+    };
+
+    void refreshAuthStatus();
+    window.addEventListener('focus', handleVisibility);
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    return () => {
+      disposed = true;
+      if (timerId !== undefined) {
+        window.clearTimeout(timerId);
+      }
+      window.removeEventListener('focus', handleVisibility);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
   }, []);
 
   const handleNavClick = (id: string) => (event: ReactMouseEvent<HTMLAnchorElement>) => {
@@ -322,6 +377,18 @@ export default function App() {
     } catch {
       setSaveStatus('error');
     }
+  };
+
+  const handleAuthSignOut = async () => {
+    if (!authStatus.authenticated) {
+      return;
+    }
+    await sendMessage(MESSAGE_TYPES.authSignOut);
+    const response = await sendMessage(MESSAGE_TYPES.authStatusGet);
+    setAuthStatus({
+      authenticated: Boolean(response?.authenticated),
+      userId: typeof response?.userId === 'string' ? response.userId : null,
+    });
   };
 
   const handleApiKeySave = async () => {
@@ -448,11 +515,43 @@ export default function App() {
                   修改设置后新页面自动生效，已打开页面可能需要刷新。
                 </p>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center justify-end gap-2">
                 <Badge variant={saveBadge.variant} className="gap-1">
                   {saveStatus === 'saved' ? <Check className="h-3 w-3" /> : null}
                   {saveBadge.label}
                 </Badge>
+
+                {authStatus.authenticated ? (
+                  <div className="flex items-center gap-2 rounded-md border border-border-primary bg-background-secondary px-2 py-1">
+                    <ShieldCheck className="h-4 w-4 options-accent-text" />
+                    <div className="flex flex-col leading-tight">
+                      <span className="text-[11px] font-semibold text-foreground">已登录</span>
+                      <span className="text-[10px] text-text-tertiary">
+                        {authStatus.userId ? `ID: ${authStatus.userId.slice(0, 8)}...` : 'Clerk 会话已同步'}
+                      </span>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="xs"
+                      onClick={() => void handleAuthSignOut()}
+                    >
+                      <LogOut className="h-3 w-3" />
+                      退出
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Button size="sm" onClick={() => void openAuthWindow('sign-in')}>
+                      登录
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => void openAuthWindow('sign-up')}>
+                      注册
+                    </Button>
+                    {authLoading ? (
+                      <span className="text-xs text-text-tertiary">状态同步中...</span>
+                    ) : null}
+                  </div>
+                )}
               </div>
             </div>
           </FramePanel>

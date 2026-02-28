@@ -16,6 +16,7 @@ import {
   MESSAGE_TYPES,
   STATUS_ERROR_CODES,
 } from '@/lib/pickup/constants';
+import { buildWebAuthUrl } from '@/lib/auth/clerk';
 import {
   loadVocabDictionary,
   lookupVocabAllPos,
@@ -33,7 +34,11 @@ import {
   type PickupOffscreenResponse,
 } from '@/lib/pickup/offscreen-protocol';
 import { onMessage } from '@/lib/pickup/messaging';
-import { getBackgroundSessionToken } from '@/lib/pickup/background/auth/clerk';
+import {
+  getBackgroundAuthStatus,
+  getBackgroundSessionToken,
+  signOutBackgroundSession,
+} from '@/lib/pickup/background/auth/clerk';
 import {
   ensureTranslateProviderConfig,
   ensureTranslateProvidersRegistered,
@@ -349,6 +354,7 @@ function resolveModelKey(modelKey?: string | (() => string)) {
 
 export function setupPickupBackground(options: PickupBackgroundOptions = {}) {
   const runtime = chrome?.runtime;
+  const tabs = chrome?.tabs;
   const offscreenClient = createOffscreenClient();
   const cache = createPickupCache({ modelKey: resolveModelKey(options.modelKey) });
   ensureTranslateProvidersRegistered();
@@ -361,6 +367,74 @@ export function setupPickupBackground(options: PickupBackgroundOptions = {}) {
   });
   runtime?.onStartup?.addListener(() => {
     void offscreenClient.warmup();
+  });
+
+  const authTabIds = new Set<number>();
+  let authPollTimer: ReturnType<typeof setTimeout> | null = null;
+  let authPollRunning = false;
+
+  const stopAuthPolling = () => {
+    if (authPollTimer !== null) {
+      globalThis.clearTimeout(authPollTimer);
+      authPollTimer = null;
+    }
+  };
+
+  const scheduleAuthPoll = () => {
+    if (authPollTimer !== null) {
+      return;
+    }
+    authPollTimer = globalThis.setTimeout(() => {
+      authPollTimer = null;
+      void pollAuthAndCloseTabs();
+    }, 900);
+  };
+
+  const closeTrackedAuthTabs = async () => {
+    if (!tabs?.remove || authTabIds.size === 0) {
+      authTabIds.clear();
+      stopAuthPolling();
+      return;
+    }
+    const tabIds = [...authTabIds];
+    authTabIds.clear();
+    await tabs.remove(tabIds);
+    stopAuthPolling();
+  };
+
+  const pollAuthAndCloseTabs = async () => {
+    if (authPollRunning || authTabIds.size === 0) {
+      if (authTabIds.size === 0) {
+        stopAuthPolling();
+      }
+      return;
+    }
+    authPollRunning = true;
+    try {
+      const status = await getBackgroundAuthStatus();
+      if (status.authenticated) {
+        await closeTrackedAuthTabs();
+      } else {
+        scheduleAuthPoll();
+      }
+    } finally {
+      authPollRunning = false;
+    }
+  };
+
+  tabs?.onRemoved?.addListener((tabId) => {
+    if (authTabIds.delete(tabId) && authTabIds.size === 0) {
+      stopAuthPolling();
+    }
+  });
+
+  tabs?.onUpdated?.addListener((tabId, changeInfo) => {
+    if (!authTabIds.has(tabId)) {
+      return;
+    }
+    if (changeInfo.status === 'complete' || typeof changeInfo.url === 'string') {
+      void pollAuthAndCloseTabs();
+    }
   });
 
   void offscreenClient.warmup();
@@ -412,27 +486,40 @@ export function setupPickupBackground(options: PickupBackgroundOptions = {}) {
     return { token };
   });
 
+  onMessage(MESSAGE_TYPES.authStatusGet, async () => {
+    return await getBackgroundAuthStatus();
+  });
+
+  onMessage(MESSAGE_TYPES.authSignOut, async () => {
+    const ok = await signOutBackgroundSession();
+    return { ok };
+  });
+
+  onMessage(MESSAGE_TYPES.authOpen, async (message) => {
+    const mode = message.data?.mode;
+    if (mode !== 'sign-in' && mode !== 'sign-up') {
+      throw new Error('Auth mode is required.');
+    }
+    if (!tabs?.create) {
+      throw new Error('chrome.tabs.create is unavailable in background.');
+    }
+    const authUrl = buildWebAuthUrl(mode);
+    const createdTab = await tabs.create({ url: authUrl });
+    if (typeof createdTab.id !== 'number') {
+      throw new Error('Failed to create auth tab.');
+    }
+    authTabIds.add(createdTab.id);
+    scheduleAuthPoll();
+    return { ok: true, tabId: createdTab.id };
+  });
+
   onMessage(MESSAGE_TYPES.openOptions, async () => {
-    const optionsUrl = chrome?.runtime?.getURL
-      ? chrome.runtime.getURL('options.html#general')
-      : null;
-    try {
-      if (chrome?.tabs?.create && optionsUrl) {
-        await chrome.tabs.create({ url: optionsUrl });
-        return { ok: true };
-      }
-    } catch (error) {
-      console.warn('Open options page failed:', error);
+    if (!chrome?.runtime?.getURL || !chrome?.tabs?.create) {
+      throw new Error('Options page open API is unavailable.');
     }
-    try {
-      if (chrome?.runtime?.openOptionsPage) {
-        await chrome.runtime.openOptionsPage();
-        return { ok: true };
-      }
-    } catch (error) {
-      console.warn('Fallback openOptionsPage failed:', error);
-    }
-    return { ok: false };
+    const optionsUrl = chrome.runtime.getURL('options.html#general');
+    await chrome.tabs.create({ url: optionsUrl });
+    return { ok: true };
   });
 
   onMessage(MESSAGE_TYPES.translatePreview, async (message) => {

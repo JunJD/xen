@@ -48,6 +48,17 @@ const ACTIVE_PICKUP_STATUSES = new Set([
   PICKUP_STATUS_DONE,
 ]);
 
+export type PickupTextSegment = {
+  node: Text;
+  start: number;
+  end: number;
+};
+
+export type PickupTextExtractionResult = {
+  text: string;
+  segments: PickupTextSegment[];
+};
+
 
 function hasReadableText(node: Node) {
   return Boolean(node.textContent?.trim());
@@ -167,37 +178,75 @@ export function isShallowBlockTransNode(node: Node) {
   return false;
 }
 
+function shouldSkipTextExtraction(element: HTMLElement) {
+  if (SKIP_TAGS.has(element.tagName)) {
+    return true;
+  }
+  if (element.hasAttribute(PICKUP_IGNORE_ATTRIBUTE)) {
+    return true;
+  }
+  if (element.matches(PICKUP_UI_SELECTOR)) {
+    return true;
+  }
+  return false;
+}
+
+export function extractTextContentWithSegments(node: Node): PickupTextExtractionResult {
+  const parts: string[] = [];
+  const segments: PickupTextSegment[] = [];
+  let cursor = 0;
+
+  const appendText = (text: string, ownerNode?: Text) => {
+    if (!text) {
+      return;
+    }
+    const start = cursor;
+    cursor += text.length;
+    parts.push(text);
+    if (ownerNode) {
+      segments.push({
+        node: ownerNode,
+        start,
+        end: cursor,
+      });
+    }
+  };
+
+  const walk = (current: Node) => {
+    if (isTextNode(current)) {
+      appendText(current.textContent ?? '', current);
+      return;
+    }
+
+    if (current instanceof Document || current instanceof DocumentFragment || current instanceof ShadowRoot) {
+      Array.from(current.childNodes).forEach(walk);
+      return;
+    }
+
+    if (!isHTMLElement(current)) {
+      return;
+    }
+
+    if (current.tagName === BR_TAG_NAME) {
+      appendText('\n');
+      return;
+    }
+
+    if (shouldSkipTextExtraction(current)) {
+      return;
+    }
+
+    Array.from(current.childNodes).forEach(walk);
+  };
+
+  walk(node);
+
+  return {
+    text: parts.join(''),
+    segments,
+  };
+}
+
 export function extractTextContent(node: Node): string {
-  if (isTextNode(node)) {
-    const text = node.textContent ?? '';
-    const trimmed = text.trim();
-    if (trimmed === '') {
-      return ' ';
-    }
-    const leading = text.slice(0, text.length - text.trimStart().length);
-    const trailing = text.slice(text.trimEnd().length);
-    const hasLeading = /[^\S\n]/.test(leading);
-    const hasTrailing = /[^\S\n]/.test(trailing);
-    return `${hasLeading ? ' ' : ''}${trimmed}${hasTrailing ? ' ' : ''}`;
-  }
-
-  if (isHTMLElement(node) && node.tagName === BR_TAG_NAME) {
-    return '\n';
-  }
-
-  if (isHTMLElement(node)) {
-    if (SKIP_TAGS.has(node.tagName)) {
-      return '';
-    }
-    if (node.hasAttribute(PICKUP_IGNORE_ATTRIBUTE)) {
-      return '';
-    }
-  }
-
-  return Array.from(node.childNodes).reduce((text, child) => {
-    if (isTextNode(child) || isHTMLElement(child)) {
-      return text + extractTextContent(child);
-    }
-    return text;
-  }, '');
+  return extractTextContentWithSegments(node).text;
 }

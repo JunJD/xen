@@ -73,12 +73,48 @@ type ChromeTabsQueryInfo = {
   url?: string | string[];
 };
 
+type ChromeTabChangeInfo = {
+  status?: string;
+  url?: string;
+};
+
 interface ChromeTabsLike {
   query?: (queryInfo: ChromeTabsQueryInfo) => Promise<ChromeTab[]>;
   get?: (tabId: number) => Promise<ChromeTab | undefined>;
   create?: (createProperties: { url?: string; active?: boolean; index?: number }) => Promise<ChromeTab>;
   update?: (tabId: number, updateProperties: { url?: string; active?: boolean }) => Promise<ChromeTab>;
+  remove?: (tabIds: number | number[]) => Promise<void>;
   sendMessage?: <TResponse = unknown>(tabId: number, message: unknown) => Promise<TResponse>;
+  onRemoved?: {
+    addListener: (callback: (tabId: number, removeInfo: { windowId?: number; isWindowClosing?: boolean }) => void) => void;
+  };
+  onUpdated?: {
+    addListener: (callback: (tabId: number, changeInfo: ChromeTabChangeInfo, tab: ChromeTab) => void) => void;
+  };
+}
+
+type ChromeWindowType = 'normal' | 'popup' | 'panel' | 'app' | 'devtools';
+
+type ChromeWindow = {
+  id?: number;
+  focused?: boolean;
+  type?: ChromeWindowType;
+  top?: number;
+  left?: number;
+  width?: number;
+  height?: number;
+};
+
+interface ChromeWindowsLike {
+  create?: (createData: {
+    url?: string | string[];
+    focused?: boolean;
+    type?: ChromeWindowType;
+    top?: number;
+    left?: number;
+    width?: number;
+    height?: number;
+  }) => Promise<ChromeWindow>;
 }
 
 type ChromeAlarm = {
@@ -108,6 +144,7 @@ interface ChromeLike {
   offscreen?: ChromeOffscreenLike;
   storage?: ChromeStorageLike;
   tabs?: ChromeTabsLike;
+  windows?: ChromeWindowsLike;
   alarms?: ChromeAlarmsLike;
   action?: ChromeActionLike;
 }

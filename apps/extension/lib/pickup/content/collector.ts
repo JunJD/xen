@@ -1,14 +1,13 @@
 import { sha256 } from 'js-sha256';
 import type { PickupParagraph } from '@/lib/pickup/messages';
 import {
-  MAX_ORIGINAL_TEXT_LENGTH,
   MIN_BLOCK_CHILDREN_FOR_FORCE_BLOCK,
   MIN_TEXT_LENGTH,
   MIN_TRANSLATABLE_CHILDREN_FOR_FORCE_BLOCK,
   PARAGRAPH_FORCE_BLOCK_TAGS,
 } from './constants';
 import {
-  extractTextContent,
+  extractTextContentWithSegments,
   isDisplayContentsElement,
   isEligibleElement,
   isHTMLElement,
@@ -198,18 +197,20 @@ export function collectParagraphs(root: ParentNode = document) {
   let index = 0;
   
   elements.forEach((element) => {
-    const text = extractTextContent(element).replace(WHITESPACE_PATTERN, ' ').trim();
-    // 段落级二次筛选：短文本放宽规则，否则必须判定为英文。
-    if (text.length < MIN_TEXT_LENGTH) {
-      if (!isShortEnglishText(text)) {
-        return;
-      }
-    } else if (!isEnglishText(text)) {
+    const text = extractTextContentWithSegments(element).text.trim();
+    const normalizedText = text.replace(WHITESPACE_PATTERN, ' ').trim();
+    if (!normalizedText) {
       return;
     }
-    if (!element.dataset.pickupOriginal && text.length <= MAX_ORIGINAL_TEXT_LENGTH) {
-      element.dataset.pickupOriginal = text;
+    // 段落级二次筛选：短文本放宽规则，否则必须判定为英文。
+    if (normalizedText.length < MIN_TEXT_LENGTH) {
+      if (!isShortEnglishText(normalizedText)) {
+        return;
+      }
+    } else if (!isEnglishText(normalizedText)) {
+      return;
     }
+    element.dataset.pickupOriginal = text;
     const id = `${PICKUP_ID_PREFIX}-${timestamp}-${index++}`;
     const hash = sha256(text);
     element.dataset.pickupId = id;

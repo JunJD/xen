@@ -1,28 +1,19 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { ClerkProvider } from '@clerk/chrome-extension';
 import App from './App.tsx';
 import './style.css';
-import { getClerkPublishableKey, getExtensionPopupUrl } from '@/lib/auth/clerk';
+import {
+  requireClerkPublishableKey,
+  requireClerkSyncHost,
+} from '@/lib/auth/clerk';
 
-const publishableKey = getClerkPublishableKey();
-const popupUrl = getExtensionPopupUrl();
+requireClerkPublishableKey();
+requireClerkSyncHost();
 
-const app = <App clerkEnabled={publishableKey.length > 0} />;
+const app = <App />;
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    {publishableKey
-      ? (
-        <ClerkProvider
-          publishableKey={publishableKey}
-          signInFallbackRedirectUrl={popupUrl}
-          signUpFallbackRedirectUrl={popupUrl}
-          afterSignOutUrl={popupUrl}
-        >
-          {app}
-        </ClerkProvider>
-      )
-      : app}
+    {app}
   </React.StrictMode>,
 );

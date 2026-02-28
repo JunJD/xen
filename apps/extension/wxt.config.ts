@@ -21,12 +21,17 @@ export default defineConfig({
     const clerkFrontendApi = import.meta.env.WXT_CLERK_FRONTEND_API
       || import.meta.env.VITE_CLERK_FRONTEND_API
       || '';
+    const clerkSyncHost = import.meta.env.WXT_CLERK_SYNC_HOST
+      || import.meta.env.VITE_CLERK_SYNC_HOST
+      || '';
     const clerkHostPermission = toHostPermission(clerkFrontendApi);
+    const clerkSyncHostPermission = toHostPermission(clerkSyncHost);
 
     const hostPermissions = [
       'https://translate.googleapis.com/*',
       'https://api.openai.com/*',
       ...(mode === 'development' ? ['http://localhost/*'] : []),
+      ...(clerkSyncHostPermission ? [clerkSyncHostPermission] : []),
       ...(clerkHostPermission ? [clerkHostPermission] : []),
     ];
 
