@@ -8,6 +8,13 @@ import {
   Settings,
   Star,
 } from 'lucide-react';
+import {
+  SignInButton,
+  SignUpButton,
+  SignedIn,
+  SignedOut,
+  UserButton,
+} from '@clerk/chrome-extension';
 import { PickupTokens } from '@/components/PickupTokens';
 import type { PickupModelStatus, TranslateProvider } from '@/lib/pickup/messages';
 import { sendMessage, MESSAGE_TYPES } from '@/lib/pickup/messaging';
@@ -49,8 +56,11 @@ async function openOptionsPage() {
   }
 }
 
-function App() {
-  const [isLoggedIn] = useState(true);
+type AppProps = {
+  clerkEnabled: boolean;
+};
+
+function App({ clerkEnabled }: AppProps) {
   const [notificationCount, setNotificationCount] = useState(2);
   const [modelStatus, setModelStatus] = useState<PickupModelStatus>(INITIAL_MODEL_STATUS);
   const [translateProvider, setTranslateProvider] = useState<TranslateProvider>(DEFAULT_TRANSLATE_PROVIDER);
@@ -159,17 +169,33 @@ function App() {
       <div className="flex  w-[360px] flex-col bg-background-quaternary">
         <div className="flex items-center justify-between border-b border-border-primary bg-background-quaternary p-4">
           <div className="flex items-center gap-3">
-            {isLoggedIn ? (
+            {clerkEnabled ? (
               <>
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-action-primary text-xs text-white">
-                  ZH
-                </div>
-                <span className="text-sm text-black">张华</span>
+                <SignedIn>
+                  <UserButton />
+                </SignedIn>
+                <SignedOut>
+                  <div className="flex items-center gap-2">
+                    <SignInButton mode="modal">
+                      <button className="rounded bg-action-primary px-3 py-1.5 text-xs text-white transition-colors hover:bg-action-active">
+                        登录
+                      </button>
+                    </SignInButton>
+                    <SignUpButton mode="modal">
+                      <button className="rounded border border-border-primary bg-background-quaternary px-3 py-1.5 text-xs text-black transition-colors hover:bg-background-secondary">
+                        注册
+                      </button>
+                    </SignUpButton>
+                  </div>
+                </SignedOut>
               </>
             ) : (
-              <button className="rounded bg-action-primary px-3 py-1.5 text-xs text-white transition-colors hover:bg-action-active">
-                登录
-              </button>
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-action-primary text-xs text-white">
+                  GUEST
+                </div>
+                <span className="text-xs text-text-tertiary">未配置 Clerk</span>
+              </div>
             )}
           </div>
 
@@ -189,6 +215,11 @@ function App() {
         </div>
 
         <div className="flex flex-1 flex-col p-3">
+          {!clerkEnabled && (
+            <div className="mb-2 rounded border border-border-primary bg-background-secondary px-3 py-2 text-[11px] text-text-tertiary">
+              设置 `WXT_CLERK_PUBLISHABLE_KEY` 后可启用登录。
+            </div>
+          )}
           <div className="flex items-center justify-between rounded border border-border-primary bg-background-secondary p-3">
             <span className="text-xs text-text-tertiary">翻译语言</span>
             <div className="flex items-center gap-2 text-xs text-black">

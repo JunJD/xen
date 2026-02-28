@@ -20,6 +20,7 @@ interface PickupProtocolMap {
   [MESSAGE_TYPES.modelStatus]: () => Promise<{ status: PickupModelStatus }>;
   [MESSAGE_TYPES.translateProviderGet]: () => Promise<{ provider: TranslateProvider }>;
   [MESSAGE_TYPES.translateProviderSet]: (data: { provider: TranslateProvider }) => Promise<{ provider: TranslateProvider }>;
+  [MESSAGE_TYPES.authTokenGet]: () => Promise<{ token: string | null }>;
   [MESSAGE_TYPES.openOptions]: () => Promise<{ ok: boolean }>;
 }
 

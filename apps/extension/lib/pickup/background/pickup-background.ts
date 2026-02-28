@@ -33,6 +33,7 @@ import {
   type PickupOffscreenResponse,
 } from '@/lib/pickup/offscreen-protocol';
 import { onMessage } from '@/lib/pickup/messaging';
+import { getBackgroundSessionToken } from '@/lib/pickup/background/auth/clerk';
 import {
   ensureTranslateProviderConfig,
   ensureTranslateProvidersRegistered,
@@ -404,6 +405,11 @@ export function setupPickupBackground(options: PickupBackgroundOptions = {}) {
     }
     const provider = await setStoredTranslateProvider(nextProvider);
     return { provider };
+  });
+
+  onMessage(MESSAGE_TYPES.authTokenGet, async () => {
+    const token = await getBackgroundSessionToken();
+    return { token };
   });
 
   onMessage(MESSAGE_TYPES.openOptions, async () => {

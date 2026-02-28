@@ -5,6 +5,7 @@ export const MESSAGE_TYPES = {
   translatePreview: 'pickupTranslatePreview',
   translateProviderGet: 'pickupTranslateProviderGet',
   translateProviderSet: 'pickupTranslateProviderSet',
+  authTokenGet: 'pickupAuthTokenGet',
   openOptions: 'pickupOpenOptions',
 } as const;
 
