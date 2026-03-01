@@ -6,6 +6,7 @@ import {
   PICKUP_ROLE_BADGE_STRUCTURE_CLASS,
   PICKUP_TOKEN_ACTIVE_CLASS,
   PICKUP_TOKEN_CLASS,
+  PICKUP_TOKEN_ORIGINAL_TEXT_ATTR,
   PICKUP_TOKEN_VOCABULARY_CLASS,
   PICKUP_UI_ATTR,
   PICKUP_UI_SELECTOR,
@@ -15,6 +16,12 @@ const TIPPY_THEME = 'xen-pickup';
 const TOKEN_SELECTOR = `.${PICKUP_TOKEN_CLASS}`;
 const ROLE_BADGE_SELECTOR = `.${PICKUP_ROLE_BADGE_CLASS}`;
 const PHONE_LINE_PATTERN = /\((US|UK)\)/;
+const PHONE_CHIP_PATTERN = /(美式|英式)\((US|UK)\)\s*(.+?)(?=\s+(?:美式|英式)\((?:US|UK)\)|$)/g;
+const SPEAK_LANG_BY_REGION = {
+  US: 'en-US',
+  UK: 'en-GB',
+} as const;
+type PhoneRegion = keyof typeof SPEAK_LANG_BY_REGION;
 
 type InteractionMeta = {
   meaning: string;
@@ -74,6 +81,65 @@ function normalizeTooltipText(value: string) {
     .map(line => line.replace(/\s+/g, ' ').trim())
     .filter(Boolean);
   return lines.join('\n');
+}
+
+function normalizeSpeakWord(rawWord: string) {
+  const trimmed = rawWord.trim();
+  if (!trimmed) {
+    return '';
+  }
+  return trimmed.replace(/^[^A-Za-z]+|[^A-Za-z]+$/g, '');
+}
+
+function resolveSpeechVoice(lang: string, voices: SpeechSynthesisVoice[]) {
+  if (voices.length === 0) {
+    return null;
+  }
+  const exact = voices.find(voice => voice.lang === lang);
+  if (exact) {
+    return exact;
+  }
+  const prefix = lang.slice(0, 2).toLowerCase();
+  return voices.find(voice => voice.lang.toLowerCase().startsWith(prefix)) ?? null;
+}
+
+function speakTokenByRegion(reference: HTMLElement, region: PhoneRegion) {
+  const synthesizer = window.speechSynthesis;
+  if (!synthesizer) {
+    return;
+  }
+  const originalText = reference.getAttribute(PICKUP_TOKEN_ORIGINAL_TEXT_ATTR)
+    ?? reference.dataset.pickupTokenOriginal
+    ?? reference.textContent
+    ?? '';
+  const speakWord = normalizeSpeakWord(originalText);
+  if (!speakWord) {
+    return;
+  }
+  const utterance = new SpeechSynthesisUtterance(speakWord);
+  utterance.lang = SPEAK_LANG_BY_REGION[region];
+  utterance.rate = 0.95;
+  const voice = resolveSpeechVoice(utterance.lang, synthesizer.getVoices());
+  if (voice) {
+    utterance.voice = voice;
+  }
+  synthesizer.cancel();
+  synthesizer.speak(utterance);
+}
+
+function parsePhoneChips(line: string) {
+  const chips: Array<{ region: PhoneRegion; value: string }> = [];
+  PHONE_CHIP_PATTERN.lastIndex = 0;
+  let match: RegExpExecArray | null = PHONE_CHIP_PATTERN.exec(line);
+  while (match) {
+    const region = match[2] as PhoneRegion;
+    const value = match[3]?.trim() ?? '';
+    if ((region === 'US' || region === 'UK') && value) {
+      chips.push({ region, value });
+    }
+    match = PHONE_CHIP_PATTERN.exec(line);
+  }
+  return chips;
 }
 
 function removeFromGroupIndex(groupId: string, element: HTMLElement) {
@@ -187,6 +253,39 @@ function createTooltipContent(reference: HTMLElement) {
       lineEl.setAttribute(PICKUP_UI_ATTR, 'true');
       if (PHONE_LINE_PATTERN.test(line)) {
         lineEl.classList.add('xen-pickup-tooltip-line-phone');
+        const chips = parsePhoneChips(line);
+        if (chips.length > 0) {
+          chips.forEach(({ region, value }) => {
+            const chipButton = document.createElement('button');
+            chipButton.type = 'button';
+            chipButton.className = 'xen-pickup-tooltip-phone-chip';
+            chipButton.setAttribute(PICKUP_UI_ATTR, 'true');
+            chipButton.setAttribute('aria-label', `朗读${region}音标`);
+
+            const regionEl = document.createElement('span');
+            regionEl.className = 'xen-pickup-tooltip-phone-region';
+            regionEl.setAttribute(PICKUP_UI_ATTR, 'true');
+            regionEl.textContent = region;
+
+            const valueEl = document.createElement('span');
+            valueEl.className = 'xen-pickup-tooltip-phone-value';
+            valueEl.setAttribute(PICKUP_UI_ATTR, 'true');
+            valueEl.textContent = value;
+
+            chipButton.append(regionEl, valueEl);
+            chipButton.addEventListener('pointerdown', (event) => {
+              event.stopPropagation();
+            });
+            chipButton.addEventListener('click', (event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              speakTokenByRegion(reference, region);
+            });
+            lineEl.append(chipButton);
+          });
+          linesRoot.append(lineEl);
+          return;
+        }
       } else {
         lineEl.classList.add('xen-pickup-tooltip-line-desc');
       }

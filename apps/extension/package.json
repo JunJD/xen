@@ -5,6 +5,7 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "dict:trans-by-pos": "node ./scripts/build-trans-by-pos.mjs --unknown-pos X public/dicts/xinghuoqiaoji_4.json public/dicts/CET4_T.json",
     "sync:pyodide": "node ./scripts/sync-pyodide.mjs",
     "predev": "pnpm run sync:pyodide",
     "dev": "wxt",

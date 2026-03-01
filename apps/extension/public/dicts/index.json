@@ -1,4 +1,30 @@
 
 {
-    "files": ["dicts/merged.json"]
+  "dictionaries": [
+    {
+      "id": "merge",
+      "name": "Merge (全量词典)",
+      "description": "项目内置合并词典",
+      "source": "Xen",
+      "icon": "🧩",
+      "files": ["dicts/merged.json"]
+    },
+    {
+      "id": "cet4",
+      "name": "CET-4",
+      "description": "大学英语四级词库（qwerty-learner）",
+      "source": "Qwerty Learner",
+      "icon": "🎓",
+      "files": ["dicts/CET4_T.json"]
+    },
+    {
+      "id": "xinghuoqiaoji_4",
+      "name": "四级巧记速记",
+      "description": "四级巧记速记（qwerty-learner）",
+      "source": "Qwerty Learner",
+      "icon": "⚡",
+      "files": ["dicts/xinghuoqiaoji_4.json"]
+    }
+  ],
+  "defaultDictionaryIds": ["merge"]
 }

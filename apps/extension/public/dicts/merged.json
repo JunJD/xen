@@ -45695,7 +45695,12 @@
       "n.邮递员=mailman"
     ],
     "usphone": "ˈpəʊstmən",
-    "ukphone": "ˈpoʊstmən"
+    "ukphone": "ˈpoʊstmən",
+    "transByPos": {
+      "NOUN": [
+        "邮递员=mailman"
+      ]
+    }
   },
   {
     "name": "mailman",
@@ -63253,7 +63258,12 @@
       "n. 直觉凭直觉感知的知识形容词:intuitional"
     ],
     "usphone": "ˌɪntuˈɪʃn",
-    "ukphone": "ˌɪntjuˈɪʃn"
+    "ukphone": "ˌɪntjuˈɪʃn",
+    "transByPos": {
+      "NOUN": [
+        "直觉凭直觉感知的知识"
+      ]
+    }
   },
   {
     "name": "invade",
@@ -69621,7 +69631,12 @@
       "n.，飞机=aeroplane(英）"
     ],
     "usphone": "ˈeəpleɪn",
-    "ukphone": "ˈerpleɪn"
+    "ukphone": "ˈerpleɪn",
+    "transByPos": {
+      "NOUN": [
+        "飞机=aeroplane(英）"
+      ]
+    }
   },
   {
     "name": "after",
@@ -76020,7 +76035,12 @@
       "n. 百分之...@=percent(美)"
     ],
     "usphone": "pɚˈsɛnt",
-    "ukphone": "ˈsent"
+    "ukphone": "ˈsent",
+    "transByPos": {
+      "NOUN": [
+        "百分之...@=percent(美)"
+      ]
+    }
   },
   {
     "name": "perhaps",
@@ -76548,7 +76568,12 @@
       "n. 介词\n\n时 态:  \nprepositioned, prepositioning, prepositions"
     ],
     "usphone": "preposition",
-    "ukphone": "ˌprɛpəˈzɪʃᵊn"
+    "ukphone": "ˌprɛpəˈzɪʃᵊn",
+    "transByPos": {
+      "NOUN": [
+        "介词"
+      ]
+    }
   },
   {
     "name": "prince",
@@ -119816,7 +119841,12 @@
       "名 词:morphologist"
     ],
     "usphone": "mɔr'fɑlədʒi",
-    "ukphone": "mɔː'fɒlədʒɪ"
+    "ukphone": "mɔː'fɒlədʒɪ",
+    "transByPos": {
+      "NOUN": [
+        "形态学(尤指动植物形态学或词语形态学)"
+      ]
+    }
   },
   {
     "name": "mixed use",
@@ -125964,7 +125994,12 @@
       "n. 增长增额形容词:incremental"
     ],
     "usphone": "ˈɪŋkrəmənt",
-    "ukphone": "ˈɪŋkrəmənt"
+    "ukphone": "ˈɪŋkrəmənt",
+    "transByPos": {
+      "NOUN": [
+        "增长增额"
+      ]
+    }
   },
   {
     "name": "hoarding",
@@ -128097,7 +128132,12 @@
       "adj. (对新的思想等)善于接受的副 词:receptively"
     ],
     "usphone": "rɪˈseptɪv",
-    "ukphone": "rɪˈseptɪv"
+    "ukphone": "rɪˈseptɪv",
+    "transByPos": {
+      "ADJ": [
+        "(对新的思想等)善于接受的"
+      ]
+    }
   },
   {
     "name": "spillover",
@@ -128651,7 +128691,12 @@
       "n. 股票经纪人名 词:stockbrokerage"
     ],
     "usphone": "ˈstɑːkbroʊkər",
-    "ukphone": "ˈstɒkbrəʊkə(r)"
+    "ukphone": "ˈstɒkbrəʊkə(r)",
+    "transByPos": {
+      "NOUN": [
+        "股票经纪人"
+      ]
+    }
   },
   {
     "name": "contraction",
@@ -136429,7 +136474,12 @@
       "n. 第七十(个)副 词:seventieth"
     ],
     "usphone": "'sɛvntɪɪθ",
-    "ukphone": "'sevəntɪɪθ"
+    "ukphone": "'sevəntɪɪθ",
+    "transByPos": {
+      "NOUN": [
+        "第七十(个)"
+      ]
+    }
   },
   {
     "name": "eightieth",
@@ -136437,7 +136487,12 @@
       "num. 第八十副 词:eightieth"
     ],
     "usphone": "'etɪɪθ",
-    "ukphone": "ˈeitiiθ"
+    "ukphone": "ˈeitiiθ",
+    "transByPos": {
+      "NUM": [
+        "第八十"
+      ]
+    }
   },
   {
     "name": "ninetieth",
@@ -136458,7 +136513,12 @@
       "num. 第100个百分之一形容词:hundredth"
     ],
     "usphone": "'hʌndrədθ",
-    "ukphone": "'hʌndrədθ"
+    "ukphone": "'hʌndrədθ",
+    "transByPos": {
+      "NUM": [
+        "第100个百分之一"
+      ]
+    }
   },
   {
     "name": "fourth",
@@ -152803,7 +152863,12 @@
     "name": "has got",
     "trans": [
       "adv.have got的第三人称单数形式 有"
-    ]
+    ],
+    "transByPos": {
+      "ADV": [
+        "have got的第三人称单数形式 有"
+      ]
+    }
   },
   {
     "name": "how much",
@@ -156380,7 +156445,12 @@
       "名 词:cosmologist"
     ],
     "usphone": "kɑz'mɑlədʒi",
-    "ukphone": "kɒz'mɒlədʒɪ"
+    "ukphone": "kɒz'mɒlədʒɪ",
+    "transByPos": {
+      "NOUN": [
+        "宇宙学"
+      ]
+    }
   },
   {
     "name": "nebula",
@@ -157196,7 +157266,12 @@
       "复 数: strata"
     ],
     "usphone": "'stretəm",
-    "ukphone": "'strɑːtəm"
+    "ukphone": "'strɑːtəm",
+    "transByPos": {
+      "NOUN": [
+        "岩层地层社会阶层"
+      ]
+    }
   },
   {
     "name": "mantle",
@@ -162579,7 +162654,12 @@
       "adj. 极饿的(指饥饿、渴求等)极度的副 词:ravenously"
     ],
     "usphone": "ˈrævənəs",
-    "ukphone": "ˈrævənəs"
+    "ukphone": "ˈrævənəs",
+    "transByPos": {
+      "ADJ": [
+        "极饿的(指饥饿、渴求等)极度的"
+      ]
+    }
   },
   {
     "name": "listless",
@@ -176212,7 +176292,12 @@
     "name": "iostream",
     "trans": [
       "n. [计算机] C++ 标准输入输出流库的头文件"
-    ]
+    ],
+    "transByPos": {
+      "NOUN": [
+        "[计算机] C++ 标准输入输出流库的头文件"
+      ]
+    }
   },
   {
     "name": "using",
@@ -176632,7 +176717,12 @@
       "名 词:motorcyclist"
     ],
     "usphone": "'motɚ'saɪkl",
-    "ukphone": "'məʊtəsaɪk(ə)l"
+    "ukphone": "'məʊtəsaɪk(ə)l",
+    "transByPos": {
+      "NOUN": [
+        "摩托车"
+      ]
+    }
   },
   {
     "name": "lemonade",
@@ -178415,7 +178505,12 @@
       "abbr. =revised edition 修订版Reabbr. rhenium 铼REabbr. Royal Engineers 皇家工兵部队REabbr. Royal Engineers 〈英〉皇家工兵部队"
     ],
     "usphone": "ri",
-    "ukphone": "riː"
+    "ukphone": "riː",
+    "transByPos": {
+      "X": [
+        "=revised edition 修订版Reabbr. rhenium 铼REabbr. Royal Engineers 皇家工兵部队REabbr. Royal Engineers 〈英〉皇家工兵部队"
+      ]
+    }
   },
   {
     "name": "walking",
@@ -185413,7 +185508,12 @@
   {
     "name": "low-income",
     "ukphone": "/ˌləʊ ˈɪnkʌm/",
-    "trans": "adj. 低收入的【记忆】合成词：low（低）+income（收入）→低收入的"
+    "trans": "adj. 低收入的【记忆】合成词：low（低）+income（收入）→低收入的",
+    "transByPos": {
+      "ADJ": [
+        "低收入的【记忆】合成词：low（低）+income（收入）→低收入的"
+      ]
+    }
   },
   {
     "name": "deviation",
@@ -190265,7 +190365,12 @@
       "adj.令人吃惊的v.“startle”的现在分词"
     ],
     "ukphone": "ˈstɑ:tlɪŋ",
-    "usphone": "ˈstɑ:rtlɪŋ"
+    "usphone": "ˈstɑ:rtlɪŋ",
+    "transByPos": {
+      "ADJ": [
+        "令人吃惊的v.“startle”的现在分词"
+      ]
+    }
   },
   {
     "name": "Czech",
@@ -200117,7 +200222,12 @@
       "adj. 回顾的(指法律、支付关系等)有追溯效力的副 词:retrospectively"
     ],
     "usphone": "ˌretrəˈspektɪv",
-    "ukphone": "ˌretrəˈspektɪv"
+    "ukphone": "ˌretrəˈspektɪv",
+    "transByPos": {
+      "ADJ": [
+        "回顾的(指法律、支付关系等)有追溯效力的"
+      ]
+    }
   },
   {
     "name": "reappear",
@@ -210087,7 +210197,12 @@
       "n. 高血压形容词:hypertensive"
     ],
     "usphone": "ˌhaɪpɚ'tɛnʃən",
-    "ukphone": "haɪpə'tenʃ(ə)n"
+    "ukphone": "haɪpə'tenʃ(ə)n",
+    "transByPos": {
+      "NOUN": [
+        "高血压"
+      ]
+    }
   },
   {
     "name": "rover",
@@ -235248,7 +235363,12 @@
       "n. 〈美〉新闻广播名 词:newscaster"
     ],
     "usphone": "'njʊzkæst",
-    "ukphone": "'njuːzkɑːst"
+    "ukphone": "'njuːzkɑːst",
+    "transByPos": {
+      "NOUN": [
+        "〈美〉新闻广播"
+      ]
+    }
   },
   {
     "name": "angst",
@@ -257135,7 +257255,12 @@
       "pron.（作动词或介词的宾语时，有时候用来替代whoever）"
     ],
     "ukphone": "ˌhu:mˈevə(r)",
-    "usphone": "humˈɛvɚ"
+    "usphone": "humˈɛvɚ",
+    "transByPos": {
+      "PRON": [
+        "（作动词或介词的宾语时，有时候用来替代whoever）"
+      ]
+    }
   },
   {
     "name": "isotope",
@@ -284192,7 +284317,12 @@
       "n. 低体温形容词:hypothermic"
     ],
     "usphone": "ˌhaɪpə'θɝmɪə",
-    "ukphone": "ˌhaɪpə(ʊ)'θɜːmɪə"
+    "ukphone": "ˌhaɪpə(ʊ)'θɜːmɪə",
+    "transByPos": {
+      "NOUN": [
+        "低体温"
+      ]
+    }
   },
   {
     "name": "mafia",
@@ -287396,7 +287526,12 @@
       "n. 光电的名 词:photovoltaic"
     ],
     "usphone": "ˌfotovɑl'teɪk",
-    "ukphone": "ˌfəʊtəʊvɒl'teɪɪk"
+    "ukphone": "ˌfəʊtəʊvɒl'teɪɪk",
+    "transByPos": {
+      "NOUN": [
+        "光电的"
+      ]
+    }
   },
   {
     "name": "hoopla",
@@ -310120,7 +310255,12 @@
       "n. <主英>=popularization"
     ],
     "usphone": "ˌpɒpjʊləraɪˈzeɪʃən",
-    "ukphone": "ˌpɒpjʊləraɪˈzeɪʃən"
+    "ukphone": "ˌpɒpjʊləraɪˈzeɪʃən",
+    "transByPos": {
+      "NOUN": [
+        "<主英>=popularization"
+      ]
+    }
   },
   {
     "name": "popularization",
@@ -310205,7 +310345,13 @@
       "abbr.，人工智能=，(，Artificial，Intelligence，)"
     ],
     "usphone": "ˌeɪˈaɪ",
-    "ukphone": "ˌeɪˈaɪ"
+    "ukphone": "ˌeɪˈaɪ",
+    "transByPos": {
+      "X": [
+        "人工智能=",
+        "(，Artificial，Intelligence，)"
+      ]
+    }
   },
   {
     "name": "likeability",
@@ -326809,7 +326955,12 @@
       "v. come的过去式"
     ],
     "usphone": "[keɪm]",
-    "ukphone": "[keɪm]"
+    "ukphone": "[keɪm]",
+    "transByPos": {
+      "VERB": [
+        "come的过去式"
+      ]
+    }
   },
   {
     "name": "cannot",
@@ -327602,7 +327753,12 @@
       "num. 第一千副 词:thousandth"
     ],
     "usphone": "'θaʊznθ",
-    "ukphone": "'θaʊzəntθ"
+    "ukphone": "'θaʊzəntθ",
+    "transByPos": {
+      "NUM": [
+        "第一千"
+      ]
+    }
   },
   {
     "name": "in part",
@@ -336264,7 +336420,12 @@
     "ukphone": "",
     "trans": [
       "vt. 买【一般现在 过去式 过去分词】"
-    ]
+    ],
+    "transByPos": {
+      "VERB": [
+        "买【一般现在 过去式 过去分词】"
+      ]
+    }
   },
   {
     "name": "a garbage can",
@@ -336331,7 +336492,12 @@
     "ukphone": "",
     "trans": [
       "vt. 选择 【一般现在 过去式 过去分词】"
-    ]
+    ],
+    "transByPos": {
+      "VERB": [
+        "选择 【一般现在 过去式 过去分词】"
+      ]
+    }
   },
   {
     "name": "Christmas card",
@@ -336502,7 +336668,12 @@
     "ukphone": "",
     "trans": [
       "v. 动词do的第三人称单数现在式"
-    ]
+    ],
+    "transByPos": {
+      "VERB": [
+        "动词do的第三人称单数现在式"
+      ]
+    }
   },
   {
     "name": "draw drew drawn",
@@ -336610,7 +336781,12 @@
     "ukphone": "",
     "trans": [
       "v. 吃 【一般现在 过去式 过去分词】"
-    ]
+    ],
+    "transByPos": {
+      "VERB": [
+        "吃 【一般现在 过去式 过去分词】"
+      ]
+    }
   },
   {
     "name": "Egypt",
@@ -337431,7 +337607,12 @@
     "ukphone": "",
     "trans": [
       "pron. 许多人（或物）a. 许多的【比较级 最高级】"
-    ]
+    ],
+    "transByPos": {
+      "PRON": [
+        "许多人（或物）a. 许多的【比较级 最高级】"
+      ]
+    }
   },
   {
     "name": "maple leaves",
@@ -338409,7 +338590,12 @@
     "ukphone": "",
     "trans": [
       "vi. 坐 【一般现在 过去式 过去分词】"
-    ]
+    ],
+    "transByPos": {
+      "VERB": [
+        "坐 【一般现在 过去式 过去分词】"
+      ]
+    }
   },
   {
     "name": "skipping",
@@ -338426,7 +338612,12 @@
     "ukphone": "",
     "trans": [
       "vi. 睡觉 【一般现在 过去式 过去分词】"
-    ]
+    ],
+    "transByPos": {
+      "VERB": [
+        "睡觉 【一般现在 过去式 过去分词】"
+      ]
+    }
   },
   {
     "name": "smoke-free",
@@ -338607,7 +338798,12 @@
     "ukphone": "",
     "trans": [
       "v. 肿胀 【一般现在 过去式 过去分词】"
-    ]
+    ],
+    "transByPos": {
+      "VERB": [
+        "肿胀 【一般现在 过去式 过去分词】"
+      ]
+    }
   },
   {
     "name": "swim swam swum",
@@ -345098,7 +345294,12 @@
       "n. 攻击传统观念的人反对崇拜圣像者形容词:iconoclastic"
     ],
     "usphone": "aɪˈkɑːnəklæst",
-    "ukphone": "aɪˈkɒnəklæst"
+    "ukphone": "aɪˈkɒnəklæst",
+    "transByPos": {
+      "NOUN": [
+        "攻击传统观念的人反对崇拜圣像者"
+      ]
+    }
   },
   {
     "name": "undeserving",
@@ -355226,7 +355427,12 @@
       "名 词:doctrinarian"
     ],
     "usphone": "ˌdɑːktrɪˈner",
-    "ukphone": "ˌdɒktrɪˈneə(r)"
+    "ukphone": "ˌdɒktrɪˈneə(r)",
+    "transByPos": {
+      "ADJ": [
+        "教条(主义)的"
+      ]
+    }
   },
   {
     "name": "unfertilized",
@@ -355767,7 +355973,12 @@
       "n. 自言自语 (戏剧中的)独白复 数: soliloquies"
     ],
     "usphone": "səˈlɪləkwi",
-    "ukphone": "səˈlɪləkwi"
+    "ukphone": "səˈlɪləkwi",
+    "transByPos": {
+      "NOUN": [
+        "自言自语 (戏剧中的)独白复 数: soliloquies"
+      ]
+    }
   },
   {
     "name": "tempestuous",
@@ -360187,7 +360398,15 @@
     "trans": [
       "v. to impose, involve, or imply as a necessary accompaniment or result",
       "使需要，导致"
-    ]
+    ],
+    "transByPos": {
+      "VERB": [
+        "to impose",
+        "involve",
+        "or imply as a necessary accompaniment or result 使需要",
+        "导致"
+      ]
+    }
   },
   {
     "name": "uninformative",
@@ -361988,7 +362207,12 @@
       "n. 读写困难名 词:dyslectic"
     ],
     "usphone": "dɪs'lɛksɪə",
-    "ukphone": "dɪs'leksɪə"
+    "ukphone": "dɪs'leksɪə",
+    "transByPos": {
+      "NOUN": [
+        "读写困难"
+      ]
+    }
   },
   {
     "name": "gerontology",
@@ -362040,7 +362264,12 @@
       "n. 正牙学名 词:orthodontist"
     ],
     "usphone": "ˌɔrθə'dɑntɪks",
-    "ukphone": "ˌɔːθə'dɒntɪks"
+    "ukphone": "ˌɔːθə'dɒntɪks",
+    "transByPos": {
+      "NOUN": [
+        "正牙学"
+      ]
+    }
   },
   {
     "name": "pasteurize",
@@ -362128,7 +362357,12 @@
       "名 词:vivisectionist"
     ],
     "usphone": "ˌvɪvɪ'sɛkʃən",
-    "ukphone": "vɪvɪ'sekʃ(ə)n"
+    "ukphone": "vɪvɪ'sekʃ(ə)n",
+    "transByPos": {
+      "NOUN": [
+        "活体解剖"
+      ]
+    }
   },
   {
     "name": "anodyne",
@@ -362229,7 +362463,12 @@
   {
     "name": "sanatorium",
     "ukphone": "/ˌsænəˈtɔːriəm/",
-    "trans": "n. 疗养院【记忆】词根记忆：sanat（健康）+orium（地点，场所）→让人重获健康的地方→疗养院"
+    "trans": "n. 疗养院【记忆】词根记忆：sanat（健康）+orium（地点，场所）→让人重获健康的地方→疗养院",
+    "transByPos": {
+      "NOUN": [
+        "疗养院【记忆】词根记忆：sanat（健康）+orium（地点，场所）→让人重获健康的地方→疗养院"
+      ]
+    }
   },
   {
     "name": "transfuse",
@@ -362379,7 +362618,12 @@
       "名 词:paleontologist"
     ],
     "usphone": "ˌpelɪɑn'tɑlədʒi",
-    "ukphone": "ˌpæɪlɪɒn'tɒlədʒɪ"
+    "ukphone": "ˌpæɪlɪɒn'tɒlədʒɪ",
+    "transByPos": {
+      "NOUN": [
+        "古生物学"
+      ]
+    }
   },
   {
     "name": "calipers",
@@ -362510,7 +362754,12 @@
       "n. 咒语形容词:incantatory"
     ],
     "usphone": "ˌɪnkæn'teʃən",
-    "ukphone": "ɪnkæn'teɪʃ(ə)n"
+    "ukphone": "ɪnkæn'teɪʃ(ə)n",
+    "transByPos": {
+      "NOUN": [
+        "咒语"
+      ]
+    }
   },
   {
     "name": "malapropism",
@@ -372081,7 +372330,12 @@
       "adj. 吵吵嚷嚷的大声叫喊的副 词:vociferously"
     ],
     "usphone": "vo'sɪfərəs",
-    "ukphone": "və(ʊ)'sɪf(ə)rəs"
+    "ukphone": "və(ʊ)'sɪf(ə)rəs",
+    "transByPos": {
+      "ADJ": [
+        "吵吵嚷嚷的大声叫喊的"
+      ]
+    }
   },
   {
     "name": "rebus",
@@ -373732,7 +373986,13 @@
     "trans": [
       "adj. not like talking about themselves or drawing attention to themselves",
       "谦逊的，不出风头的"
-    ]
+    ],
+    "transByPos": {
+      "ADJ": [
+        "not like talking about themselves or drawing attention to themselves 谦逊的",
+        "不出风头的"
+      ]
+    }
   },
   {
     "name": "self-perpetuating",
@@ -375092,7 +375352,12 @@
     "name": "manoeuvre/maneuver",
     "trans": [
       "机动， 策略 (noun, vt.)"
-    ]
+    ],
+    "transByPos": {
+      "VERB": [
+        ")"
+      ]
+    }
   },
   {
     "usphone": "/ˈodɚ/",
@@ -402237,7 +402502,12 @@
   {
     "name": "funnyman",
     "ukphone": "/ˈfʌniˌmæn/",
-    "trans": "n. 滑稽演员【记忆】合成词：funny（滑稽的）+man（人）→滑稽演员"
+    "trans": "n. 滑稽演员【记忆】合成词：funny（滑稽的）+man（人）→滑稽演员",
+    "transByPos": {
+      "NOUN": [
+        "滑稽演员【记忆】合成词：funny（滑稽的）+man（人）→滑稽演员"
+      ]
+    }
   },
   {
     "name": "stagehand",
@@ -402430,7 +402700,12 @@
   {
     "name": "codification",
     "ukphone": "/ˌkəʊdɪfɪˈkeɪʃn/",
-    "trans": "n. 法典编纂【记忆】词根记忆：cod(e)（编码）+ification（形成…）→法典编纂"
+    "trans": "n. 法典编纂【记忆】词根记忆：cod(e)（编码）+ification（形成…）→法典编纂",
+    "transByPos": {
+      "NOUN": [
+        "法典编纂【记忆】词根记忆：cod(e)（编码）+ification（形成…）→法典编纂"
+      ]
+    }
   },
   {
     "name": "interrogatory",
@@ -402877,7 +403152,12 @@
   {
     "name": "filmmaking",
     "ukphone": "/ˈfɪlmˌmeɪkɪŋ/",
-    "trans": "n. 电影制作【记忆】合成词：film（电影）+making（制作）→电影制作"
+    "trans": "n. 电影制作【记忆】合成词：film（电影）+making（制作）→电影制作",
+    "transByPos": {
+      "NOUN": [
+        "电影制作【记忆】合成词：film（电影）+making（制作）→电影制作"
+      ]
+    }
   },
   {
     "name": "full shot",
@@ -404206,7 +404486,12 @@
   {
     "name": "paraconsciously",
     "ukphone": "/ˌpærəˈkɒnʃəsli/",
-    "trans": "adv. 超意识地【记忆】词根记忆：access（接近）+ible（能…的）→能接近的"
+    "trans": "adv. 超意识地【记忆】词根记忆：access（接近）+ible（能…的）→能接近的",
+    "transByPos": {
+      "ADV": [
+        "超意识地【记忆】词根记忆：access（接近）+ible（能…的）→能接近的"
+      ]
+    }
   },
   {
     "name": "emotional state",
@@ -404762,7 +405047,12 @@
   {
     "name": "diffusive",
     "ukphone": "/dɪˈfjuːsɪv/",
-    "trans": "adj. 扩散的【记忆】词根记忆：dif（分开）+fus（流）+ive（…的） →分流→散播扩散的"
+    "trans": "adj. 扩散的【记忆】词根记忆：dif（分开）+fus（流）+ive（…的） →分流→散播扩散的",
+    "transByPos": {
+      "ADJ": [
+        "扩散的【记忆】词根记忆：dif（分开）+fus（流）+ive（…的） →分流→散播扩散的"
+      ]
+    }
   },
   {
     "name": "angina",
@@ -406674,7 +406964,12 @@
   {
     "name": "centralisation",
     "ukphone": "/ˌsentrəlaɪˈzeɪʃn/",
-    "trans": "n. 集中化【记忆】词根记忆：central（中心的）+isation（…化）→集中化"
+    "trans": "n. 集中化【记忆】词根记忆：central（中心的）+isation（…化）→集中化",
+    "transByPos": {
+      "NOUN": [
+        "集中化【记忆】词根记忆：central（中心的）+isation（…化）→集中化"
+      ]
+    }
   },
   {
     "name": "city planner",
@@ -406685,7 +406980,12 @@
   {
     "name": "commercialisation",
     "ukphone": "/kəˌmɜːʃəlaɪˈzeɪʃn/",
-    "trans": "n. 商业化【记忆】词根记忆：commercial（商业的）+isation （…化）→商业化"
+    "trans": "n. 商业化【记忆】词根记忆：commercial（商业的）+isation （…化）→商业化",
+    "transByPos": {
+      "NOUN": [
+        "商业化【记忆】词根记忆：commercial（商业的）+isation （…化）→商业化"
+      ]
+    }
   },
   {
     "name": "real estate",
@@ -407741,7 +408041,12 @@
   {
     "name": "germiculture",
     "ukphone": "/ˈdʒɜːmɪˌkʌltʃə(r)/",
-    "trans": "n. 细菌培养【记忆】词根记忆：germ（细菌）+i+culture（培养） →细菌培养"
+    "trans": "n. 细菌培养【记忆】词根记忆：germ（细菌）+i+culture（培养） →细菌培养",
+    "transByPos": {
+      "NOUN": [
+        "细菌培养【记忆】词根记忆：germ（细菌）+i+culture（培养） →细菌培养"
+      ]
+    }
   },
   {
     "name": "involution form",
@@ -407976,7 +408281,12 @@
   {
     "name": "tribalism",
     "ukphone": "/ˈtraɪbəˌlɪzəm/",
-    "trans": "n. 部落制【记忆】词根记忆：tribal（部落的）+ism（…制度）→部落制"
+    "trans": "n. 部落制【记忆】词根记忆：tribal（部落的）+ism（…制度）→部落制",
+    "transByPos": {
+      "NOUN": [
+        "部落制【记忆】词根记忆：tribal（部落的）+ism（…制度）→部落制"
+      ]
+    }
   },
   {
     "name": "between jobs",
@@ -408185,7 +408495,12 @@
   {
     "name": "anti-social",
     "ukphone": "/ˌæntiˈsəʊʃl/",
-    "trans": "adj. 反社会的【记忆】词根记忆：anti（反）+social（社会的）→反社会的"
+    "trans": "adj. 反社会的【记忆】词根记忆：anti（反）+social（社会的）→反社会的",
+    "transByPos": {
+      "ADJ": [
+        "反社会的【记忆】词根记忆：anti（反）+social（社会的）→反社会的"
+      ]
+    }
   },
   {
     "name": "bosom friend",
@@ -408196,7 +408511,12 @@
   {
     "name": "comrade-in-arms",
     "ukphone": "/ˌkɒmreɪd ɪn ˈɑːmz/",
-    "trans": "n. 战友【记忆】合成词：comrade（同志）+in+arms（手臂）→手挽手的同志→战友"
+    "trans": "n. 战友【记忆】合成词：comrade（同志）+in+arms（手臂）→手挽手的同志→战友",
+    "transByPos": {
+      "NOUN": [
+        "战友【记忆】合成词：comrade（同志）+in+arms（手臂）→手挽手的同志→战友"
+      ]
+    }
   },
   {
     "name": "confidante",
@@ -408232,12 +408552,22 @@
   {
     "name": "extroverted",
     "ukphone": "/ˈekstrəvɜːtɪd/",
-    "trans": "adj. 性格外向的【记忆】词根记忆：extro（以外）+vert（转）+ ed（…的）→性格向外转→外向"
+    "trans": "adj. 性格外向的【记忆】词根记忆：extro（以外）+vert（转）+ ed（…的）→性格向外转→外向",
+    "transByPos": {
+      "ADJ": [
+        "性格外向的【记忆】词根记忆：extro（以外）+vert（转）+ ed（…的）→性格向外转→外向"
+      ]
+    }
   },
   {
     "name": "fellow-apprentice",
     "ukphone": "/ˈfeləʊ əˈprentɪs/",
-    "trans": "n. 师兄弟【记忆】合成词：fellow（同伴）+apprentice（学徒）→同为学徒→师兄弟"
+    "trans": "n. 师兄弟【记忆】合成词：fellow（同伴）+apprentice（学徒）→同为学徒→师兄弟",
+    "transByPos": {
+      "NOUN": [
+        "师兄弟【记忆】合成词：fellow（同伴）+apprentice（学徒）→同为学徒→师兄弟"
+      ]
+    }
   },
   {
     "name": "introverted",
@@ -408352,7 +408682,12 @@
   {
     "name": "advocator",
     "ukphone": "/ˈædvəˌkeɪtə/",
-    "trans": "n. 辩护者【记忆】词根记忆：ad（加强）+voc（叫喊）+ at+or （人）→一再呼吁的人→辩护者"
+    "trans": "n. 辩护者【记忆】词根记忆：ad（加强）+voc（叫喊）+ at+or （人）→一再呼吁的人→辩护者",
+    "transByPos": {
+      "NOUN": [
+        "辩护者【记忆】词根记忆：ad（加强）+voc（叫喊）+ at+or （人）→一再呼吁的人→辩护者"
+      ]
+    }
   },
   {
     "name": "field survey",
@@ -408792,7 +409127,12 @@
   {
     "name": "code-switching",
     "ukphone": "/ˈkəʊd swɪtʃɪŋ/",
-    "trans": "n. 转换语言【记忆】合成词：code（编码）+switching（转换） →转换语言"
+    "trans": "n. 转换语言【记忆】合成词：code（编码）+switching（转换） →转换语言",
+    "transByPos": {
+      "NOUN": [
+        "转换语言【记忆】合成词：code（编码）+switching（转换） →转换语言"
+      ]
+    }
   },
   {
     "name": "cultural background",
@@ -408883,12 +409223,22 @@
   {
     "name": "hydrophone",
     "ukphone": "/ˈhaɪdrəˌfəʊn/",
-    "trans": "n. 水中听音器【记忆】词根记忆：hydro（水）+phone（听筒）→水中听音器"
+    "trans": "n. 水中听音器【记忆】词根记忆：hydro（水）+phone（听筒）→水中听音器",
+    "transByPos": {
+      "NOUN": [
+        "水中听音器【记忆】词根记忆：hydro（水）+phone（听筒）→水中听音器"
+      ]
+    }
   },
   {
     "name": "infrasound",
     "ukphone": "/ˈɪnfrəˌsaʊnd/",
-    "trans": "n. 次声【记忆】词根记忆：infra（下，低）+sound（声音）→次声"
+    "trans": "n. 次声【记忆】词根记忆：infra（下，低）+sound（声音）→次声",
+    "transByPos": {
+      "NOUN": [
+        "次声【记忆】词根记忆：infra（下，低）+sound（声音）→次声"
+      ]
+    }
   },
   {
     "name": "mechanical wave",
@@ -408940,7 +409290,12 @@
   {
     "name": "amphitheatre",
     "ukphone": "/ˈæmfɪθɪətə(r)/",
-    "trans": "n. 圆形剧场【记忆】词根记忆：amphi（圆形）+theatre（剧场）→圆形剧场"
+    "trans": "n. 圆形剧场【记忆】词根记忆：amphi（圆形）+theatre（剧场）→圆形剧场",
+    "transByPos": {
+      "NOUN": [
+        "圆形剧场【记忆】词根记忆：amphi（圆形）+theatre（剧场）→圆形剧场"
+      ]
+    }
   },
   {
     "name": "background wall",
@@ -409101,7 +409456,12 @@
   {
     "name": "macro-control",
     "ukphone": "/ˈmækrəʊkənˈtrəʊl/",
-    "trans": "n. 宏观调控【记忆】词根记忆：macro（宏大）+control（控制）→宏观调控"
+    "trans": "n. 宏观调控【记忆】词根记忆：macro（宏大）+control（控制）→宏观调控",
+    "transByPos": {
+      "NOUN": [
+        "宏观调控【记忆】词根记忆：macro（宏大）+control（控制）→宏观调控"
+      ]
+    }
   },
   {
     "name": "social security",
@@ -409760,7 +410120,12 @@
   {
     "name": "unsupportive",
     "ukphone": "/ˌʌnsəˈpɔːtɪv/",
-    "trans": "adj. 不支持的【记忆】词根记忆：un（不）+support（支持）+ ive（…的）→不支持的"
+    "trans": "adj. 不支持的【记忆】词根记忆：un（不）+support（支持）+ ive（…的）→不支持的",
+    "transByPos": {
+      "ADJ": [
+        "不支持的【记忆】词根记忆：un（不）+support（支持）+ ive（…的）→不支持的"
+      ]
+    }
   },
   {
     "name": "agrochemical",
@@ -409969,7 +410334,12 @@
   {
     "name": "motivating",
     "ukphone": "/ˌməʊtɪˈveɪtɪŋ/",
-    "trans": "adj. 激励人的【记忆】词根记忆：motivat（e）（激励）+ing（令人…的）→激励人的"
+    "trans": "adj. 激励人的【记忆】词根记忆：motivat（e）（激励）+ing（令人…的）→激励人的",
+    "transByPos": {
+      "ADJ": [
+        "激励人的【记忆】词根记忆：motivat（e）（激励）+ing（令人…的）→激励人的"
+      ]
+    }
   },
   {
     "name": "base on",
@@ -453407,7 +453777,12 @@
     "name": "ANSI",
     "trans": [
       "abbr. 美国国家标准学会(=American National Standards Institute)"
-    ]
+    ],
+    "transByPos": {
+      "X": [
+        "美国国家标准学会(=American National Standards Institute)"
+      ]
+    }
   },
   {
     "name": "runtime",
@@ -503316,7 +503691,12 @@
       "v.<主英>=intellectualize"
     ],
     "usphone": "ˌɪntəˈlɛktjʊəˌlaɪz",
-    "ukphone": "ˌɪntəˈlɛktjʊəˌlaɪz"
+    "ukphone": "ˌɪntəˈlɛktjʊəˌlaɪz",
+    "transByPos": {
+      "VERB": [
+        "<主英>=intellectualize"
+      ]
+    }
   },
   {
     "name": "generalist",
@@ -543908,7 +544288,12 @@
       "n. 盗窃癖名 词:kleptomaniac"
     ],
     "usphone": "'klɛptə'menɪə",
-    "ukphone": "ˌkleptə(ʊ)'meɪnɪə"
+    "ukphone": "ˌkleptə(ʊ)'meɪnɪə",
+    "transByPos": {
+      "NOUN": [
+        "盗窃癖"
+      ]
+    }
   },
   {
     "name": "dipsomaniac",
@@ -544681,7 +545066,12 @@
       "n. 泛神论名 词:pantheist"
     ],
     "usphone": "'pænθɪɪzəm",
-    "ukphone": "'pænθiːɪz(ə)m"
+    "ukphone": "'pænθiːɪz(ə)m",
+    "transByPos": {
+      "NOUN": [
+        "泛神论"
+      ]
+    }
   },
   {
     "name": "panoply",
@@ -544824,7 +545214,12 @@
       "n. 无知形容词:nescient"
     ],
     "usphone": "ˈnɛʃəns",
-    "ukphone": "'nesiəns"
+    "ukphone": "'nesiəns",
+    "transByPos": {
+      "NOUN": [
+        "无知"
+      ]
+    }
   },
   {
     "name": "conjunct",
@@ -544846,7 +545241,12 @@
       "adj. 双向的名 词:bipartition"
     ],
     "usphone": "baɪ'pɑrtaɪt",
-    "ukphone": "baɪ'pɑːtaɪt"
+    "ukphone": "baɪ'pɑːtaɪt",
+    "transByPos": {
+      "ADJ": [
+        "双向的"
+      ]
+    }
   },
   {
     "name": "calliope",
@@ -544894,7 +545294,12 @@
       "n. 心(脏)病学名 词:cardiologist"
     ],
     "usphone": "ˌkɑrdɪ'ɑlədʒi",
-    "ukphone": "kɑːdɪ'ɒlədʒɪ"
+    "ukphone": "kɑːdɪ'ɒlədʒɪ",
+    "transByPos": {
+      "NOUN": [
+        "心(脏)病学"
+      ]
+    }
   },
   {
     "name": "parterre",
@@ -545499,7 +545904,12 @@
       "名 词:geophysicist"
     ],
     "usphone": "ˌdʒio'fɪzɪks",
-    "ukphone": "ˌdʒiːə(ʊ)'fɪzɪks"
+    "ukphone": "ˌdʒiːə(ʊ)'fɪzɪks",
+    "transByPos": {
+      "NOUN": [
+        "地球物理学"
+      ]
+    }
   },
   {
     "name": "geostationary",
@@ -545779,7 +546189,12 @@
       "adj. 四足动物(的)名 词:tetrapod"
     ],
     "usphone": "ˈtɛtrəˌpɑd",
-    "ukphone": "'tetrəpɒd"
+    "ukphone": "'tetrəpɒd",
+    "transByPos": {
+      "ADJ": [
+        "四足动物(的)"
+      ]
+    }
   },
   {
     "name": "lycanthropy",
@@ -545861,7 +546276,12 @@
       "adj. 水力的副 词:hydrodynamically"
     ],
     "usphone": "ˌhaɪdrodaɪ'næmɪk",
-    "ukphone": "ˌhaɪdrəʊdaɪ'næmɪk"
+    "ukphone": "ˌhaɪdrəʊdaɪ'næmɪk",
+    "transByPos": {
+      "ADJ": [
+        "水力的"
+      ]
+    }
   },
   {
     "name": "gradation",
@@ -546048,7 +546468,12 @@
       "n. 亲英派的人名 词:Anglophilia"
     ],
     "usphone": "ˈæŋɡləˌfaɪl",
-    "ukphone": "ˈæŋɡləufail"
+    "ukphone": "ˈæŋɡləufail",
+    "transByPos": {
+      "NOUN": [
+        "亲英派的人"
+      ]
+    }
   },
   {
     "name": "decalogue",
@@ -546133,7 +546558,12 @@
       "n. [音]半音程形容词:semitonic"
     ],
     "usphone": "'sɛmɪton",
-    "ukphone": "'semɪtəʊn"
+    "ukphone": "'semɪtəʊn",
+    "transByPos": {
+      "NOUN": [
+        "[音]半音程"
+      ]
+    }
   },
   {
     "name": "hyperventilate",
@@ -546187,7 +546617,12 @@
       "n. [语言学]转喻形容词:metonymic"
     ],
     "usphone": "məˈtɑnəmi",
-    "ukphone": "mi'tɔnimi"
+    "ukphone": "mi'tɔnimi",
+    "transByPos": {
+      "NOUN": [
+        "[语言学]转喻"
+      ]
+    }
   },
   {
     "name": "contraindication",
@@ -546649,7 +547084,12 @@
       "n. 小气候(指森林、城市、洞穴等局部地区的气候)名 词:microclimatology"
     ],
     "usphone": "'maɪkro,klaɪmɪt",
-    "ukphone": "'maɪkrə(ʊ),klaɪmət"
+    "ukphone": "'maɪkrə(ʊ),klaɪmət",
+    "transByPos": {
+      "NOUN": [
+        "小气候(指森林、城市、洞穴等局部地区的气候)"
+      ]
+    }
   },
   {
     "name": "multidisciplinary",
@@ -546713,7 +547153,12 @@
       "n. 血液学名 词:hematologist"
     ],
     "usphone": "ˌhimə'tɑlədʒi",
-    "ukphone": "ˌhemə'tɒlədʒɪ"
+    "ukphone": "ˌhemə'tɒlədʒɪ",
+    "transByPos": {
+      "NOUN": [
+        "血液学"
+      ]
+    }
   },
   {
     "name": "bursitis",
@@ -546896,7 +547341,12 @@
       "名 词:endoscopy"
     ],
     "usphone": "ˈɛndəˌskop",
-    "ukphone": "'endəskəʊp"
+    "ukphone": "'endəskəʊp",
+    "transByPos": {
+      "NOUN": [
+        "内窥镜"
+      ]
+    }
   },
   {
     "name": "arthroscopy",
@@ -546905,7 +547355,12 @@
       "形容词:arthroscopic"
     ],
     "usphone": "ɑrˈθrɑskəpi",
-    "ukphone": "ɑ:'θrɔskəpi"
+    "ukphone": "ɑ:'θrɔskəpi",
+    "transByPos": {
+      "NOUN": [
+        "关节镜检查"
+      ]
+    }
   },
   {
     "name": "laparoscopy",
@@ -546913,7 +547368,12 @@
       "n. 腹腔镜检查形容词:laparoscopic"
     ],
     "usphone": "ˌlæpə'rɑskəpi",
-    "ukphone": "ˌlæpə'rɒskəpɪ"
+    "ukphone": "ˌlæpə'rɒskəpɪ",
+    "transByPos": {
+      "NOUN": [
+        "腹腔镜检查"
+      ]
+    }
   },
   {
     "name": "oscilloscope",
@@ -546987,7 +547447,12 @@
       "n. 预防复 数: prophylaxes"
     ],
     "usphone": "ˌprofɪ'læksɪs",
-    "ukphone": "ˌprɒfɪ'læksɪs"
+    "ukphone": "ˌprɒfɪ'læksɪs",
+    "transByPos": {
+      "NOUN": [
+        "预防复 数: prophylaxes"
+      ]
+    }
   },
   {
     "name": "taxidermist",
@@ -547060,7 +547525,12 @@
       "n. 验尸动 词:necropsy"
     ],
     "usphone": "'nɛkrɑpsi",
-    "ukphone": "'nekrɒpsɪ"
+    "ukphone": "'nekrɒpsɪ",
+    "transByPos": {
+      "NOUN": [
+        "验尸"
+      ]
+    }
   },
   {
     "name": "paleography",
@@ -547069,7 +547539,12 @@
       "形容词:paleographic"
     ],
     "usphone": "ˌpelɪ'ɑgrəfi",
-    "ukphone": "ˌpeɪlɪ'ɒɡrəfiː"
+    "ukphone": "ˌpeɪlɪ'ɒɡrəfiː",
+    "transByPos": {
+      "NOUN": [
+        "古文书学古字体"
+      ]
+    }
   },
   {
     "name": "Paleozoic",
@@ -547195,7 +547670,12 @@
       "名 词:neurotoxicity"
     ],
     "usphone": "ˌnʊro'tɑksɪn",
-    "ukphone": "ˌnjʊərəʊ'tɒksɪn"
+    "ukphone": "ˌnjʊərəʊ'tɒksɪn",
+    "transByPos": {
+      "NOUN": [
+        "神经毒素"
+      ]
+    }
   },
   {
     "name": "attenuated",
@@ -552662,7 +553142,13 @@
     "name": "cpp",
     "trans": [
       "n. [计算机] C++ 文件扩展名，用于保存 C++ 源代码"
-    ]
+    ],
+    "transByPos": {
+      "NOUN": [
+        "[计算机] C++ 文件扩展名",
+        "用于保存 C++ 源代码"
+      ]
+    }
   },
   {
     "name": "nullptr",

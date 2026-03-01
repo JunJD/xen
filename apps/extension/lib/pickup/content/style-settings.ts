@@ -20,11 +20,14 @@ export function applyPickupStyleSettings(settings: PickupSettings) {
   if (!root) {
     return;
   }
+  let tokenHostStateChanged = false;
   if (root.dataset[ANNOTATION_STYLE_DATASET_KEY] !== settings.annotationStyle) {
     root.dataset[ANNOTATION_STYLE_DATASET_KEY] = settings.annotationStyle;
+    tokenHostStateChanged = true;
   }
   if (root.dataset[HIGHLIGHT_STYLE_DATASET_KEY] !== settings.highlightStyle) {
     root.dataset[HIGHLIGHT_STYLE_DATASET_KEY] = settings.highlightStyle;
+    tokenHostStateChanged = true;
   }
   const blurFlag = settings.translationBlurEnabled ? 'true' : 'false';
   if (root.dataset[TRANSLATION_BLUR_DATASET_KEY] !== blurFlag) {
@@ -34,5 +37,7 @@ export function applyPickupStyleSettings(settings: PickupSettings) {
   root.style.setProperty(HIGHLIGHT_OPACITY_VAR, `${highlightOpacity}%`);
   const underlineOpacity = clampOpacity(Math.max(30, Math.min(100, highlightOpacity + 20)));
   root.style.setProperty(UNDERLINE_OPACITY_VAR, `${underlineOpacity}%`);
-  syncPickupTokenHostStates();
+  if (tokenHostStateChanged) {
+    syncPickupTokenHostStates();
+  }
 }

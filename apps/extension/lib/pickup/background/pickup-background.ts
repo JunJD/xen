@@ -18,6 +18,7 @@ import {
 } from '@/lib/pickup/constants';
 import { buildWebAuthUrl } from '@/lib/auth/clerk';
 import {
+  getVocabDictionaryManifest,
   loadVocabDictionary,
   lookupVocabAllPos,
   lookupVocabPhones,
@@ -47,6 +48,7 @@ import {
   getStoredPickupDictionaryIds,
   getStoredTranslateProvider,
   isTranslateProvider,
+  setStoredPickupDictionaryIds,
   setStoredTranslateProvider,
   translateText,
 } from './translate';
@@ -310,9 +312,30 @@ async function buildTranslationPreviews(
     return [];
   }
   const includeParagraphTranslation = options.includeParagraphTranslation !== false;
+  const manifest = await getVocabDictionaryManifest();
+  const availableDictionaryIds = new Set(manifest.dictionaries.map(item => item.id));
   const storedDictionaryIds = await getStoredPickupDictionaryIds();
+  let resolvedDictionaryIds = (storedDictionaryIds ?? []).filter(id => availableDictionaryIds.has(id));
+  if (resolvedDictionaryIds.length === 0) {
+    resolvedDictionaryIds = manifest.defaultDictionaryIds.filter(id => availableDictionaryIds.has(id));
+  }
+  if (resolvedDictionaryIds.length === 0) {
+    const firstId = manifest.dictionaries[0]?.id;
+    if (firstId) {
+      resolvedDictionaryIds = [firstId];
+    }
+  }
+  if (resolvedDictionaryIds.length === 0) {
+    throw new Error('Dictionary manifest has no valid dictionary ids.');
+  }
+  const needsMigration = !storedDictionaryIds
+    || storedDictionaryIds.length !== resolvedDictionaryIds.length
+    || storedDictionaryIds.some((id, index) => id !== resolvedDictionaryIds[index]);
+  if (needsMigration) {
+    await setStoredPickupDictionaryIds(resolvedDictionaryIds);
+  }
   const dictionary = await loadVocabDictionary({
-    dictionaryIds: storedDictionaryIds ?? undefined,
+    dictionaryIds: resolvedDictionaryIds,
   });
   if (!includeParagraphTranslation) {
     return paragraphs.map(paragraph => buildParagraphTranslationPreview(paragraph, dictionary, ''));
@@ -326,17 +349,21 @@ async function buildTranslationPreviews(
     const cleanText = sourceText.replace(/\u200B/g, '').trim();
     let paragraphText = '';
     if (cleanText) {
-      const sourceHash = sha256(cleanText);
-      const cached = await translationCache.get(sourceHash);
-      const cachedValue = cached?.value?.trim() ?? '';
-      if (cachedValue) {
-        paragraphText = cached!.value;
-      } else {
-        paragraphText = await translateText(provider, { text: cleanText });
-        if (paragraphText.trim()) {
-          await translationCache.set(sourceHash, paragraphText);
-          wroteCache = true;
+      try {
+        const sourceHash = sha256(cleanText);
+        const cached = await translationCache.get(sourceHash);
+        const cachedValue = cached?.value?.trim() ?? '';
+        if (cachedValue) {
+          paragraphText = cached!.value;
+        } else {
+          paragraphText = await translateText(provider, { text: cleanText });
+          if (paragraphText.trim()) {
+            await translationCache.set(sourceHash, paragraphText);
+            wroteCache = true;
+          }
         }
+      } catch (error) {
+        console.warn('Pickup paragraph translation failed, fallback to token-only preview:', error);
       }
     }
     previews.push(buildParagraphTranslationPreview(paragraph, dictionary, paragraphText));

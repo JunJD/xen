@@ -61,12 +61,14 @@ import {
   DEFAULT_LLM_MODEL,
   DEFAULT_LLM_MODEL_LIST,
   ensureTranslateProviderStored,
+  getStoredPickupDictionaryIds,
   getStoredLlmModel,
   getStoredLlmModelList,
   hasStoredLlmApiKey,
   setStoredLlmApiKey,
   setStoredLlmModel,
   setStoredLlmModelList,
+  setStoredPickupDictionaryIds,
   setStoredTranslateProvider,
 } from '@/lib/pickup/background/translate/storage';
 import {
@@ -74,6 +76,7 @@ import {
   TRANSLATE_PROVIDERS,
   TRANSLATE_PROVIDER_LABELS,
 } from '@/lib/pickup/translate/options';
+import { getVocabDictionaryManifest } from '@/lib/pickup/vocab/dictionary';
 
 const ANNOTATION_STYLE_OPTIONS: Array<{
   id: PickupAnnotationStyle;
@@ -98,6 +101,14 @@ const MODE_OPTIONS: Array<{ id: PickupRenderMode; label: string; hint: string }>
   { id: PICKUP_RENDER_MODE_SYNTAX_REBUILD, label: '翻译语法', hint: '默认显示结构化译文。' },
   { id: PICKUP_RENDER_MODE_VOCAB_INFUSION, label: '原生语法', hint: '强调原文结构与词汇。' },
 ];
+
+type DictionaryOption = {
+  id: string;
+  name: string;
+  description?: string;
+  source?: string;
+  icon?: string;
+};
 
 const NAV_ITEMS = [
   {
@@ -217,6 +228,8 @@ export default function App() {
   const [settings, setSettings] = useState(DEFAULT_PICKUP_SETTINGS);
   const [ignoreText, setIgnoreText] = useState('');
   const [translateProvider, setTranslateProvider] = useState(DEFAULT_TRANSLATE_PROVIDER);
+  const [dictionaryOptions, setDictionaryOptions] = useState<DictionaryOption[]>([]);
+  const [selectedDictionaryId, setSelectedDictionaryId] = useState('');
   const [llmModel, setLlmModel] = useState(DEFAULT_LLM_MODEL);
   const [llmModels, setLlmModels] = useState<string[]>(DEFAULT_LLM_MODEL_LIST);
   const [newModelInput, setNewModelInput] = useState('');
@@ -229,6 +242,10 @@ export default function App() {
   const scrollTargetRef = useRef<HTMLDivElement | null>(null);
 
   const vocabColor = useMemo(() => PICKUP_TYPES[1], []);
+  const selectedDictionaryOption = useMemo(
+    () => dictionaryOptions.find(item => item.id === selectedDictionaryId) ?? null,
+    [dictionaryOptions, selectedDictionaryId],
+  );
 
   useEffect(() => {
     let active = true;
@@ -239,12 +256,34 @@ export default function App() {
         const model = await getStoredLlmModel();
         const models = await getStoredLlmModelList();
         const apiKeyReady = await hasStoredLlmApiKey();
+        const dictionaryManifest = await getVocabDictionaryManifest();
+        const options = dictionaryManifest.dictionaries.map(item => ({
+          id: item.id,
+          name: item.name,
+          description: item.description,
+          source: item.source,
+          icon: item.icon,
+        }));
+        const optionIds = new Set(options.map(item => item.id));
+        const storedDictionaryIds = await getStoredPickupDictionaryIds();
+        const selectedDictionaryId = (storedDictionaryIds ?? []).find(id => optionIds.has(id))
+          ?? dictionaryManifest.defaultDictionaryIds.find(id => optionIds.has(id))
+          ?? options[0]?.id
+          ?? '';
+        if (!selectedDictionaryId) {
+          throw new Error('Dictionary manifest has no available dictionary ids.');
+        }
+        if (!storedDictionaryIds || storedDictionaryIds.length !== 1 || storedDictionaryIds[0] !== selectedDictionaryId) {
+          await setStoredPickupDictionaryIds([selectedDictionaryId]);
+        }
         if (!active) {
           return;
         }
         setSettings(loadedSettings);
         setIgnoreText(loadedSettings.ignoreList.join('\n'));
         setTranslateProvider(provider);
+        setDictionaryOptions(options);
+        setSelectedDictionaryId(selectedDictionaryId);
         setLlmModel(model);
         setLlmModels(models);
         setHasApiKey(apiKeyReady);
@@ -372,6 +411,21 @@ export default function App() {
     try {
       await setStoredTranslateProvider(nextProvider);
       setTranslateProvider(nextProvider);
+      setSaveStatus('saved');
+      window.setTimeout(() => setSaveStatus('idle'), 1200);
+    } catch {
+      setSaveStatus('error');
+    }
+  };
+
+  const handleDictionaryChange = async (nextDictionaryId: string | null) => {
+    if (!nextDictionaryId || nextDictionaryId === selectedDictionaryId) {
+      return;
+    }
+    setSaveStatus('saving');
+    try {
+      await setStoredPickupDictionaryIds([nextDictionaryId]);
+      setSelectedDictionaryId(nextDictionaryId);
       setSaveStatus('saved');
       window.setTimeout(() => setSaveStatus('idle'), 1200);
     } catch {
@@ -673,6 +727,33 @@ export default function App() {
                   </Select>
                 </SettingRow>
                 <div className="text-xs text-text-tertiary">{providerHint}</div>
+              </div>
+
+              <Separator />
+
+              <div className="grid gap-2">
+                <SettingRow title="词典" description="词汇释义与音标来源。">
+                  <Select value={selectedDictionaryId} onValueChange={handleDictionaryChange}>
+                    <SelectTrigger className="w-full md:w-56">
+                      <SelectValue placeholder="选择词典" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {dictionaryOptions.map(option => (
+                        <SelectItem key={option.id} value={option.id}>
+                          {option.icon ? `${option.icon} ` : ''}{option.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </SettingRow>
+                {selectedDictionaryId ? (
+                  <div className="text-xs text-text-tertiary">
+                    {selectedDictionaryOption?.description ?? '已选择词典。'}
+                    {selectedDictionaryOption?.source
+                      ? ` 来源：${selectedDictionaryOption.source}`
+                      : ''}
+                  </div>
+                ) : null}
               </div>
 
               <Separator />

@@ -20,6 +20,8 @@ export type VocabDictionaryDescriptor = {
   name: string;
   files: string[];
   description?: string;
+  source?: string;
+  icon?: string;
 };
 
 export type VocabDictionaryManifest = {
@@ -317,11 +319,19 @@ function normalizeDictionaryDescriptor(raw: unknown): VocabDictionaryDescriptor 
   const description = typeof record.description === 'string' && record.description.trim()
     ? record.description.trim()
     : undefined;
+  const source = typeof record.source === 'string' && record.source.trim()
+    ? record.source.trim()
+    : undefined;
+  const icon = typeof record.icon === 'string' && record.icon.trim()
+    ? record.icon.trim()
+    : undefined;
   return {
     id,
     name,
     files,
     description,
+    source,
+    icon,
   };
 }
 
@@ -562,6 +572,10 @@ export function lookupVocabTranslation(
   if (posKey) {
     if (entry.byPos?.[posKey]?.length) {
       return `${prefix}${entry.byPos[posKey][0]}${suffix}`;
+    }
+    // For dictionaries without POS labels, allow explicit unknown bucket.
+    if (entry.byPos?.X?.length) {
+      return `${prefix}${entry.byPos.X[0]}${suffix}`;
     }
     return null;
   }

@@ -138,11 +138,20 @@ export function FloatingSidebar() {
   };
 
   const handleToggleTranslation = () => {
+    if (!pickupActive) {
+      return;
+    }
     const detail: PickupControlDetail = { action: PICKUP_CONTROL_ACTION_TOGGLE_TRANSLATION };
     window.dispatchEvent(new CustomEvent(PICKUP_CONTROL_EVENT, { detail }));
   };
 
   const handleToggleTranslationBlur = async () => {
+    if (!pickupActive) {
+      return;
+    }
+    if (!translationEnabled) {
+      return;
+    }
     const next = await setPickupSettings({ translationBlurEnabled: !translationBlurEnabled });
     setTranslationBlurEnabled(next.translationBlurEnabled);
     applyPickupStyleSettings(next);
@@ -155,6 +164,18 @@ export function FloatingSidebar() {
 
   const translationLabel = translationEnabled ? '翻译已开启' : '翻译已关闭';
   const blurLabel = translationBlurEnabled ? '蒙层已开启' : '蒙层已关闭';
+  const translationToggleDisabled = !pickupActive;
+  const blurToggleDisabled = !translationEnabled;
+  const blurControlLabel = !pickupActive
+    ? '译文蒙层（翻译渲染未开启）'
+    : blurToggleDisabled
+      ? '译文蒙层（翻译未开启）'
+      : `译文蒙层（${blurLabel}）`;
+  const blurControlTitle = !pickupActive
+    ? '请先开启翻译渲染，再切换译文蒙层'
+    : blurToggleDisabled
+    ? '请先开启翻译，再切换译文蒙层'
+    : `点击切换译文蒙层（当前：${blurLabel}）`;
   const hiddenTranslate = dockSide === 'right' ? 'translate-x-16' : '-translate-x-16';
   const handleTranslate = dockSide === 'right' ? 'translate-x-5' : '-translate-x-5';
   const alignItems = dockSide === 'right' ? 'items-end' : 'items-start';
@@ -294,9 +315,12 @@ export function FloatingSidebar() {
           <button
             type="button"
             aria-label={`切换翻译（当前：${translationLabel}）`}
-            title={`点击切换翻译（当前：${translationLabel}）`}
+            title={translationToggleDisabled
+              ? '请先开启翻译渲染，再切换翻译'
+              : `点击切换翻译（当前：${translationLabel}）`}
             onClick={handleToggleTranslation}
-            className={`relative ${edgeMargin} flex h-8 w-8 items-center justify-center rounded-full border text-text-secondary transition-all duration-300 hover:bg-background-secondary ${translationEnabled ? 'border-action-link bg-action-link/10' : 'border-border-primary bg-background-quaternary'} ${actionCollapsed} ${actionExpanded} ${revealOnDrag} ${dragTransition}`}
+            disabled={translationToggleDisabled}
+            className={`relative ${edgeMargin} flex h-8 w-8 items-center justify-center rounded-full border text-text-secondary transition-all duration-300 ${translationToggleDisabled ? 'cursor-not-allowed opacity-45' : 'hover:bg-background-secondary'} ${translationEnabled ? 'border-action-link bg-action-link/10' : 'border-border-primary bg-background-quaternary'} ${actionCollapsed} ${actionExpanded} ${revealOnDrag} ${dragTransition}`}
           >
             <Languages className={`h-4 w-4 ${translationEnabled ? 'text-action-link' : 'text-foreground'}`} />
           </button>
@@ -305,10 +329,11 @@ export function FloatingSidebar() {
         {!isDragging && (
           <button
             type="button"
-            aria-label={`译文蒙层（${blurLabel}）`}
-            title={`点击切换译文蒙层（${blurLabel}）`}
+            aria-label={blurControlLabel}
+            title={blurControlTitle}
             onClick={handleToggleTranslationBlur}
-            className={`relative ${edgeMargin} flex h-8 w-8 items-center justify-center rounded-full border border-border-primary bg-background-quaternary text-text-secondary transition-all duration-300 hover:bg-background-secondary ${actionCollapsed} ${actionExpanded} ${revealOnDrag} ${dragTransition}`}
+            disabled={!pickupActive || blurToggleDisabled}
+            className={`relative ${edgeMargin} flex h-8 w-8 items-center justify-center rounded-full border border-border-primary bg-background-quaternary text-text-secondary transition-all duration-300 ${(!pickupActive || blurToggleDisabled) ? 'cursor-not-allowed opacity-45' : 'hover:bg-background-secondary'} ${actionCollapsed} ${actionExpanded} ${revealOnDrag} ${dragTransition}`}
           >
             {translationBlurEnabled ? (
               <EyeOff className="h-4 w-4 text-foreground" />

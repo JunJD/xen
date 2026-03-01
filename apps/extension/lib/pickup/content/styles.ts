@@ -255,8 +255,8 @@ export function ensurePickupStyles() {
     }
     :root[${PICKUP_ROOT_TRANSLATION_BLUR_ATTR}="true"] .${PICKUP_TRANSLATION_PARAGRAPH_CLASS} {
       position: relative;
-      filter: blur(4px) saturate(0.6) grayscale(0.28);
-      opacity: 0.6;
+      filter: blur(2.2px) saturate(0.82) grayscale(0.18);
+      opacity: 0.78;
       transition: filter 0.18s ease, opacity 0.18s ease;
     }
     :root[${PICKUP_ROOT_TRANSLATION_BLUR_ATTR}="true"] .${PICKUP_TRANSLATION_PARAGRAPH_CLASS}::after {
@@ -265,12 +265,12 @@ export function ensurePickupStyles() {
       inset: -1px -2px;
       pointer-events: none;
       border-radius: 4px;
-      opacity: 0.9;
+      opacity: 0.55;
       background: linear-gradient(120deg,
         color-mix(in srgb, var(--xen-pickup-soft-bg, rgba(248, 250, 252, 0.88)) 68%, transparent),
         color-mix(in srgb, var(--xen-pickup-soft-bg, rgba(248, 250, 252, 0.88)) 78%, transparent));
-      backdrop-filter: blur(8px) saturate(0.7);
-      -webkit-backdrop-filter: blur(8px) saturate(0.7);
+      backdrop-filter: blur(4px) saturate(0.9);
+      -webkit-backdrop-filter: blur(4px) saturate(0.9);
       transition: opacity 0.18s ease;
     }
     :root[${PICKUP_ROOT_THEME_ATTR}="${THEME_DARK}"][${PICKUP_ROOT_TRANSLATION_BLUR_ATTR}="true"] .${PICKUP_TRANSLATION_PARAGRAPH_CLASS}::after {
@@ -280,8 +280,8 @@ export function ensurePickupStyles() {
     }
     @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
       :root[${PICKUP_ROOT_TRANSLATION_BLUR_ATTR}="true"] .${PICKUP_TRANSLATION_PARAGRAPH_CLASS} {
-        filter: blur(4.5px) saturate(0.55);
-        opacity: 0.55;
+        filter: blur(2.6px) saturate(0.78);
+        opacity: 0.72;
       }
     }
     :root[${PICKUP_ROOT_TRANSLATION_BLUR_ATTR}="true"] .${PICKUP_TRANSLATION_PARAGRAPH_CLASS}:hover,
@@ -382,6 +382,13 @@ export function ensurePickupStyles() {
       border: 1px solid #e6dac8;
       background: #f3eee6;
       padding: 2px 6px;
+      cursor: pointer;
+      transition: border-color 0.15s ease, background-color 0.15s ease, transform 0.15s ease;
+    }
+    .xen-pickup-tooltip-phone-chip:hover {
+      border-color: rgba(255, 122, 0, 0.52);
+      background: #fff1e3;
+      transform: translateY(-1px);
     }
     .xen-pickup-tooltip-phone-region {
       font-weight: 600;
@@ -494,6 +501,10 @@ export function ensurePickupStyles() {
     :root[${PICKUP_ROOT_THEME_ATTR}="${THEME_DARK}"] .xen-pickup-tooltip-phone-chip {
       border-color: rgba(226, 232, 240, 0.2);
       background: rgba(148, 163, 184, 0.18);
+    }
+    :root[${PICKUP_ROOT_THEME_ATTR}="${THEME_DARK}"] .xen-pickup-tooltip-phone-chip:hover {
+      border-color: rgba(255, 170, 96, 0.62);
+      background: rgba(255, 170, 96, 0.24);
     }
     :root[${PICKUP_ROOT_THEME_ATTR}="${THEME_DARK}"] .xen-pickup-tooltip-phone-region {
       color: rgba(248, 250, 252, 0.92);
