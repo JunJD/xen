@@ -3,6 +3,7 @@ import {
   isPickupRenderMode,
   type PickupRenderMode,
 } from '@/lib/pickup/content/render-mode';
+import { storageGet, storageSet } from '@/lib/platform/storage';
 
 export type PickupAnnotationStyle = 'top' | 'right' | 'none';
 export type PickupHighlightStyle = 'underline' | 'marker' | 'text-color';
@@ -31,45 +32,6 @@ export const DEFAULT_PICKUP_SETTINGS: PickupSettings = {
   translationBlurEnabled: false,
   floatingSidebarEnabled: true,
 };
-
-function getStorageArea() {
-  if (typeof chrome !== 'undefined' && chrome.storage?.local) {
-    return chrome.storage.local;
-  }
-  const browserStorage = (globalThis as { browser?: { storage?: { local?: ChromeStorageAreaLike } } })
-    .browser?.storage?.local;
-  return browserStorage ?? null;
-}
-
-async function storageGet(key: string): Promise<unknown> {
-  const storage = getStorageArea();
-  if (!storage || !storage.get) {
-    throw new Error('Storage unavailable.');
-  }
-  const storageGet = storage.get.bind(storage);
-  return new Promise((resolve, reject) => {
-    try {
-      storageGet([key], (result) => resolve(result?.[key]));
-    } catch (error) {
-      reject(error);
-    }
-  });
-}
-
-async function storageSet(key: string, value: unknown): Promise<void> {
-  const storage = getStorageArea();
-  if (!storage || !storage.set) {
-    throw new Error('Storage unavailable.');
-  }
-  const storageSet = storage.set.bind(storage);
-  return new Promise((resolve, reject) => {
-    try {
-      storageSet({ [key]: value }, () => resolve());
-    } catch (error) {
-      reject(error);
-    }
-  });
-}
 
 function clampNumber(value: unknown, min: number, max: number, fallback: number) {
   if (typeof value !== 'number' || Number.isNaN(value)) {

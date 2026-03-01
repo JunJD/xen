@@ -1,12 +1,12 @@
 import type { PickupSettings } from '@/lib/pickup/settings';
+import {
+  PICKUP_DATASET_ANNOTATION_STYLE_KEY as ANNOTATION_STYLE_DATASET_KEY,
+  PICKUP_DATASET_HIGHLIGHT_STYLE_KEY as HIGHLIGHT_STYLE_DATASET_KEY,
+  PICKUP_DATASET_TRANSLATION_BLUR_KEY as TRANSLATION_BLUR_DATASET_KEY,
+  PICKUP_HIGHLIGHT_OPACITY_CSS_VAR as HIGHLIGHT_OPACITY_VAR,
+  PICKUP_UNDERLINE_OPACITY_CSS_VAR as UNDERLINE_OPACITY_VAR,
+} from './markers';
 import { syncPickupTokenHostStates } from './web-components';
-
-const ANNOTATION_STYLE_DATASET_KEY = 'xenPickupAnnotationStyle';
-const HIGHLIGHT_STYLE_DATASET_KEY = 'xenPickupHighlightStyle';
-const TRANSLATION_BLUR_DATASET_KEY = 'xenPickupTranslationBlur';
-const WORD_LINE_DATASET_KEY = 'xenPickupWordLineEnabled';
-const HIGHLIGHT_OPACITY_VAR = '--xen-pickup-highlight-opacity';
-const UNDERLINE_OPACITY_VAR = '--xen-pickup-underline-opacity';
 
 function clampOpacity(value: number) {
   return Math.min(100, Math.max(0, value));
@@ -29,9 +29,6 @@ export function applyPickupStyleSettings(settings: PickupSettings) {
   const blurFlag = settings.translationBlurEnabled ? 'true' : 'false';
   if (root.dataset[TRANSLATION_BLUR_DATASET_KEY] !== blurFlag) {
     root.dataset[TRANSLATION_BLUR_DATASET_KEY] = blurFlag;
-  }
-  if (root.dataset[WORD_LINE_DATASET_KEY] !== 'true') {
-    root.dataset[WORD_LINE_DATASET_KEY] = 'true';
   }
   const highlightOpacity = clampOpacity(settings.highlightOpacity);
   root.style.setProperty(HIGHLIGHT_OPACITY_VAR, `${highlightOpacity}%`);

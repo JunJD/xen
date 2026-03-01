@@ -1,10 +1,14 @@
-const DEFAULT_TRANSLATION_PREVIEW_ENABLED = false;
-const GLOBAL_KEY = '__xenPickupTranslationPreviewEnabled';
-const STORAGE_KEY = 'xenPickupTranslationPreviewEnabled';
-const DATASET_KEY = 'xenPickupTranslationLineEnabled';
+import { PICKUP_DATASET_TRANSLATION_LINE_ENABLED_KEY } from './markers';
+import { applyModeState, initModeState, persistModeState, resolveModeState } from './mode-state';
 
-type GlobalWithTranslationPreview = typeof globalThis & {
-  __xenPickupTranslationPreviewEnabled?: unknown;
+const DEFAULT_TRANSLATION_PREVIEW_ENABLED = false;
+
+const TRANSLATION_PREVIEW_MODE_CONFIG = {
+  globalKey: '__xenPickupTranslationPreviewEnabled',
+  storageKey: 'xenPickupTranslationPreviewEnabled',
+  datasetKey: PICKUP_DATASET_TRANSLATION_LINE_ENABLED_KEY,
+  defaultValue: DEFAULT_TRANSLATION_PREVIEW_ENABLED,
+  normalize: normalizeTranslationPreviewEnabled,
 };
 
 function normalizeTranslationPreviewEnabled(value: unknown): boolean | null {
@@ -18,60 +22,17 @@ function normalizeTranslationPreviewEnabled(value: unknown): boolean | null {
 }
 
 export function resolvePickupTranslationPreviewEnabled() {
-  if (typeof globalThis === 'undefined') {
-    return DEFAULT_TRANSLATION_PREVIEW_ENABLED;
-  }
-
-  const scope = globalThis as GlobalWithTranslationPreview;
-  const globalValue = normalizeTranslationPreviewEnabled(scope[GLOBAL_KEY]);
-  if (globalValue !== null) {
-    return globalValue;
-  }
-
-  try {
-    const stored = window.localStorage?.getItem(STORAGE_KEY);
-    const storageValue = normalizeTranslationPreviewEnabled(stored);
-    if (storageValue !== null) {
-      return storageValue;
-    }
-  } catch {
-    // Ignore storage access issues in restricted contexts.
-  }
-
-  return DEFAULT_TRANSLATION_PREVIEW_ENABLED;
+  return resolveModeState(TRANSLATION_PREVIEW_MODE_CONFIG);
 }
 
 export function persistPickupTranslationPreviewEnabled(enabled: boolean) {
-  if (typeof globalThis === 'undefined') {
-    return;
-  }
-
-  const scope = globalThis as GlobalWithTranslationPreview;
-  scope[GLOBAL_KEY] = enabled;
-
-  try {
-    window.localStorage?.setItem(STORAGE_KEY, enabled ? 'true' : 'false');
-  } catch {
-    // Ignore storage access issues in restricted contexts.
-  }
+  persistModeState(TRANSLATION_PREVIEW_MODE_CONFIG, enabled);
 }
 
 export function applyPickupTranslationPreviewEnabled(enabled: boolean) {
-  if (typeof document === 'undefined') {
-    return;
-  }
-  const root = document.documentElement;
-  if (!root) {
-    return;
-  }
-  const datasetValue = enabled ? 'true' : 'false';
-  if (root.dataset[DATASET_KEY] !== datasetValue) {
-    root.dataset[DATASET_KEY] = datasetValue;
-  }
+  applyModeState(TRANSLATION_PREVIEW_MODE_CONFIG, enabled);
 }
 
 export function initPickupTranslationPreviewEnabled() {
-  const enabled = resolvePickupTranslationPreviewEnabled();
-  applyPickupTranslationPreviewEnabled(enabled);
-  return enabled;
+  return initModeState(TRANSLATION_PREVIEW_MODE_CONFIG);
 }

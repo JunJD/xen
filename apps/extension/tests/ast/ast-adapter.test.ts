@@ -23,7 +23,7 @@ function toSortedNumbers(values: Array<number | undefined>) {
   return values.filter((value): value is number => typeof value === 'number').sort((a, b) => a - b);
 }
 
-describe('buildSentenceAstFromTokens', () => {
+describe('构建句子 AST', () => {
   analysisCases.forEach((sample) => {
     it(sample.id, () => {
       const annotation = { id: sample.id, tokens: sample.tokens };

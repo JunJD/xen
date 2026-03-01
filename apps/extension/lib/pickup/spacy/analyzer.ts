@@ -113,7 +113,7 @@ function hydrateBootstrapScript(rawScript: string): string {
 }
 
 function resolveLoadPyodide(): LoadPyodideFn | null {
-  const scope = globalThis as unknown as GlobalWithPyodide;
+  const scope = globalThis as GlobalWithPyodide;
   if (typeof scope.loadPyodide === 'function') {
     return scope.loadPyodide;
   }
@@ -126,7 +126,7 @@ async function ensureLoadPyodide(): Promise<LoadPyodideFn | null> {
     return existing;
   }
 
-  const scope = globalThis as unknown as GlobalWithPyodide;
+  const scope = globalThis as GlobalWithPyodide;
   if (scope.__xenLoadPyodidePromise) {
     return scope.__xenLoadPyodidePromise;
   }
@@ -280,10 +280,22 @@ function extractTokenText(docText: string, token: SpacyAnalyzeToken): string {
   const start = Math.max(0, Math.min(docText.length, token.start));
   const end = Math.max(start, Math.min(docText.length, token.end));
   const bySpan = docText.slice(start, end);
+  const rawText = token.text ?? '';
+
+  if (bySpan.length > 0 && rawText.length > 0) {
+    const normalizedBySpan = bySpan.replace(/\s+/g, ' ').trim();
+    const normalizedRaw = rawText.replace(/\s+/g, ' ').trim();
+    if (normalizedBySpan === normalizedRaw) {
+      return bySpan;
+    }
+    return rawText;
+  }
+
   if (bySpan.length > 0) {
     return bySpan;
   }
-  return token.text ?? '';
+
+  return rawText;
 }
 
 function tryDestroyProxy(value: unknown) {

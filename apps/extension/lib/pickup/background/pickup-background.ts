@@ -40,9 +40,11 @@ import {
   signOutBackgroundSession,
 } from '@/lib/pickup/background/auth/clerk';
 import {
+  DEFAULT_LLM_MODEL,
   ensureTranslateProviderConfig,
   ensureTranslateProvidersRegistered,
   getStoredLlmModel,
+  getStoredPickupDictionaryIds,
   getStoredTranslateProvider,
   isTranslateProvider,
   setStoredTranslateProvider,
@@ -84,7 +86,7 @@ async function resolveTranslationModelKey(provider: TranslateProvider) {
   if (provider !== 'llm') {
     return `translate:${provider}`;
   }
-  const model = await getStoredLlmModel().catch(() => 'gpt-4o-mini');
+  const model = await getStoredLlmModel().catch(() => DEFAULT_LLM_MODEL);
   return `translate:${provider}:${model}`;
 }
 
@@ -308,7 +310,10 @@ async function buildTranslationPreviews(
     return [];
   }
   const includeParagraphTranslation = options.includeParagraphTranslation !== false;
-  const dictionary = await loadVocabDictionary();
+  const storedDictionaryIds = await getStoredPickupDictionaryIds();
+  const dictionary = await loadVocabDictionary({
+    dictionaryIds: storedDictionaryIds ?? undefined,
+  });
   if (!includeParagraphTranslation) {
     return paragraphs.map(paragraph => buildParagraphTranslationPreview(paragraph, dictionary, ''));
   }

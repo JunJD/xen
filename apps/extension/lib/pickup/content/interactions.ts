@@ -1,13 +1,19 @@
 import tippy, { type Instance, type Props } from 'tippy.js';
+import {
+  PICKUP_IGNORE_ATTR,
+  PICKUP_LANE_SYNTAX_CLASS,
+  PICKUP_ROLE_BADGE_CLASS,
+  PICKUP_ROLE_BADGE_STRUCTURE_CLASS,
+  PICKUP_TOKEN_ACTIVE_CLASS,
+  PICKUP_TOKEN_CLASS,
+  PICKUP_TOKEN_VOCABULARY_CLASS,
+  PICKUP_UI_ATTR,
+  PICKUP_UI_SELECTOR,
+} from './markers';
 
 const TIPPY_THEME = 'xen-pickup';
-const TOKEN_SELECTOR = '.xen-pickup-token';
-const ROLE_BADGE_SELECTOR = '.xen-pickup-role-badge';
-const PICKUP_UI_SELECTOR = '[data-pickup-ui]';
-const PICKUP_TOKEN_VOCABULARY_CLASS = 'xen-pickup-token-vocabulary';
-const PICKUP_TOKEN_ACTIVE_CLASS = 'xen-pickup-token-active';
-const PICKUP_LANE_SYNTAX_CLASS = 'xen-pickup-lane-syntax-rebuild';
-const PICKUP_ROLE_BADGE_STRUCTURE_CLASS = 'xen-pickup-role-badge-structure';
+const TOKEN_SELECTOR = `.${PICKUP_TOKEN_CLASS}`;
+const ROLE_BADGE_SELECTOR = `.${PICKUP_ROLE_BADGE_CLASS}`;
 const PHONE_LINE_PATTERN = /\((US|UK)\)/;
 
 type InteractionMeta = {
@@ -52,8 +58,8 @@ const BASE_TIPPY_PROPS: Partial<Props> = {
     ],
   },
   onCreate(instance) {
-    instance.popper.setAttribute('data-pickup-ui', 'true');
-    instance.popper.setAttribute('data-pickup-ignore', 'true');
+    instance.popper.setAttribute(PICKUP_UI_ATTR, 'true');
+    instance.popper.setAttribute(PICKUP_IGNORE_ATTR, 'true');
   },
 };
 
@@ -160,11 +166,11 @@ function resolveMeaningDescription(reference: HTMLElement) {
 function createTooltipContent(reference: HTMLElement) {
   const root = document.createElement('div');
   root.className = 'xen-pickup-tooltip';
-  root.setAttribute('data-pickup-ui', 'true');
+  root.setAttribute(PICKUP_UI_ATTR, 'true');
 
   const linesRoot = document.createElement('div');
   linesRoot.className = 'xen-pickup-tooltip-lines';
-  linesRoot.setAttribute('data-pickup-ui', 'true');
+  linesRoot.setAttribute(PICKUP_UI_ATTR, 'true');
 
   root.append(linesRoot);
 
@@ -178,7 +184,7 @@ function createTooltipContent(reference: HTMLElement) {
     lines.forEach((line) => {
       const lineEl = document.createElement('div');
       lineEl.className = 'xen-pickup-tooltip-line';
-      lineEl.setAttribute('data-pickup-ui', 'true');
+      lineEl.setAttribute(PICKUP_UI_ATTR, 'true');
       if (PHONE_LINE_PATTERN.test(line)) {
         lineEl.classList.add('xen-pickup-tooltip-line-phone');
       } else {

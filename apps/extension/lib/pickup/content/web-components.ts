@@ -1,20 +1,25 @@
-const DEFAULT_IGNORE_ATTR = 'data-pickup-ignore';
-const DEFAULT_ACCENT_VARIABLE = '--xen-pickup-accent';
-const DEFAULT_SOFT_BG_VARIABLE = '--xen-pickup-soft-bg';
-
-const CLASS_TOKEN = 'xen-pickup-token';
-const CLASS_TOKEN_VOCABULARY = 'xen-pickup-token-vocabulary';
-const CLASS_TOKEN_GRAMMAR = 'xen-pickup-token-grammar';
-const CLASS_TOKEN_TRANSLATED = 'xen-pickup-token-translated';
-const CLASS_TOKEN_ACTIVE = 'xen-pickup-token-active';
-const CLASS_ANNOTATION_TOP = 'xen-pickup-annotation-top';
-const CLASS_ANNOTATION_RIGHT = 'xen-pickup-annotation-right';
-const CLASS_ANNOTATION_NONE = 'xen-pickup-annotation-none';
-const CLASS_HIGHLIGHT_UNDERLINE = 'xen-pickup-highlight-underline';
-const CLASS_HIGHLIGHT_MARKER = 'xen-pickup-highlight-marker';
-const CLASS_HIGHLIGHT_TEXT_COLOR = 'xen-pickup-highlight-text-color';
-const CLASS_THEME_DARK = 'xen-pickup-theme-dark';
-const CLASS_THEME_LIGHT = 'xen-pickup-theme-light';
+import {
+  PICKUP_ACCENT_CSS_VAR as DEFAULT_ACCENT_VARIABLE,
+  PICKUP_ANNOTATION_NONE_CLASS as CLASS_ANNOTATION_NONE,
+  PICKUP_ANNOTATION_RIGHT_CLASS as CLASS_ANNOTATION_RIGHT,
+  PICKUP_ANNOTATION_TOP_CLASS as CLASS_ANNOTATION_TOP,
+  PICKUP_HIGHLIGHT_MARKER_CLASS as CLASS_HIGHLIGHT_MARKER,
+  PICKUP_HIGHLIGHT_TEXT_COLOR_CLASS as CLASS_HIGHLIGHT_TEXT_COLOR,
+  PICKUP_HIGHLIGHT_UNDERLINE_CLASS as CLASS_HIGHLIGHT_UNDERLINE,
+  PICKUP_IGNORE_ATTR as DEFAULT_IGNORE_ATTR,
+  PICKUP_ROOT_ANNOTATION_STYLE_ATTR as ROOT_ANNOTATION_STYLE_ATTR,
+  PICKUP_ROOT_HIGHLIGHT_STYLE_ATTR as ROOT_HIGHLIGHT_STYLE_ATTR,
+  PICKUP_ROOT_THEME_ATTR as ROOT_THEME_ATTR,
+  PICKUP_SOFT_BG_CSS_VAR as DEFAULT_SOFT_BG_VARIABLE,
+  PICKUP_THEME_DARK_CLASS as CLASS_THEME_DARK,
+  PICKUP_THEME_LIGHT_CLASS as CLASS_THEME_LIGHT,
+  PICKUP_TOKEN_ACTIVE_CLASS as CLASS_TOKEN_ACTIVE,
+  PICKUP_TOKEN_CLASS as CLASS_TOKEN,
+  PICKUP_TOKEN_GRAMMAR_CLASS as CLASS_TOKEN_GRAMMAR,
+  PICKUP_TOKEN_TAG as TOKEN_TAG,
+  PICKUP_TOKEN_TRANSLATED_CLASS as CLASS_TOKEN_TRANSLATED,
+  PICKUP_TOKEN_VOCABULARY_CLASS as CLASS_TOKEN_VOCABULARY,
+} from './markers';
 
 const ANNOTATION_STATE_CLASSES = [
   CLASS_ANNOTATION_TOP,
@@ -32,12 +37,6 @@ const THEME_STATE_CLASSES = [
   CLASS_THEME_DARK,
   CLASS_THEME_LIGHT,
 ] as const;
-
-const TOKEN_TAG = 'xen-pickup-token-wc';
-
-const ROOT_ANNOTATION_STYLE_ATTR = 'data-xen-pickup-annotation-style';
-const ROOT_HIGHLIGHT_STYLE_ATTR = 'data-xen-pickup-highlight-style';
-const ROOT_THEME_ATTR = 'data-xen-pickup-theme';
 
 const TOKEN_SHADOW_STYLE = `
   :host {
@@ -91,53 +90,53 @@ const TOKEN_SHADOW_STYLE = `
     margin-left: 0.32em;
     font-size: 0.72em;
   }
-  :host(.xen-pickup-token-translated) .xen-token-annotation-top::before,
-  :host(.xen-pickup-token-translated) .xen-token-annotation-right::before {
+  :host(.${CLASS_TOKEN_TRANSLATED}) .xen-token-annotation-top::before,
+  :host(.${CLASS_TOKEN_TRANSLATED}) .xen-token-annotation-right::before {
     content: '\\FF08';
     opacity: 0.82;
   }
-  :host(.xen-pickup-token-translated) .xen-token-annotation-top::after,
-  :host(.xen-pickup-token-translated) .xen-token-annotation-right::after {
+  :host(.${CLASS_TOKEN_TRANSLATED}) .xen-token-annotation-top::after,
+  :host(.${CLASS_TOKEN_TRANSLATED}) .xen-token-annotation-right::after {
     content: '\\FF09';
     opacity: 0.82;
   }
-  :host(:not(.xen-pickup-token-translated)) .xen-token-annotation-top,
-  :host(:not(.xen-pickup-token-translated)) .xen-token-annotation-right {
+  :host(:not(.${CLASS_TOKEN_TRANSLATED})) .xen-token-annotation-top,
+  :host(:not(.${CLASS_TOKEN_TRANSLATED})) .xen-token-annotation-right {
     display: none;
   }
-  :host(.xen-pickup-annotation-top) .xen-token-root {
+  :host(.${CLASS_ANNOTATION_TOP}) .xen-token-root {
     display: inline;
   }
-  :host(.xen-pickup-annotation-top) .xen-token-origin {
+  :host(.${CLASS_ANNOTATION_TOP}) .xen-token-origin {
     display: ruby;
   }
-  :host(.xen-pickup-annotation-top) .xen-token-annotation-right {
+  :host(.${CLASS_ANNOTATION_TOP}) .xen-token-annotation-right {
     display: none;
   }
-  :host(.xen-pickup-annotation-right) .xen-token-root {
+  :host(.${CLASS_ANNOTATION_RIGHT}) .xen-token-root {
     display: inline-flex;
     align-items: baseline;
   }
-  :host(.xen-pickup-annotation-right) .xen-token-origin {
+  :host(.${CLASS_ANNOTATION_RIGHT}) .xen-token-origin {
     display: inline;
   }
-  :host(.xen-pickup-annotation-right) .xen-token-annotation-top {
+  :host(.${CLASS_ANNOTATION_RIGHT}) .xen-token-annotation-top {
     display: none;
   }
-  :host(.xen-pickup-annotation-right) .xen-token-annotation-right {
+  :host(.${CLASS_ANNOTATION_RIGHT}) .xen-token-annotation-right {
     display: inline-flex;
     align-items: baseline;
     justify-content: center;
     gap: 0.08em;
   }
-  :host(.xen-pickup-annotation-none) .xen-token-annotation-top,
-  :host(.xen-pickup-annotation-none) .xen-token-annotation-right {
+  :host(.${CLASS_ANNOTATION_NONE}) .xen-token-annotation-top,
+  :host(.${CLASS_ANNOTATION_NONE}) .xen-token-annotation-right {
     display: none;
   }
-  :host(.xen-pickup-theme-dark) {
+  :host(.${CLASS_THEME_DARK}) {
     --xen-token-annotation-color: rgba(226, 232, 240, 0.82);
   }
-  :host(.xen-pickup-token-translated.xen-pickup-highlight-underline) .xen-token-origin-text {
+  :host(.${CLASS_TOKEN_TRANSLATED}.${CLASS_HIGHLIGHT_UNDERLINE}) .xen-token-origin-text {
     position: relative;
     margin: 0 -0.28em;
     padding: 0.02em 0.28em 0.06em;
@@ -155,7 +154,7 @@ const TOKEN_SHADOW_STYLE = `
     -webkit-box-decoration-break: clone;
     box-decoration-break: clone;
   }
-  :host(.xen-pickup-token-translated.xen-pickup-highlight-marker) .xen-token-origin-text {
+  :host(.${CLASS_TOKEN_TRANSLATED}.${CLASS_HIGHLIGHT_MARKER}) .xen-token-origin-text {
     position: relative;
     display: inline-block;
     isolation: isolate;
@@ -167,8 +166,8 @@ const TOKEN_SHADOW_STYLE = `
       transparent
     );
   }
-  :host(.xen-pickup-token-translated.xen-pickup-highlight-marker) .xen-token-origin-text::before,
-  :host(.xen-pickup-token-translated.xen-pickup-highlight-marker) .xen-token-origin-text::after {
+  :host(.${CLASS_TOKEN_TRANSLATED}.${CLASS_HIGHLIGHT_MARKER}) .xen-token-origin-text::before,
+  :host(.${CLASS_TOKEN_TRANSLATED}.${CLASS_HIGHLIGHT_MARKER}) .xen-token-origin-text::after {
     content: '';
     position: absolute;
     left: 0;
@@ -184,27 +183,42 @@ const TOKEN_SHADOW_STYLE = `
     opacity: 0.5;
     pointer-events: none;
   }
-  :host(.xen-pickup-token-translated.xen-pickup-highlight-marker) .xen-token-origin-text::before {
+  :host(.${CLASS_TOKEN_TRANSLATED}.${CLASS_HIGHLIGHT_MARKER}) .xen-token-origin-text::before {
     transform: rotate(10deg) translateY(-0.5em);
   }
-  :host(.xen-pickup-token-translated.xen-pickup-highlight-marker) .xen-token-origin-text::after {
+  :host(.${CLASS_TOKEN_TRANSLATED}.${CLASS_HIGHLIGHT_MARKER}) .xen-token-origin-text::after {
     transform: rotate(8deg) translateY(1em);
   }
-  :host(.xen-pickup-token-translated.xen-pickup-highlight-text-color) .xen-token-origin-text {
+  :host(.${CLASS_TOKEN_TRANSLATED}.${CLASS_HIGHLIGHT_TEXT_COLOR}) .xen-token-origin-text {
     color: color-mix(in srgb, var(--xen-pickup-accent, #ff7008) 72%, currentColor);
     font-weight: 600;
   }
-  :host(.xen-pickup-token-translated.xen-pickup-highlight-text-color):hover .xen-token-origin-text {
+  :host(.${CLASS_TOKEN_TRANSLATED}.${CLASS_HIGHLIGHT_TEXT_COLOR}):hover .xen-token-origin-text {
     color: color-mix(in srgb, var(--xen-pickup-accent, #ff7008) 80%, currentColor);
   }
-  :host(.xen-pickup-token-translated.xen-pickup-highlight-marker):hover .xen-token-origin-text {
+  :host(.${CLASS_TOKEN_TRANSLATED}.${CLASS_HIGHLIGHT_MARKER}):hover .xen-token-origin-text {
     background: color-mix(in srgb, var(--xen-token-marker-base) 48%, transparent);
   }
-  :host(.xen-pickup-token-active) .xen-token-origin-text {
+  :host(.${CLASS_TOKEN_ACTIVE}) .xen-token-origin-text {
     background-color: color-mix(in srgb, var(--xen-pickup-accent, #415ccc) 16%, transparent);
     border-radius: 0;
   }
 `;
+
+let tokenConstructableStyleSheet: CSSStyleSheet | null = null;
+
+function getTokenConstructableStyleSheet(): CSSStyleSheet | null {
+  if (tokenConstructableStyleSheet) {
+    return tokenConstructableStyleSheet;
+  }
+  if (typeof CSSStyleSheet === 'undefined') {
+    return null;
+  }
+  const sheet = new CSSStyleSheet();
+  sheet.replaceSync(TOKEN_SHADOW_STYLE);
+  tokenConstructableStyleSheet = sheet;
+  return tokenConstructableStyleSheet;
+}
 
 export type PickupTokenKind = 'vocabulary' | 'grammar' | 'other';
 
@@ -290,9 +304,6 @@ function applyHostState(element: HTMLElement) {
 }
 
 function buildTokenView(shadowRoot: ShadowRoot): TokenView {
-  const style = document.createElement('style');
-  style.textContent = TOKEN_SHADOW_STYLE;
-
   const rootElement = document.createElement('span');
   rootElement.className = 'xen-token-root';
 
@@ -310,7 +321,15 @@ function buildTokenView(shadowRoot: ShadowRoot): TokenView {
 
   originElement.append(originTextElement, topTranslationElement);
   rootElement.append(originElement, rightTranslationElement);
-  shadowRoot.replaceChildren(style, rootElement);
+  const sharedSheet = getTokenConstructableStyleSheet();
+  if (sharedSheet && 'adoptedStyleSheets' in shadowRoot) {
+    shadowRoot.adoptedStyleSheets = [sharedSheet];
+    shadowRoot.replaceChildren(rootElement);
+  } else {
+    const style = document.createElement('style');
+    style.textContent = TOKEN_SHADOW_STYLE;
+    shadowRoot.replaceChildren(style, rootElement);
+  }
 
   return {
     originTextElement,

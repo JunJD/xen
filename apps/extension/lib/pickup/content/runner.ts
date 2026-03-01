@@ -1,6 +1,11 @@
 import type { PickupParagraph } from '@/lib/pickup/messages';
 import { REQUEST_TIMEOUT_MS } from './constants';
 import { collectParagraphs } from './collector';
+import {
+  PICKUP_TOKEN_ORIGINAL_TEXT_ATTR,
+  PICKUP_TOKEN_TAG,
+  PICKUP_TRANSLATION_PARAGRAPH_SELECTOR,
+} from './markers';
 import { applyAnnotations, requestAnnotationTranslationPreview } from './render';
 import { ensurePickupStyles } from './styles';
 import { requestAnnotations } from './transport';
@@ -19,8 +24,6 @@ const INITIAL_COLLECT_RETRY_COUNT = 2;
 const INITIAL_COLLECT_RETRY_INTERVAL_MS = 1000;
 const READY_STATE_COMPLETE = 'complete';
 const DEFAULT_TRANSLATION_PREVIEW_ENABLED = false;
-const PICKUP_TOKEN_TAG = 'xen-pickup-token-wc';
-const PICKUP_TOKEN_ORIGINAL_TEXT_ATTR = 'data-pickup-token-original';
 
 type PickupRunnerOptions = {
   translationPreviewEnabled?: boolean;
@@ -273,6 +276,9 @@ export function createPickupRunner(options: PickupRunnerOptions = {}) {
   }
 
   function restoreAnnotatedContent(root: ParentNode = document) {
+    const translationParagraphElements = root.querySelectorAll<HTMLElement>(PICKUP_TRANSLATION_PARAGRAPH_SELECTOR);
+    translationParagraphElements.forEach((element) => element.remove());
+
     const tokenElements = root.querySelectorAll<HTMLElement>(PICKUP_TOKEN_TAG);
     tokenElements.forEach((tokenElement) => {
       const originalText = tokenElement.getAttribute(PICKUP_TOKEN_ORIGINAL_TEXT_ATTR) ?? '';

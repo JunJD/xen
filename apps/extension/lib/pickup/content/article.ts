@@ -1,4 +1,5 @@
 import { Readability } from '@mozilla/readability';
+import { PICKUP_UI_OR_IGNORE_SELECTOR } from './markers';
 
 let cachedArticle: { url: string; text: string } | null = null;
 
@@ -7,7 +8,7 @@ function shouldResetCache() {
 }
 
 function removeInjectedNodes(documentClone: Document) {
-  documentClone.querySelectorAll('[data-pickup-ui], [data-pickup-ignore]').forEach((node) => {
+  documentClone.querySelectorAll(PICKUP_UI_OR_IGNORE_SELECTOR).forEach((node) => {
     node.remove();
   });
 }

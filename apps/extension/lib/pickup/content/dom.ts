@@ -2,6 +2,11 @@ import {
   INLINE_DISPLAY_KEYWORDS,
   PARAGRAPH_FORCE_BLOCK_TAGS,
 } from './constants';
+import {
+  PICKUP_IGNORE_ATTR as PICKUP_IGNORE_ATTRIBUTE,
+  PICKUP_IGNORE_SELECTOR,
+  PICKUP_UI_SELECTOR,
+} from './markers';
 
 const SKIP_TAGS = new Set([
   'SCRIPT',
@@ -29,9 +34,6 @@ const SKIP_TAGS = new Set([
   'ASIDE',
 ]);
 
-const PICKUP_IGNORE_ATTRIBUTE = 'data-pickup-ignore';
-const PICKUP_IGNORE_SELECTOR = '[data-pickup-ignore="true"]';
-const PICKUP_UI_SELECTOR = '[data-pickup-ui]';
 const CONTENT_EDITABLE_SELECTOR = '[contenteditable="true"]';
 const PICKUP_PROCESSED_VALUE = 'true';
 const PICKUP_STATUS_PENDING = 'pending';

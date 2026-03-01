@@ -1,5 +1,6 @@
 import { generateText } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
+import { DEFAULT_LLM_MODEL } from '../storage';
 import type { TranslateProviderAdapter } from '../types';
 
 type OpenAITranslateProviderOptions = {
@@ -32,7 +33,7 @@ export function createOpenAITranslateProvider(
         throw new Error('LLM translate requires an API key.');
       }
       const resolvedModel = resolveModel ? await resolveModel() : model;
-      const modelId = resolvedModel?.trim() || 'gpt-4o-mini';
+      const modelId = resolvedModel?.trim() || DEFAULT_LLM_MODEL;
 
       const openai = createOpenAI({ apiKey });
       const promptTarget = request.targetLangName ?? targetLangName;

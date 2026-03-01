@@ -1,5 +1,7 @@
 const DICT_INDEX_PATH = 'dicts/index.json';
 const DEFAULT_DICT_FILES = ['dicts/merged.json'];
+const DEFAULT_DICTIONARY_ID = 'default';
+const DEFAULT_DICTIONARY_NAME = 'Default Dictionary';
 const TOKEN_AFFIX_PATTERN = /^([^A-Za-z0-9\u4e00-\u9fff]*)(.*?)([^A-Za-z0-9\u4e00-\u9fff]*)$/;
 
 type RawDictEntry = Record<string, unknown>;
@@ -13,8 +15,22 @@ export type VocabDictionaryEntry = {
 
 export type VocabDictionary = Map<string, VocabDictionaryEntry>;
 
-let cachedDictionary: VocabDictionary | null = null;
-let dictionaryPromise: Promise<VocabDictionary> | null = null;
+export type VocabDictionaryDescriptor = {
+  id: string;
+  name: string;
+  files: string[];
+  description?: string;
+};
+
+export type VocabDictionaryManifest = {
+  dictionaries: VocabDictionaryDescriptor[];
+  defaultDictionaryIds: string[];
+};
+
+let manifestCache: VocabDictionaryManifest | null = null;
+let manifestPromise: Promise<VocabDictionaryManifest> | null = null;
+const dictionaryCache = new Map<string, VocabDictionary>();
+const dictionaryPromiseCache = new Map<string, Promise<VocabDictionary>>();
 
 function resolveRuntimeUrl(path: string): string {
   const normalized = path.replace(/^\/+/, '');
@@ -38,6 +54,43 @@ function splitTokenAffixes(text: string) {
 
 function normalizeKey(value: string) {
   return value.toLowerCase().trim();
+}
+
+function normalizeDictionaryId(value: unknown): string | null {
+  if (typeof value !== 'string') {
+    return null;
+  }
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+  return trimmed;
+}
+
+function normalizeDictionaryIdList(value: unknown): string[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  const ids: string[] = [];
+  value.forEach((item) => {
+    const id = normalizeDictionaryId(item);
+    if (!id || ids.includes(id)) {
+      return;
+    }
+    ids.push(id);
+  });
+  return ids;
+}
+
+function normalizeDictionaryFilePath(file: string) {
+  if (!file) {
+    return '';
+  }
+  const normalized = file.replace(/^\/+/, '').trim();
+  if (!normalized) {
+    return '';
+  }
+  return normalized.startsWith('dicts/') ? normalized : `dicts/${normalized}`;
 }
 
 function normalizeBlockText(value: string) {
@@ -229,33 +282,173 @@ async function fetchJson(url: string): Promise<unknown | null> {
 }
 
 function normalizeDictionaryFiles(raw: unknown): string[] {
-  if (Array.isArray(raw)) {
-    return raw.filter(item => typeof item === 'string') as string[];
+  if (!Array.isArray(raw)) {
+    return [];
   }
-  if (raw && typeof raw === 'object') {
-    const record = raw as Record<string, unknown>;
-    const list = record.files ?? record.dicts ?? record.dictionaries;
-    if (Array.isArray(list)) {
-      return list.filter(item => typeof item === 'string') as string[];
+  const files: string[] = [];
+  raw.forEach((item) => {
+    if (typeof item !== 'string') {
+      return;
     }
-  }
-  return [];
+    const normalized = normalizeDictionaryFilePath(item);
+    if (!normalized || files.includes(normalized)) {
+      return;
+    }
+    files.push(normalized);
+  });
+  return files;
 }
 
-async function resolveDictionaryFiles(): Promise<string[]> {
-  const indexUrl = resolveRuntimeUrl(DICT_INDEX_PATH);
-  const payload = await fetchJson(indexUrl);
-  const files = normalizeDictionaryFiles(payload);
-  const resolved = (files.length > 0 ? files : DEFAULT_DICT_FILES)
-    .map((file) => {
-      if (!file) {
-        return '';
-      }
-      const normalized = file.replace(/^\/+/, '');
-      return normalized.startsWith('dicts/') ? normalized : `dicts/${normalized}`;
-    })
-    .filter(Boolean);
-  return Array.from(new Set(resolved));
+function normalizeDictionaryDescriptor(raw: unknown): VocabDictionaryDescriptor | null {
+  if (!raw || typeof raw !== 'object') {
+    return null;
+  }
+  const record = raw as Record<string, unknown>;
+  const id = normalizeDictionaryId(record.id ?? record.key ?? record.name ?? record.label);
+  if (!id) {
+    return null;
+  }
+  const files = normalizeDictionaryFiles(record.files ?? record.dicts ?? record.paths);
+  if (files.length === 0) {
+    return null;
+  }
+  const nameRaw = record.name ?? record.label ?? record.title ?? id;
+  const name = typeof nameRaw === 'string' && nameRaw.trim() ? nameRaw.trim() : id;
+  const description = typeof record.description === 'string' && record.description.trim()
+    ? record.description.trim()
+    : undefined;
+  return {
+    id,
+    name,
+    files,
+    description,
+  };
+}
+
+function createDefaultManifest(): VocabDictionaryManifest {
+  return {
+    dictionaries: [
+      {
+        id: DEFAULT_DICTIONARY_ID,
+        name: DEFAULT_DICTIONARY_NAME,
+        files: DEFAULT_DICT_FILES.map(normalizeDictionaryFilePath).filter(Boolean),
+      },
+    ],
+    defaultDictionaryIds: [DEFAULT_DICTIONARY_ID],
+  };
+}
+
+function buildManifestFromPayload(payload: unknown): VocabDictionaryManifest {
+  if (!payload || typeof payload !== 'object') {
+    return createDefaultManifest();
+  }
+
+  const record = payload as Record<string, unknown>;
+  const dictionariesRaw = Array.isArray(record.dictionaries) ? record.dictionaries : [];
+  let dictionaries = dictionariesRaw
+    .map(item => normalizeDictionaryDescriptor(item))
+    .filter((item): item is VocabDictionaryDescriptor => item !== null);
+
+  if (dictionaries.length === 0) {
+    const legacyFiles = normalizeDictionaryFiles(record.files ?? record.dicts ?? record.dictionaries);
+    if (legacyFiles.length > 0) {
+      dictionaries = [
+        {
+          id: DEFAULT_DICTIONARY_ID,
+          name: DEFAULT_DICTIONARY_NAME,
+          files: legacyFiles,
+        },
+      ];
+    }
+  }
+
+  if (dictionaries.length === 0) {
+    return createDefaultManifest();
+  }
+
+  const dictionaryIds = new Set(dictionaries.map(item => item.id));
+  const defaultIdsFromArray = normalizeDictionaryIdList(
+    record.defaultDictionaryIds ?? record.defaultDictionaries,
+  ).filter(id => dictionaryIds.has(id));
+  const singleDefaultId = normalizeDictionaryId(record.defaultDictionaryId);
+  const defaultDictionaryIds = defaultIdsFromArray.length > 0
+    ? defaultIdsFromArray
+    : singleDefaultId && dictionaryIds.has(singleDefaultId)
+      ? [singleDefaultId]
+      : [dictionaries[0].id];
+
+  return {
+    dictionaries,
+    defaultDictionaryIds,
+  };
+}
+
+async function resolveDictionaryManifest(): Promise<VocabDictionaryManifest> {
+  if (manifestCache) {
+    return manifestCache;
+  }
+  if (manifestPromise) {
+    return manifestPromise;
+  }
+  manifestPromise = (async () => {
+    const indexUrl = resolveRuntimeUrl(DICT_INDEX_PATH);
+    const payload = await fetchJson(indexUrl);
+    return buildManifestFromPayload(payload);
+  })();
+
+  try {
+    manifestCache = await manifestPromise;
+    return manifestCache;
+  }
+  finally {
+    manifestPromise = null;
+  }
+}
+
+export async function getVocabDictionaryManifest(): Promise<VocabDictionaryManifest> {
+  return resolveDictionaryManifest();
+}
+
+function resolveSelectedDictionaries(
+  manifest: VocabDictionaryManifest,
+  dictionaryIds?: string[],
+): VocabDictionaryDescriptor[] {
+  const idsByDescriptor = new Map(manifest.dictionaries.map(item => [item.id, item] as const));
+  const selectedIds = dictionaryIds && dictionaryIds.length > 0
+    ? normalizeDictionaryIdList(dictionaryIds)
+    : manifest.defaultDictionaryIds;
+
+  if (selectedIds.length === 0) {
+    throw new Error('No dictionaries selected.');
+  }
+
+  const selected: VocabDictionaryDescriptor[] = [];
+  const unknownIds: string[] = [];
+
+  selectedIds.forEach((id) => {
+    const descriptor = idsByDescriptor.get(id);
+    if (!descriptor) {
+      unknownIds.push(id);
+      return;
+    }
+    if (!selected.some(item => item.id === descriptor.id)) {
+      selected.push(descriptor);
+    }
+  });
+
+  if (unknownIds.length > 0) {
+    throw new Error(`Unknown dictionary id(s): ${unknownIds.join(', ')}`);
+  }
+
+  if (selected.length === 0) {
+    throw new Error('No valid dictionaries selected.');
+  }
+
+  return selected;
+}
+
+function buildDictionaryCacheKey(selected: VocabDictionaryDescriptor[]) {
+  return selected.map(item => item.id).join('::');
 }
 
 async function loadDictionaryFile(path: string): Promise<VocabDictionary> {
@@ -280,17 +473,27 @@ async function loadDictionaryFile(path: string): Promise<VocabDictionary> {
   return map;
 }
 
-export async function loadVocabDictionary(): Promise<VocabDictionary> {
-  if (cachedDictionary) {
-    return cachedDictionary;
+export async function loadVocabDictionary(
+  options: { dictionaryIds?: string[] } = {},
+): Promise<VocabDictionary> {
+  const manifest = await resolveDictionaryManifest();
+  const selected = resolveSelectedDictionaries(manifest, options.dictionaryIds);
+  const cacheKey = buildDictionaryCacheKey(selected);
+
+  const cached = dictionaryCache.get(cacheKey);
+  if (cached) {
+    return cached;
   }
-  if (dictionaryPromise) {
-    return dictionaryPromise;
+
+  const inFlight = dictionaryPromiseCache.get(cacheKey);
+  if (inFlight) {
+    return inFlight;
   }
-  dictionaryPromise = (async () => {
-    const files = await resolveDictionaryFiles();
+
+  const promise = (async () => {
+    const files = selected.flatMap(item => item.files);
     if (files.length === 0) {
-      return new Map();
+      throw new Error('Selected dictionaries have no files.');
     }
     const maps = await Promise.all(files.map(loadDictionaryFile));
     const merged: VocabDictionary = new Map();
@@ -304,11 +507,14 @@ export async function loadVocabDictionary(): Promise<VocabDictionary> {
     return merged;
   })();
 
+  dictionaryPromiseCache.set(cacheKey, promise);
   try {
-    cachedDictionary = await dictionaryPromise;
-    return cachedDictionary;
-  } finally {
-    dictionaryPromise = null;
+    const resolved = await promise;
+    dictionaryCache.set(cacheKey, resolved);
+    return resolved;
+  }
+  finally {
+    dictionaryPromiseCache.delete(cacheKey);
   }
 }
 

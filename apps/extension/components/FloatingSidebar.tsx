@@ -11,7 +11,19 @@ import {
 } from '@/lib/pickup/content/control-events';
 import { applyPickupStyleSettings } from '@/lib/pickup/content/style-settings';
 import { sendMessage, MESSAGE_TYPES } from '@/lib/pickup/messaging';
-import { getPickupSettings, setPickupSettings } from '@/lib/pickup/settings';
+import {
+  PICKUP_SETTINGS_STORAGE_KEY,
+  getPickupSettings,
+  normalizePickupSettings,
+  setPickupSettings,
+  type PickupSettings,
+} from '@/lib/pickup/settings';
+
+type StorageChangeRecord = Record<string, { newValue?: unknown }>;
+type StorageOnChangedLike = {
+  addListener?: (callback: (changes: StorageChangeRecord, areaName?: string) => void) => void;
+  removeListener?: (callback: (changes: StorageChangeRecord, areaName?: string) => void) => void;
+};
 
 export function FloatingSidebar() {
   const [pickupActive, setPickupActive] = useState(true);
@@ -68,18 +80,39 @@ export function FloatingSidebar() {
   useEffect(() => {
     let active = true;
     const load = async () => {
-      try {
-        const settings = await getPickupSettings();
-        if (active) {
-          setTranslationBlurEnabled(settings.translationBlurEnabled);
-        }
-      } catch {
-        // Ignore load failures.
+      const settings = await getPickupSettings();
+      if (active) {
+        setTranslationBlurEnabled(settings.translationBlurEnabled);
       }
     };
     void load();
     return () => {
       active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    const storageOnChanged: StorageOnChangedLike | undefined
+      = (typeof chrome !== 'undefined' && chrome.storage?.onChanged)
+        ? chrome.storage.onChanged
+        : (globalThis as { browser?: { storage?: { onChanged?: StorageOnChangedLike } } })
+            .browser?.storage?.onChanged;
+
+    const handleSettingsStorageChanged = (changes: StorageChangeRecord, areaName?: string) => {
+      if (areaName && areaName !== 'local') {
+        return;
+      }
+      const change = changes[PICKUP_SETTINGS_STORAGE_KEY];
+      if (!change || typeof change !== 'object') {
+        return;
+      }
+      const nextSettings = normalizePickupSettings(change.newValue as Partial<PickupSettings>);
+      setTranslationBlurEnabled(nextSettings.translationBlurEnabled);
+    };
+
+    storageOnChanged?.addListener?.(handleSettingsStorageChanged);
+    return () => {
+      storageOnChanged?.removeListener?.(handleSettingsStorageChanged);
     };
   }, []);
 
@@ -109,17 +142,10 @@ export function FloatingSidebar() {
     window.dispatchEvent(new CustomEvent(PICKUP_CONTROL_EVENT, { detail }));
   };
 
-  const handleToggleTranslationBlur = () => {
-    const nextValue = !translationBlurEnabled;
-    setTranslationBlurEnabled(nextValue);
-    void setPickupSettings({ translationBlurEnabled: nextValue })
-      .then((next) => {
-        setTranslationBlurEnabled(next.translationBlurEnabled);
-        applyPickupStyleSettings(next);
-      })
-      .catch(() => {
-        setTranslationBlurEnabled(prev => !prev);
-      });
+  const handleToggleTranslationBlur = async () => {
+    const next = await setPickupSettings({ translationBlurEnabled: !translationBlurEnabled });
+    setTranslationBlurEnabled(next.translationBlurEnabled);
+    applyPickupStyleSettings(next);
   };
 
   const handleOpenOptions = () => {

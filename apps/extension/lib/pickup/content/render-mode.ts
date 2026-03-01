@@ -1,3 +1,12 @@
+import { PICKUP_DATASET_MODE_KEY } from './markers';
+import {
+  applyModeState,
+  getStoredModeState,
+  initModeState,
+  persistModeState,
+  resolveModeState,
+} from './mode-state';
+
 export const PICKUP_RENDER_MODE_VOCAB_INFUSION = 'vocab_infusion';
 export const PICKUP_RENDER_MODE_SYNTAX_REBUILD = 'syntax_rebuild';
 
@@ -6,84 +15,33 @@ export type PickupRenderMode =
   | typeof PICKUP_RENDER_MODE_SYNTAX_REBUILD;
 
 const DEFAULT_RENDER_MODE = PICKUP_RENDER_MODE_VOCAB_INFUSION;
-const GLOBAL_MODE_KEY = '__xenPickupRenderMode';
-const STORAGE_KEY = 'xenPickupRenderMode';
-const DATASET_KEY = 'xenPickupMode';
 
-type GlobalWithPickupMode = typeof globalThis & {
-  __xenPickupRenderMode?: unknown;
+const MODE_STATE_CONFIG = {
+  globalKey: '__xenPickupRenderMode',
+  storageKey: 'xenPickupRenderMode',
+  datasetKey: PICKUP_DATASET_MODE_KEY,
+  defaultValue: DEFAULT_RENDER_MODE as PickupRenderMode,
+  normalize: (value: unknown): PickupRenderMode | null => (isPickupRenderMode(value) ? value : null),
 };
 
 export function resolvePickupRenderMode(): PickupRenderMode {
-  if (typeof globalThis === 'undefined') {
-    return DEFAULT_RENDER_MODE;
-  }
-
-  const scope = globalThis as GlobalWithPickupMode;
-  const cached = scope[GLOBAL_MODE_KEY];
-  if (cached === PICKUP_RENDER_MODE_VOCAB_INFUSION || cached === PICKUP_RENDER_MODE_SYNTAX_REBUILD) {
-    return cached;
-  }
-
-  try {
-    const stored = window.localStorage?.getItem(STORAGE_KEY);
-    if (stored === PICKUP_RENDER_MODE_VOCAB_INFUSION || stored === PICKUP_RENDER_MODE_SYNTAX_REBUILD) {
-      return stored;
-    }
-  } catch {
-    // Ignore storage access issues in restricted contexts.
-  }
-
-  return DEFAULT_RENDER_MODE;
+  return resolveModeState(MODE_STATE_CONFIG);
 }
 
 export function getStoredPickupRenderMode(): PickupRenderMode | null {
-  if (typeof globalThis === 'undefined') {
-    return null;
-  }
-  try {
-    const stored = window.localStorage?.getItem(STORAGE_KEY);
-    if (stored === PICKUP_RENDER_MODE_VOCAB_INFUSION || stored === PICKUP_RENDER_MODE_SYNTAX_REBUILD) {
-      return stored;
-    }
-  } catch {
-    // Ignore storage access issues in restricted contexts.
-  }
-  return null;
+  return getStoredModeState(MODE_STATE_CONFIG);
 }
 
 export function persistPickupRenderMode(mode: PickupRenderMode) {
-  if (typeof globalThis === 'undefined') {
-    return;
-  }
-
-  const scope = globalThis as GlobalWithPickupMode;
-  scope[GLOBAL_MODE_KEY] = mode;
-
-  try {
-    window.localStorage?.setItem(STORAGE_KEY, mode);
-  } catch {
-    // Ignore storage access issues in restricted contexts.
-  }
+  persistModeState(MODE_STATE_CONFIG, mode);
 }
 
 export function applyPickupRenderMode(mode: PickupRenderMode) {
-  if (typeof document === 'undefined') {
-    return;
-  }
-  const root = document.documentElement;
-  if (!root) {
-    return;
-  }
-  if (root.dataset[DATASET_KEY] !== mode) {
-    root.dataset[DATASET_KEY] = mode;
-  }
+  applyModeState(MODE_STATE_CONFIG, mode);
 }
 
 export function initPickupRenderMode(): PickupRenderMode {
-  const mode = resolvePickupRenderMode();
-  applyPickupRenderMode(mode);
-  return mode;
+  return initModeState(MODE_STATE_CONFIG);
 }
 
 export function togglePickupRenderMode(current?: PickupRenderMode): PickupRenderMode {

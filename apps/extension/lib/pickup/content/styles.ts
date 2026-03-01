@@ -1,4 +1,17 @@
 import { STYLE_ID } from './constants';
+import {
+  PICKUP_DATASET_THEME_KEY as THEME_DATASET_KEY,
+  PICKUP_ROLE_BADGE_CLASS,
+  PICKUP_ROLE_BADGE_STRUCTURE_CLASS,
+  PICKUP_ROLE_BADGE_TOKEN_CLASS,
+  PICKUP_ROOT_MODE_ATTR,
+  PICKUP_ROOT_THEME_ATTR,
+  PICKUP_ROOT_TRANSLATION_BLUR_ATTR,
+  PICKUP_ROOT_TRANSLATION_LINE_ENABLED_ATTR,
+  PICKUP_TOKEN_TAG,
+  PICKUP_TRANSLATION_PARAGRAPH_CLASS,
+  PICKUP_TRANSLATION_PARAGRAPH_INLINE_CLASS,
+} from './markers';
 
 type RgbaColor = {
   r: number;
@@ -7,7 +20,6 @@ type RgbaColor = {
   a: number;
 };
 
-const THEME_DATASET_KEY = 'xenPickupTheme';
 const THEME_DARK = 'dark';
 const THEME_LIGHT = 'light';
 const THEME_ATTRIBUTE_FILTER = [
@@ -210,7 +222,7 @@ export function ensurePickupStyles() {
       --xen-pickup-highlight-opacity: 45%;
       --xen-pickup-underline-opacity: 85%;
     }
-    :root[data-xen-pickup-theme="dark"] {
+    :root[${PICKUP_ROOT_THEME_ATTR}="${THEME_DARK}"] {
       --xen-pickup-loading-outline: rgba(148, 163, 184, 0.55);
       --xen-pickup-loading-bg: linear-gradient(120deg, rgba(15, 23, 42, 0.88) 0%, rgba(59, 130, 246, 0.22) 45%, rgba(15, 23, 42, 0.88) 80%);
       --xen-pickup-loading-glow-weak: rgba(59, 130, 246, 0.1);
@@ -219,41 +231,35 @@ export function ensurePickupStyles() {
       --xen-pickup-error-bg: rgba(127, 29, 29, 0.25);
       --xen-pickup-annotated-outline: rgba(56, 189, 248, 0.25);
     }
-    xen-pickup-token-wc {
+    ${PICKUP_TOKEN_TAG} {
       display: inline;
       color: inherit;
       font: inherit;
       line-height: inherit;
     }
-    .xen-pickup-three-lane {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      position: relative;
+    .${PICKUP_TRANSLATION_PARAGRAPH_CLASS} {
+      display: block;
+      margin-top: 4px;
+      line-height: 1.45;
+      color: color-mix(in srgb, currentColor 76%, transparent);
+      font-size: 0.95em;
     }
-    :root[data-xen-pickup-translation-line-enabled="false"] .xen-pickup-three-lane .xen-pickup-lane-target {
+    .${PICKUP_TRANSLATION_PARAGRAPH_CLASS}.${PICKUP_TRANSLATION_PARAGRAPH_INLINE_CLASS} {
+      display: inline;
+      margin-top: 0;
+      margin-left: 0.4em;
+      vertical-align: baseline;
+    }
+    :root[${PICKUP_ROOT_TRANSLATION_LINE_ENABLED_ATTR}="false"] .${PICKUP_TRANSLATION_PARAGRAPH_CLASS} {
       display: none;
     }
-    :root[data-xen-pickup-word-line-enabled="false"] .xen-pickup-three-lane .xen-pickup-lane-vocab-infusion {
-      display: none;
-    }
-    .xen-pickup-three-lane .xen-pickup-lane-syntax-rebuild {
-      display: none;
-    }
-    .xen-pickup-lane {
-      margin: 0;
-      padding: 0;
-    }
-    .xen-pickup-lane-content {
-      line-height: inherit;
-    }
-    :root[data-xen-pickup-translation-blur="true"] .xen-pickup-lane-target .xen-pickup-lane-content.xen-pickup-paragraph-translation {
+    :root[${PICKUP_ROOT_TRANSLATION_BLUR_ATTR}="true"] .${PICKUP_TRANSLATION_PARAGRAPH_CLASS} {
       position: relative;
       filter: blur(4px) saturate(0.6) grayscale(0.28);
       opacity: 0.6;
       transition: filter 0.18s ease, opacity 0.18s ease;
     }
-    :root[data-xen-pickup-translation-blur="true"] .xen-pickup-lane-target .xen-pickup-lane-content.xen-pickup-paragraph-translation::after {
+    :root[${PICKUP_ROOT_TRANSLATION_BLUR_ATTR}="true"] .${PICKUP_TRANSLATION_PARAGRAPH_CLASS}::after {
       content: '';
       position: absolute;
       inset: -1px -2px;
@@ -267,47 +273,30 @@ export function ensurePickupStyles() {
       -webkit-backdrop-filter: blur(8px) saturate(0.7);
       transition: opacity 0.18s ease;
     }
-    :root[data-xen-pickup-theme="dark"][data-xen-pickup-translation-blur="true"] .xen-pickup-lane-target .xen-pickup-lane-content.xen-pickup-paragraph-translation::after {
+    :root[${PICKUP_ROOT_THEME_ATTR}="${THEME_DARK}"][${PICKUP_ROOT_TRANSLATION_BLUR_ATTR}="true"] .${PICKUP_TRANSLATION_PARAGRAPH_CLASS}::after {
       background: linear-gradient(120deg,
         color-mix(in srgb, rgba(15, 23, 42, 0.82) 68%, transparent),
         color-mix(in srgb, rgba(15, 23, 42, 0.86) 78%, transparent));
     }
     @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-      :root[data-xen-pickup-translation-blur="true"] .xen-pickup-lane-target .xen-pickup-lane-content.xen-pickup-paragraph-translation {
+      :root[${PICKUP_ROOT_TRANSLATION_BLUR_ATTR}="true"] .${PICKUP_TRANSLATION_PARAGRAPH_CLASS} {
         filter: blur(4.5px) saturate(0.55);
         opacity: 0.55;
       }
     }
-    :root[data-xen-pickup-translation-blur="true"] .xen-pickup-lane-target .xen-pickup-lane-content.xen-pickup-paragraph-translation:hover,
-    :root[data-xen-pickup-translation-blur="true"] .xen-pickup-lane-target .xen-pickup-lane-content.xen-pickup-paragraph-translation:focus-within {
+    :root[${PICKUP_ROOT_TRANSLATION_BLUR_ATTR}="true"] .${PICKUP_TRANSLATION_PARAGRAPH_CLASS}:hover,
+    :root[${PICKUP_ROOT_TRANSLATION_BLUR_ATTR}="true"] .${PICKUP_TRANSLATION_PARAGRAPH_CLASS}:focus-within {
       filter: none;
       opacity: 1;
     }
-    :root[data-xen-pickup-translation-blur="true"] .xen-pickup-lane-target .xen-pickup-lane-content.xen-pickup-paragraph-translation:hover::after,
-    :root[data-xen-pickup-translation-blur="true"] .xen-pickup-lane-target .xen-pickup-lane-content.xen-pickup-paragraph-translation:focus-within::after {
+    :root[${PICKUP_ROOT_TRANSLATION_BLUR_ATTR}="true"] .${PICKUP_TRANSLATION_PARAGRAPH_CLASS}:hover::after,
+    :root[${PICKUP_ROOT_TRANSLATION_BLUR_ATTR}="true"] .${PICKUP_TRANSLATION_PARAGRAPH_CLASS}:focus-within::after {
       opacity: 0;
     }
-    .xen-pickup-inline {
-      display: inline;
-    }
-    .xen-pickup-inline .xen-pickup-lane {
-      display: inline;
-    }
-    .xen-pickup-inline .xen-pickup-lane-content {
-      display: inline;
-    }
-    .xen-pickup-lane + .xen-pickup-lane {
-      padding-top: 4px;
-    }
-    .xen-pickup-inline .xen-pickup-lane + .xen-pickup-lane {
-      border-top: 0;
-      padding-top: 0;
-      margin-left: 4px;
-    }
-    :root[data-xen-pickup-mode="vocab_infusion"] .xen-pickup-role-badge {
+    :root[${PICKUP_ROOT_MODE_ATTR}="vocab_infusion"] .${PICKUP_ROLE_BADGE_CLASS} {
       display: none;
     }
-    .xen-pickup-role-badge {
+    .${PICKUP_ROLE_BADGE_CLASS} {
       margin-left: 2px;
       font-size: 0.58em;
       font-weight: 600;
@@ -316,21 +305,21 @@ export function ensurePickupStyles() {
       vertical-align: super;
       cursor: help;
     }
-    .xen-pickup-role-badge.xen-pickup-role-badge-structure {
+    .${PICKUP_ROLE_BADGE_CLASS}.${PICKUP_ROLE_BADGE_STRUCTURE_CLASS} {
       color: rgba(14, 116, 144, 0.9);
       font-weight: 700;
     }
-    .xen-pickup-role-badge.xen-pickup-role-badge-token {
+    .${PICKUP_ROLE_BADGE_CLASS}.${PICKUP_ROLE_BADGE_TOKEN_CLASS} {
       color: rgba(71, 85, 105, 0.72);
       font-weight: 600;
     }
-    :root[data-xen-pickup-theme="dark"] .xen-pickup-role-badge {
+    :root[${PICKUP_ROOT_THEME_ATTR}="${THEME_DARK}"] .${PICKUP_ROLE_BADGE_CLASS} {
       color: rgba(226, 232, 240, 0.78);
     }
-    :root[data-xen-pickup-theme="dark"] .xen-pickup-role-badge.xen-pickup-role-badge-structure {
+    :root[${PICKUP_ROOT_THEME_ATTR}="${THEME_DARK}"] .${PICKUP_ROLE_BADGE_CLASS}.${PICKUP_ROLE_BADGE_STRUCTURE_CLASS} {
       color: rgba(56, 189, 248, 0.9);
     }
-    :root[data-xen-pickup-theme="dark"] .xen-pickup-role-badge.xen-pickup-role-badge-token {
+    :root[${PICKUP_ROOT_THEME_ATTR}="${THEME_DARK}"] .${PICKUP_ROLE_BADGE_CLASS}.${PICKUP_ROLE_BADGE_TOKEN_CLASS} {
       color: rgba(226, 232, 240, 0.68);
     }
     [data-pickup-annotated="true"] {
@@ -487,45 +476,45 @@ export function ensurePickupStyles() {
     .tippy-box[data-theme~="xen-pickup"] .tippy-content {
       padding: 10px 12px;
     }
-    :root[data-xen-pickup-theme="dark"] .tippy-box[data-theme~="xen-pickup"] {
+    :root[${PICKUP_ROOT_THEME_ATTR}="${THEME_DARK}"] .tippy-box[data-theme~="xen-pickup"] {
       background: #1f2430;
       color: #e2e8f0;
       border-color: rgba(226, 232, 240, 0.18);
       box-shadow: 0 14px 36px rgba(2, 6, 23, 0.45);
     }
-    :root[data-xen-pickup-theme="dark"] .xen-pickup-tooltip-line-main {
+    :root[${PICKUP_ROOT_THEME_ATTR}="${THEME_DARK}"] .xen-pickup-tooltip-line-main {
       color: #f8fafc;
     }
-    :root[data-xen-pickup-theme="dark"] .xen-pickup-tooltip-line-desc {
+    :root[${PICKUP_ROOT_THEME_ATTR}="${THEME_DARK}"] .xen-pickup-tooltip-line-desc {
       color: rgba(241, 245, 249, 0.94);
     }
-    :root[data-xen-pickup-theme="dark"] .xen-pickup-tooltip-line-phone {
+    :root[${PICKUP_ROOT_THEME_ATTR}="${THEME_DARK}"] .xen-pickup-tooltip-line-phone {
       color: rgba(226, 232, 240, 0.86);
     }
-    :root[data-xen-pickup-theme="dark"] .xen-pickup-tooltip-phone-chip {
+    :root[${PICKUP_ROOT_THEME_ATTR}="${THEME_DARK}"] .xen-pickup-tooltip-phone-chip {
       border-color: rgba(226, 232, 240, 0.2);
       background: rgba(148, 163, 184, 0.18);
     }
-    :root[data-xen-pickup-theme="dark"] .xen-pickup-tooltip-phone-region {
+    :root[${PICKUP_ROOT_THEME_ATTR}="${THEME_DARK}"] .xen-pickup-tooltip-phone-region {
       color: rgba(248, 250, 252, 0.92);
     }
-    :root[data-xen-pickup-theme="dark"] .xen-pickup-tooltip-phone-value {
+    :root[${PICKUP_ROOT_THEME_ATTR}="${THEME_DARK}"] .xen-pickup-tooltip-phone-value {
       color: rgba(226, 232, 240, 0.9);
     }
-    :root[data-xen-pickup-theme="dark"] .xen-pickup-tooltip-divider {
+    :root[${PICKUP_ROOT_THEME_ATTR}="${THEME_DARK}"] .xen-pickup-tooltip-divider {
       background: linear-gradient(90deg, rgba(255, 149, 64, 0.95) 0%, rgba(255, 149, 64, 0.24) 100%);
     }
-    :root[data-xen-pickup-theme="dark"] .xen-pickup-tooltip-word {
+    :root[${PICKUP_ROOT_THEME_ATTR}="${THEME_DARK}"] .xen-pickup-tooltip-word {
       border-color: rgba(255, 170, 96, 0.36);
       background: rgba(255, 170, 96, 0.14);
       color: rgba(255, 229, 198, 0.95);
     }
-    :root[data-xen-pickup-theme="dark"] .xen-pickup-tooltip-word:hover {
+    :root[${PICKUP_ROOT_THEME_ATTR}="${THEME_DARK}"] .xen-pickup-tooltip-word:hover {
       border-color: rgba(255, 170, 96, 0.62);
       background: rgba(255, 170, 96, 0.24);
       color: #fff4e8;
     }
-    :root[data-xen-pickup-theme="dark"] .xen-pickup-tooltip-action {
+    :root[${PICKUP_ROOT_THEME_ATTR}="${THEME_DARK}"] .xen-pickup-tooltip-action {
       border-color: rgba(226, 232, 240, 0.22);
       color: rgba(226, 232, 240, 0.9);
       background: rgba(148, 163, 184, 0.2);

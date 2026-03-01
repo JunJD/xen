@@ -1,51 +1,14 @@
 import type { TranslateProvider } from '@/lib/pickup/messages';
 import { DEFAULT_TRANSLATE_PROVIDER, isTranslateProvider } from '@/lib/pickup/translate/options';
+import { storageGet, storageSet } from '@/lib/platform/storage';
 
 const TRANSLATE_PROVIDER_STORAGE_KEY = 'xenTranslateProvider';
 const LLM_API_KEY_STORAGE_KEY = 'xenTranslateLlmApiKey';
 const LLM_MODEL_STORAGE_KEY = 'xenTranslateLlmModel';
 const LLM_MODEL_LIST_STORAGE_KEY = 'xenTranslateLlmModels';
+const PICKUP_DICTIONARY_IDS_STORAGE_KEY = 'xenPickupDictionaryIds';
 export const DEFAULT_LLM_MODEL = 'gpt-4o-mini';
 export const DEFAULT_LLM_MODEL_LIST = ['gpt-4o-mini', 'gpt-4o', 'gpt-4.1-mini'];
-
-function getStorageArea() {
-  if (typeof chrome !== 'undefined' && chrome.storage?.local) {
-    return chrome.storage.local;
-  }
-  const browserStorage = (globalThis as { browser?: { storage?: { local?: ChromeStorageAreaLike } } })
-    .browser?.storage?.local;
-  return browserStorage ?? null;
-}
-
-async function storageGet(key: string): Promise<unknown> {
-  const storage = getStorageArea();
-  if (!storage || !storage.get) {
-    throw new Error('Storage unavailable.');
-  }
-  const storageGet = storage.get.bind(storage);
-  return new Promise((resolve, reject) => {
-    try {
-      storageGet([key], (result) => resolve(result?.[key]));
-    } catch (error) {
-      reject(error);
-    }
-  });
-}
-
-async function storageSet(key: string, value: unknown): Promise<void> {
-  const storage = getStorageArea();
-  if (!storage || !storage.set) {
-    throw new Error('Storage unavailable.');
-  }
-  const storageSet = storage.set.bind(storage);
-  return new Promise((resolve, reject) => {
-    try {
-      storageSet({ [key]: value }, () => resolve());
-    } catch (error) {
-      reject(error);
-    }
-  });
-}
 
 export async function ensureTranslateProviderStored(
   fallbackProvider: TranslateProvider = DEFAULT_TRANSLATE_PROVIDER,
@@ -86,6 +49,27 @@ export async function ensureTranslateModelStored(
 }
 
 function normalizeModelList(value: unknown): string[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  const cleaned: string[] = [];
+  value.forEach((item) => {
+    if (typeof item !== 'string') {
+      return;
+    }
+    const trimmed = item.trim();
+    if (!trimmed) {
+      return;
+    }
+    if (cleaned.includes(trimmed)) {
+      return;
+    }
+    cleaned.push(trimmed);
+  });
+  return cleaned;
+}
+
+function normalizeDictionaryIdList(value: unknown): string[] {
   if (!Array.isArray(value)) {
     return [];
   }
@@ -151,6 +135,40 @@ export async function setStoredLlmModel(nextModel: string): Promise<string> {
     throw new Error('LLM model is required.');
   }
   await storageSet(LLM_MODEL_STORAGE_KEY, normalized);
+  return normalized;
+}
+
+export async function ensureStoredPickupDictionaryIds(
+  fallbackDictionaryIds: string[],
+): Promise<string[]> {
+  const raw = await storageGet(PICKUP_DICTIONARY_IDS_STORAGE_KEY);
+  const normalized = normalizeDictionaryIdList(raw);
+  if (normalized.length > 0) {
+    return normalized;
+  }
+  const fallback = normalizeDictionaryIdList(fallbackDictionaryIds);
+  if (fallback.length === 0) {
+    throw new Error('Dictionary fallback ids are required.');
+  }
+  await storageSet(PICKUP_DICTIONARY_IDS_STORAGE_KEY, fallback);
+  return fallback;
+}
+
+export async function getStoredPickupDictionaryIds(): Promise<string[] | null> {
+  const raw = await storageGet(PICKUP_DICTIONARY_IDS_STORAGE_KEY);
+  const normalized = normalizeDictionaryIdList(raw);
+  if (normalized.length === 0) {
+    return null;
+  }
+  return normalized;
+}
+
+export async function setStoredPickupDictionaryIds(nextDictionaryIds: string[]): Promise<string[]> {
+  const normalized = normalizeDictionaryIdList(nextDictionaryIds);
+  if (normalized.length === 0) {
+    throw new Error('Dictionary ids are required.');
+  }
+  await storageSet(PICKUP_DICTIONARY_IDS_STORAGE_KEY, normalized);
   return normalized;
 }
 
