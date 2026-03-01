@@ -9,22 +9,44 @@
         box-sizing: border-box;
       }
       body {
+        margin: 0;
         font-family: system-ui, -apple-system, sans-serif;
-        padding: 24px;
+        padding: 24px 18px 36px;
+        background: #f8fafc;
         color: #0f172a;
+      }
+      .page {
+        max-width: 980px;
+        margin: 0 auto;
+      }
+      .title {
+        margin: 0 0 6px;
+        font-size: 22px;
+        line-height: 1.2;
+      }
+      .subtitle {
+        margin: 0 0 18px;
+        color: #475569;
+        font-size: 14px;
       }
       .section {
         padding: 16px;
         border: 1px solid #e2e8f0;
         border-radius: 12px;
         margin-bottom: 18px;
+        background: #ffffff;
       }
       .label {
         font-size: 12px;
         letter-spacing: 0.04em;
         text-transform: uppercase;
         color: #64748b;
-        margin-bottom: 8px;
+        margin-bottom: 6px;
+      }
+      .expect {
+        margin: 0 0 10px;
+        font-size: 12px;
+        color: #475569;
       }
       .inline-flex { display: inline-flex; }
       .flex { display: flex; }
@@ -82,61 +104,200 @@
       .btn {
         background: #eef2ff;
       }
+      .case-shell {
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 14px;
+      }
+      .dark-surface {
+        background: #0f172a;
+        color: #e2e8f0;
+        border-color: #334155;
+      }
+      .dark-row {
+        background: rgba(51, 65, 85, 0.48);
+        border: 1px solid rgba(148, 163, 184, 0.35);
+        border-radius: 10px;
+        padding: 10px 12px;
+      }
+      .font-context {
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        font-size: 15px;
+        color: #1e293b;
+      }
+      .font-source {
+        font-family: "Times New Roman", Georgia, serif;
+        font-size: 18px;
+        letter-spacing: 0.01em;
+      }
+      .chip-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 220px;
+      }
+      .chip-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: #0ea5e9;
+        flex: none;
+      }
+      .chip-text {
+        min-width: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .table td {
+        border: 1px solid #e2e8f0;
+        padding: 8px 10px;
+        vertical-align: middle;
+        height: 44px;
+      }
+      .table td:first-child {
+        width: 180px;
+        color: #64748b;
+        font-size: 12px;
+      }
+      .mixed-lang {
+        width: 260px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 8px 10px;
+      }
       .dark .dark\:text-white { color: #ffffff; }
     </style>
   </head>
   <body>
-    <div class="section">
-      <div class="label" data-pickup-ignore="true">Case 1 - Inline Element</div>
-      <div class="border border-slate-200 rounded-lg p-4 w-60">
-        <a
-          class="dark:text-white inline-flex h-9 items-center rounded py-2 transition-colors duration-300 hover:no-underline bg-menu-chosen-background text-menu-chosen-text"
-          href="#"
-        >
-          <div class="inline-flex h-4 items-center justify-start gap-1.5 px-[5px]">
-            <div data-pickup-original="Applications" data-imt-p="1">Applications</div>
-          </div>
-        </a>
-      </div>
-    </div>
-
-    <div class="section">
-      <div class="label" data-pickup-ignore="true">Case 2 - Compact Flex Block</div>
-      <div class="flex items-center h-9 text-sm leading-5 px-3 border border-slate-200 rounded-md w-56">Analytics</div>
-    </div>
-
-    <div class="section">
-      <div class="label" data-pickup-ignore="true">Case 3 - Ellipsis Truncation</div>
-      <div class="w-[180px] truncate border border-slate-200 rounded-md px-3 py-2">Account Settings for Very Long Project Name</div>
-    </div>
-
-    <div class="section">
-      <div class="label" data-pickup-ignore="true">Case 4 - Paragraph Block</div>
-      <p class="max-w-[520px] text-base leading-6">
-        This is a longer paragraph for layout testing. It should allow a multi-lane layout while staying readable and without breaking the surrounding layout.
+    <main class="page">
+      <h1 class="title">Pickup Layout Cases</h1>
+      <p class="subtitle">
+        Use this page to verify inline layout stability, dark/light readability, truncation handling, and font consistency.
       </p>
-    </div>
 
-    <div class="section">
-      <div class="label" data-pickup-ignore="true">Case 5 - Menu List</div>
-      <ul class="menu-list w-56">
-        <li class="flex items-center h-9 px-3 rounded-md">Security</li>
-        <li class="flex items-center h-9 px-3 rounded-md">Approvals</li>
-        <li class="flex items-center h-9 px-3 rounded-md">Billing</li>
-      </ul>
-    </div>
-
-    <div class="section">
-      <div class="label" data-pickup-ignore="true">Case 6 - Button</div>
-      <button class="h-8 px-3 text-xs border border-indigo-200 rounded-md btn">Save Changes</button>
-    </div>
-
-    <div class="section">
-      <div class="label" data-pickup-ignore="true">Case 7 - Card Title + Subtitle</div>
-      <div class="border border-slate-200 rounded-lg p-3 w-60">
-        <div class="text-base font-semibold">Personal Account</div>
-        <div class="text-xs text-slate-500">View profile page</div>
+      <div class="section">
+        <div class="label" data-pickup-ignore="true">Case 1 - Inline Element</div>
+        <p class="expect" data-pickup-ignore="true">Expected: translation stays inline, does not wrap to a second lane.</p>
+        <div class="case-shell w-60">
+          <a
+            class="dark:text-white inline-flex h-9 items-center rounded py-2 transition-colors duration-300 hover:no-underline bg-menu-chosen-background text-menu-chosen-text"
+            href="#"
+          >
+            <div class="inline-flex h-4 items-center justify-start gap-1.5 px-[5px]">
+              <div data-pickup-original="Applications" data-imt-p="1">Applications</div>
+            </div>
+          </a>
+        </div>
       </div>
-    </div>
+
+      <div class="section">
+        <div class="label" data-pickup-ignore="true">Case 2 - Compact Flex Block</div>
+        <p class="expect" data-pickup-ignore="true">Expected: stays single line, no stacked translation lane.</p>
+        <div class="flex items-center h-9 text-sm leading-5 px-3 border border-slate-200 rounded-md w-56">Analytics</div>
+      </div>
+
+      <div class="section">
+        <div class="label" data-pickup-ignore="true">Case 3 - Ellipsis Truncation</div>
+        <p class="expect" data-pickup-ignore="true">Expected: remains truncated on one line and does not increase width.</p>
+        <div class="w-[180px] truncate border border-slate-200 rounded-md px-3 py-2">Account Settings for Very Long Project Name</div>
+      </div>
+
+      <div class="section">
+        <div class="label" data-pickup-ignore="true">Case 4 - Paragraph Block</div>
+        <p class="expect" data-pickup-ignore="true">Expected: paragraph can use multi-lane rendering and keeps readable line height.</p>
+        <p class="max-w-[520px] text-base leading-6">
+          This is a longer paragraph for layout testing. It should allow a multi-lane layout while staying readable and without breaking the surrounding layout.
+        </p>
+      </div>
+
+      <div class="section">
+        <div class="label" data-pickup-ignore="true">Case 5 - Menu List</div>
+        <p class="expect" data-pickup-ignore="true">Expected: each row keeps single-line height with no overlap.</p>
+        <ul class="menu-list w-56">
+          <li class="flex items-center h-9 px-3 rounded-md">Security</li>
+          <li class="flex items-center h-9 px-3 rounded-md">Approvals</li>
+          <li class="flex items-center h-9 px-3 rounded-md">Billing</li>
+        </ul>
+      </div>
+
+      <div class="section">
+        <div class="label" data-pickup-ignore="true">Case 6 - Button</div>
+        <p class="expect" data-pickup-ignore="true">Expected: button height remains fixed at 32px.</p>
+        <button class="h-8 px-3 text-xs border border-indigo-200 rounded-md btn">Save Changes</button>
+      </div>
+
+      <div class="section">
+        <div class="label" data-pickup-ignore="true">Case 7 - Card Title + Subtitle</div>
+        <p class="expect" data-pickup-ignore="true">Expected: card height stays stable with title and subtitle structure preserved.</p>
+        <div class="border border-slate-200 rounded-lg p-3 w-60">
+          <div class="text-base font-semibold">Personal Account</div>
+          <div class="text-xs text-slate-500">View profile page</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="label" data-pickup-ignore="true">Case 8 - Dark Surface Contrast</div>
+        <p class="expect" data-pickup-ignore="true">Expected: translation remains readable on dark background (no low-contrast gray).</p>
+        <div class="case-shell dark-surface w-60">
+          <div class="dark-row">Monthly Revenue Summary</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="label" data-pickup-ignore="true">Case 9 - Font Inheritance Stress</div>
+        <p class="expect" data-pickup-ignore="true">Expected: translation font follows source text style, not container fallback font.</p>
+        <div class="case-shell">
+          <div class="font-context">
+            Parent fallback font context:
+            <span class="font-source">Quarterly Forecast</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="label" data-pickup-ignore="true">Case 10 - Icon + Truncated Chip</div>
+        <p class="expect" data-pickup-ignore="true">Expected: inline translation does not push icon outside or break truncation width.</p>
+        <div class="case-shell">
+          <div class="chip-row border border-slate-200 rounded-md px-3 py-2">
+            <span class="chip-dot"></span>
+            <span class="chip-text">Background Worker Processing Queue Health</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="label" data-pickup-ignore="true">Case 11 - Table Cell Height Lock</div>
+        <p class="expect" data-pickup-ignore="true">Expected: row height stays fixed and adjacent cells remain aligned.</p>
+        <div class="case-shell">
+          <table class="table">
+            <tbody>
+              <tr>
+                <td>Status</td>
+                <td>Pending Approval</td>
+              </tr>
+              <tr>
+                <td>Owner</td>
+                <td>Operations Team</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="label" data-pickup-ignore="true">Case 12 - Mixed CJK + English Truncation</div>
+        <p class="expect" data-pickup-ignore="true">Expected: mixed-language text remains single-line with ellipsis behavior.</p>
+        <div class="mixed-lang">订单状态 Order Processing and Fulfillment Tracking Center</div>
+      </div>
+    </main>
+
   </body>
 </html>
