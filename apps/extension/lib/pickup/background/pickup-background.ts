@@ -292,53 +292,62 @@ function buildUnitTranslationPreview(
 
 function buildParagraphTranslationPreview(
   paragraph: PickupTranslateParagraphInput,
-  dictionary: VocabDictionary,
+  units: PickupTranslateUnitPreview[],
   paragraphText: string,
 ): PickupTranslateParagraphPreview {
   return {
     id: paragraph.id,
     sourceText: paragraph.sourceText,
     paragraphText,
-    units: paragraph.units.map(unit => buildUnitTranslationPreview(unit, dictionary)),
+    units,
   };
 }
 
 async function buildTranslationPreviews(
   paragraphs: PickupTranslateParagraphInput[],
   provider: TranslateProvider,
-  options: { includeParagraphTranslation?: boolean } = {},
+  options: { includeParagraphTranslation?: boolean; includeUnitTranslation?: boolean } = {},
 ): Promise<PickupTranslateParagraphPreview[]> {
   if (paragraphs.length === 0) {
     return [];
   }
   const includeParagraphTranslation = options.includeParagraphTranslation !== false;
-  const manifest = await getVocabDictionaryManifest();
-  const availableDictionaryIds = new Set(manifest.dictionaries.map(item => item.id));
-  const storedDictionaryIds = await getStoredPickupDictionaryIds();
-  let resolvedDictionaryIds = (storedDictionaryIds ?? []).filter(id => availableDictionaryIds.has(id));
-  if (resolvedDictionaryIds.length === 0) {
-    resolvedDictionaryIds = manifest.defaultDictionaryIds.filter(id => availableDictionaryIds.has(id));
-  }
-  if (resolvedDictionaryIds.length === 0) {
-    const firstId = manifest.dictionaries[0]?.id;
-    if (firstId) {
-      resolvedDictionaryIds = [firstId];
+  const includeUnitTranslation = options.includeUnitTranslation !== false;
+  let dictionary: VocabDictionary | null = null;
+  if (includeUnitTranslation) {
+    const manifest = await getVocabDictionaryManifest();
+    const availableDictionaryIds = new Set(manifest.dictionaries.map(item => item.id));
+    const storedDictionaryIds = await getStoredPickupDictionaryIds();
+    let resolvedDictionaryIds = (storedDictionaryIds ?? []).filter(id => availableDictionaryIds.has(id));
+    if (resolvedDictionaryIds.length === 0) {
+      resolvedDictionaryIds = manifest.defaultDictionaryIds.filter(id => availableDictionaryIds.has(id));
     }
+    if (resolvedDictionaryIds.length === 0) {
+      const firstId = manifest.dictionaries[0]?.id;
+      if (firstId) {
+        resolvedDictionaryIds = [firstId];
+      }
+    }
+    if (resolvedDictionaryIds.length === 0) {
+      throw new Error('Dictionary manifest has no valid dictionary ids.');
+    }
+    const needsMigration = !storedDictionaryIds
+      || storedDictionaryIds.length !== resolvedDictionaryIds.length
+      || storedDictionaryIds.some((id, index) => id !== resolvedDictionaryIds[index]);
+    if (needsMigration) {
+      await setStoredPickupDictionaryIds(resolvedDictionaryIds);
+    }
+    dictionary = await loadVocabDictionary({
+      dictionaryIds: resolvedDictionaryIds,
+    });
   }
-  if (resolvedDictionaryIds.length === 0) {
-    throw new Error('Dictionary manifest has no valid dictionary ids.');
-  }
-  const needsMigration = !storedDictionaryIds
-    || storedDictionaryIds.length !== resolvedDictionaryIds.length
-    || storedDictionaryIds.some((id, index) => id !== resolvedDictionaryIds[index]);
-  if (needsMigration) {
-    await setStoredPickupDictionaryIds(resolvedDictionaryIds);
-  }
-  const dictionary = await loadVocabDictionary({
-    dictionaryIds: resolvedDictionaryIds,
-  });
   if (!includeParagraphTranslation) {
-    return paragraphs.map(paragraph => buildParagraphTranslationPreview(paragraph, dictionary, ''));
+    return paragraphs.map((paragraph) => {
+      const units = includeUnitTranslation && dictionary
+        ? paragraph.units.map(unit => buildUnitTranslationPreview(unit, dictionary))
+        : [];
+      return buildParagraphTranslationPreview(paragraph, units, '');
+    });
   }
   const modelKey = await resolveTranslationModelKey(provider);
   const translationCache = getTranslationCache(modelKey);
@@ -366,7 +375,10 @@ async function buildTranslationPreviews(
         console.warn('Pickup paragraph translation failed, fallback to token-only preview:', error);
       }
     }
-    previews.push(buildParagraphTranslationPreview(paragraph, dictionary, paragraphText));
+    const units = includeUnitTranslation && dictionary
+      ? paragraph.units.map(unit => buildUnitTranslationPreview(unit, dictionary))
+      : [];
+    previews.push(buildParagraphTranslationPreview(paragraph, units, paragraphText));
   }
   if (wroteCache) {
     void translationCache.maybePrune(CACHE_PRUNE_REASONS.translate);
@@ -560,8 +572,10 @@ export function setupPickupBackground(options: PickupBackgroundOptions = {}) {
       ? message.data.provider
       : await getStoredTranslateProvider();
     const includeParagraphTranslation = message.data?.includeParagraphTranslation !== false;
+    const includeUnitTranslation = message.data?.includeUnitTranslation !== false;
     const translations = await buildTranslationPreviews(paragraphs, provider, {
       includeParagraphTranslation,
+      includeUnitTranslation,
     });
     return { translations };
   });

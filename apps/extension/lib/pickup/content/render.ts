@@ -1,5 +1,6 @@
 ﻿import type {
   PickupAnnotation,
+  PickupTranslateParagraphInput,
 } from '@/lib/pickup/messages';
 import { buildSentenceAst } from '@/lib/pickup/ast/adapter-registry';
 import { buildRenderModelFromSentenceAst, type RenderToken } from '@/lib/pickup/render-model';
@@ -135,6 +136,7 @@ type ApplyAnnotationsOptions = {
 
 type AnnotationTranslationPreviewOptions = {
   includeParagraphTranslation?: boolean;
+  includeUnitTranslation?: boolean;
 };
 
 function buildSentenceRenderEntries(
@@ -163,18 +165,18 @@ function buildSentenceRenderEntries(
   return entries;
 }
 
-async function requestTranslationOverridesByEntries(
-  entries: SentenceRenderEntry[],
+async function requestTranslationOverridesByParagraphs(
+  paragraphs: PickupTranslateParagraphInput[],
   options: AnnotationTranslationPreviewOptions = {},
 ) {
-  const translationInputs = buildTranslationPreviewInputs(entries);
-  if (translationInputs.length === 0) {
+  if (paragraphs.length === 0) {
     return new Map<string, ParagraphTranslationOverride>();
   }
 
   try {
-    const translations = await requestTranslationPreview(translationInputs, {
+    const translations = await requestTranslationPreview(paragraphs, {
       includeParagraphTranslation: options.includeParagraphTranslation,
+      includeUnitTranslation: options.includeUnitTranslation,
     });
     return buildTranslationOverrideLookup(translations);
   }
@@ -184,6 +186,14 @@ async function requestTranslationOverridesByEntries(
   }
 }
 
+async function requestTranslationOverridesByEntries(
+  entries: SentenceRenderEntry[],
+  options: AnnotationTranslationPreviewOptions = {},
+) {
+  const translationInputs = buildTranslationPreviewInputs(entries);
+  return requestTranslationOverridesByParagraphs(translationInputs, options);
+}
+
 export async function requestAnnotationTranslationPreview(
   annotations: PickupAnnotation[],
   elementMap: Map<string, Element>,
@@ -191,6 +201,26 @@ export async function requestAnnotationTranslationPreview(
 ) {
   const entries = buildSentenceRenderEntries(annotations, elementMap);
   return requestTranslationOverridesByEntries(entries, options);
+}
+
+export async function requestParagraphTranslationPreview(
+  paragraphs: PickupTranslateParagraphInput[],
+  options: AnnotationTranslationPreviewOptions = {},
+) {
+  return requestTranslationOverridesByParagraphs(paragraphs, options);
+}
+
+export function applyParagraphTranslationOverrides(
+  elementMap: Map<string, Element>,
+  translationOverridesByParagraph: Map<string, ParagraphTranslationOverride>,
+) {
+  elementMap.forEach((element, id) => {
+    upsertTranslationParagraphElement(
+      id,
+      element as HTMLElement,
+      translationOverridesByParagraph.get(id)?.paragraphText ?? EMPTY_TEXT,
+    );
+  });
 }
 
 export async function applyAnnotations(

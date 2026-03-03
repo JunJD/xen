@@ -15,6 +15,7 @@ export async function requestAnnotations(paragraphs: PickupParagraph[]) {
 type RequestTranslationPreviewOptions = {
   provider?: TranslateProvider;
   includeParagraphTranslation?: boolean;
+  includeUnitTranslation?: boolean;
 };
 
 export async function requestTranslationPreview(
@@ -25,6 +26,7 @@ export async function requestTranslationPreview(
     paragraphs,
     provider: options.provider,
     includeParagraphTranslation: options.includeParagraphTranslation,
+    includeUnitTranslation: options.includeUnitTranslation,
   });
   if (!response?.translations) {
     throw new Error('Translation preview failed.');

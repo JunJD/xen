@@ -97,6 +97,7 @@ export const translatePreviewRequestSchema = z.object({
   paragraphs: z.array(pickupTranslateParagraphInputSchema),
   provider: translateProviderSchema.optional(),
   includeParagraphTranslation: z.boolean().optional(),
+  includeUnitTranslation: z.boolean().optional(),
 });
 export const translatePreviewResponseSchema = z.object({
   translations: z.array(pickupTranslateParagraphPreviewSchema),

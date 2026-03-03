@@ -1,4 +1,4 @@
-import type { PickupParagraph } from '@/lib/pickup/messages';
+import type { PickupParagraph, PickupTranslateParagraphInput } from '@/lib/pickup/messages';
 import { REQUEST_TIMEOUT_MS } from './constants';
 import { collectParagraphs } from './collector';
 import {
@@ -6,7 +6,12 @@ import {
   PICKUP_TOKEN_TAG,
   PICKUP_TRANSLATION_PARAGRAPH_SELECTOR,
 } from './markers';
-import { applyAnnotations, requestAnnotationTranslationPreview } from './render';
+import {
+  applyAnnotations,
+  applyParagraphTranslationOverrides,
+  requestAnnotationTranslationPreview,
+  requestParagraphTranslationPreview,
+} from './render';
 import { ensurePickupStyles } from './styles';
 import { requestAnnotations } from './transport';
 
@@ -24,6 +29,7 @@ const INITIAL_COLLECT_RETRY_COUNT = 2;
 const INITIAL_COLLECT_RETRY_INTERVAL_MS = 1000;
 const READY_STATE_COMPLETE = 'complete';
 const DEFAULT_TRANSLATION_PREVIEW_ENABLED = false;
+const ANNOTATED_PARAGRAPH_SELECTOR = '[data-pickup-annotated="true"][data-pickup-id]';
 
 type PickupRunnerOptions = {
   translationPreviewEnabled?: boolean;
@@ -47,6 +53,8 @@ export function createPickupRunner(options: PickupRunnerOptions = {}) {
   let started = false;
   let refreshRequested = false;
   let translationPreviewEnabled = options.translationPreviewEnabled ?? DEFAULT_TRANSLATION_PREVIEW_ENABLED;
+  let patchingParagraphTranslations = false;
+  let patchParagraphTranslationsRequested = false;
 
   function isExtensionContextInvalidated(error: unknown) {
     const message = error instanceof Error ? error.message : String(error ?? '');
@@ -173,7 +181,10 @@ export function createPickupRunner(options: PickupRunnerOptions = {}) {
       const translationOverridesByParagraph = await requestAnnotationTranslationPreview(
         annotations,
         elementMap,
-        { includeParagraphTranslation: translationPreviewEnabled },
+        {
+          includeParagraphTranslation: translationPreviewEnabled,
+          includeUnitTranslation: true,
+        },
       );
       await applyAnnotations(annotations, elementMap, { translationOverridesByParagraph });
     }
@@ -219,6 +230,64 @@ export function createPickupRunner(options: PickupRunnerOptions = {}) {
 
     if (readyIds.length > 0) {
       queueReady(readyIds);
+    }
+  }
+
+  function collectAnnotatedParagraphTranslationInputs() {
+    const paragraphs: PickupTranslateParagraphInput[] = [];
+    const elementMap = new Map<string, Element>();
+    document.querySelectorAll<HTMLElement>(ANNOTATED_PARAGRAPH_SELECTOR).forEach((element) => {
+      const id = element.dataset.pickupId?.trim();
+      if (!id || elementMap.has(id)) {
+        return;
+      }
+      const sourceText = (element.dataset.pickupOriginal ?? element.textContent ?? '').trim();
+      if (!sourceText) {
+        return;
+      }
+      paragraphs.push({
+        id,
+        sourceText,
+        units: [],
+      });
+      elementMap.set(id, element);
+    });
+    return { paragraphs, elementMap };
+  }
+
+  async function patchVisibleParagraphTranslations() {
+    if (contextInvalidated || !started || !translationPreviewEnabled) {
+      return;
+    }
+    if (patchingParagraphTranslations) {
+      patchParagraphTranslationsRequested = true;
+      return;
+    }
+    patchingParagraphTranslations = true;
+    try {
+      do {
+        patchParagraphTranslationsRequested = false;
+        const { paragraphs, elementMap } = collectAnnotatedParagraphTranslationInputs();
+        if (paragraphs.length === 0) {
+          return;
+        }
+        const translationOverridesByParagraph = await requestParagraphTranslationPreview(paragraphs, {
+          includeParagraphTranslation: true,
+          includeUnitTranslation: false,
+        });
+        if (!translationPreviewEnabled || !started || contextInvalidated) {
+          return;
+        }
+        applyParagraphTranslationOverrides(elementMap, translationOverridesByParagraph);
+      } while (patchParagraphTranslationsRequested && translationPreviewEnabled);
+    } catch (error) {
+      if (handleContextInvalidatedOnce(error)) {
+        stop();
+        return;
+      }
+      console.warn('Pickup paragraph translation patch failed:', error);
+    } finally {
+      patchingParagraphTranslations = false;
     }
   }
 
@@ -340,6 +409,9 @@ export function createPickupRunner(options: PickupRunnerOptions = {}) {
     }
 
     setupInitialCollectionGate();
+    if (translationPreviewEnabled) {
+      void patchVisibleParagraphTranslations();
+    }
   }
 
   function stop() {
@@ -369,6 +441,8 @@ export function createPickupRunner(options: PickupRunnerOptions = {}) {
     isCollectionEnabled = false;
     hasDeferredCollect = false;
     refreshRequested = false;
+    patchingParagraphTranslations = false;
+    patchParagraphTranslationsRequested = false;
     pending.clear();
     readyQueue.clear();
   }
@@ -384,7 +458,9 @@ export function createPickupRunner(options: PickupRunnerOptions = {}) {
         return false;
       }
       translationPreviewEnabled = enabled;
-      refresh();
+      if (enabled) {
+        void patchVisibleParagraphTranslations();
+      }
       return true;
     },
     isStarted: () => started,
