@@ -29,6 +29,14 @@ type PyodideLike = {
   globals?: {
     get: (name: string) => unknown;
   };
+  FS?: {
+    mkdir: (path: string) => void;
+    mount: (type: unknown, options: Record<string, unknown>, mountpoint: string) => void;
+    syncfs: (populate: boolean, callback: (error?: unknown) => void) => void;
+    filesystems?: {
+      IDBFS?: unknown;
+    };
+  };
 };
 
 type LoadPyodideFn = (options?: { indexURL?: string }) => Promise<PyodideLike>;
@@ -55,6 +63,8 @@ const PYODIDE_RUNTIME_INDEX_PATH = `${PYODIDE_RUNTIME_BASE_PATH}/`;
 const SPACY_BOOTSTRAP_SCRIPT_PATH = 'spacy/visualize.py';
 const SPACY_PACKAGES_BASE_PATH = 'spacy/packages';
 const SPACY_PACKAGES_BASE_URL_TOKEN = '__SPACY_PACKAGES_BASE_URL__';
+const SPACY_PERSIST_BASE_PATH_TOKEN = '__SPACY_PERSIST_BASE_PATH__';
+const SPACY_PERSIST_BASE_PATH = '/xen-spacy-cache';
 
 let analyzerRuntimePromise: Promise<AnalyzerRuntime | null> | null = null;
 let runtimeStatus: PickupModelStatus = {
@@ -109,7 +119,87 @@ function getRuntimeUrl(path: string): string {
 
 function hydrateBootstrapScript(rawScript: string): string {
   const packagesBaseUrl = getRuntimeUrl(SPACY_PACKAGES_BASE_PATH).replace(/\/+$/, '');
-  return rawScript.replaceAll(SPACY_PACKAGES_BASE_URL_TOKEN, packagesBaseUrl);
+  return rawScript
+    .replaceAll(SPACY_PACKAGES_BASE_URL_TOKEN, packagesBaseUrl)
+    .replaceAll(SPACY_PERSIST_BASE_PATH_TOKEN, SPACY_PERSIST_BASE_PATH);
+}
+
+function describeMountError(error: unknown): string {
+  if (error instanceof Error && typeof error.message === 'string') {
+    return error.message;
+  }
+  return String(error ?? '');
+}
+
+function isAlreadyMountedError(error: unknown): boolean {
+  const message = describeMountError(error).toLowerCase();
+  return message.includes('already mounted') || message.includes('mountpoint');
+}
+
+function getPyodideFs(pyodide: PyodideLike) {
+  return pyodide.FS ?? null;
+}
+
+function mkdirIfMissing(
+  fs: NonNullable<PyodideLike['FS']>,
+  path: string,
+) {
+  try {
+    fs.mkdir(path);
+  }
+  catch {
+    return;
+  }
+}
+
+function syncPyodideFs(
+  fs: NonNullable<PyodideLike['FS']>,
+  populate: boolean,
+) {
+  return new Promise<void>((resolve, reject) => {
+    try {
+      fs.syncfs(populate, (error) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+        resolve();
+      });
+    }
+    catch (error) {
+      reject(error);
+    }
+  });
+}
+
+async function preparePersistentSpacyCache(pyodide: PyodideLike) {
+  const fs = getPyodideFs(pyodide);
+  const idbfs = fs?.filesystems?.IDBFS;
+  if (!fs || !idbfs) {
+    return;
+  }
+
+  mkdirIfMissing(fs, SPACY_PERSIST_BASE_PATH);
+
+  try {
+    fs.mount(idbfs, {}, SPACY_PERSIST_BASE_PATH);
+  }
+  catch (error) {
+    if (!isAlreadyMountedError(error)) {
+      throw error;
+    }
+  }
+
+  await syncPyodideFs(fs, true);
+}
+
+async function flushPersistentSpacyCache(pyodide: PyodideLike) {
+  const fs = getPyodideFs(pyodide);
+  const idbfs = fs?.filesystems?.IDBFS;
+  if (!fs || !idbfs) {
+    return;
+  }
+  await syncPyodideFs(fs, false);
 }
 
 function resolveLoadPyodide(): LoadPyodideFn | null {
@@ -358,6 +448,11 @@ async function createAnalyzerRuntime(): Promise<AnalyzerRuntime | null> {
       return null;
     }
 
+    setRuntimeProgress(22, '加载本地模型缓存');
+    await preparePersistentSpacyCache(pyodide).catch((error) => {
+      console.warn('Failed to prepare persistent spaCy cache:', error);
+    });
+
     setRuntimeProgress(34, '加载 spaCy 引导脚本');
     const bootstrapScriptUrl = `${getRuntimeUrl(SPACY_BOOTSTRAP_SCRIPT_PATH)}?v=${PYODIDE_RUNTIME_VERSION}`;
     const response = await fetch(bootstrapScriptUrl);
@@ -372,6 +467,10 @@ async function createAnalyzerRuntime(): Promise<AnalyzerRuntime | null> {
     const bootstrapScript = hydrateBootstrapScript(await response.text());
     setRuntimeProgress(55, '安装 spaCy 与模型文件');
     await pyodide.runPythonAsync(bootstrapScript);
+    setRuntimeProgress(78, '持久化模型缓存');
+    await flushPersistentSpacyCache(pyodide).catch((error) => {
+      console.warn('Failed to sync persistent spaCy cache:', error);
+    });
 
     setRuntimeProgress(90, '绑定 analyze 函数');
     const analyzeFn = pyodide.globals?.get('analyze');

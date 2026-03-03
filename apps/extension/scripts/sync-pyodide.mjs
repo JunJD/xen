@@ -1,4 +1,4 @@
-import { copyFile, mkdir, readFile, readdir, rm } from 'node:fs/promises';
+import { copyFile, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import process from 'node:process';
 
@@ -8,6 +8,9 @@ const publicPyodideDir = resolve(root, 'public', 'pyodide');
 const sourcePackageJsonPath = resolve(sourceDir, 'package.json');
 
 const FALLBACK_VERSION = '0.0.0';
+const CDN_URL_PATTERN = /API\.setCdnUrl\([^)]*cdn\.jsdelivr\.net[^)]*\)/g;
+const LOCAL_CDN_REPLACEMENT = 'API.setCdnUrl(config.indexURL)';
+const EXCLUDED_FILES = new Set(['README.md', 'console.html', 'package.json', 'pyodide.d.ts']);
 
 async function resolvePyodideVersion() {
   try {
@@ -29,7 +32,11 @@ async function main() {
   const versionedTargetDir = resolve(publicPyodideDir, version);
 
   const entries = await readdir(sourceDir, { withFileTypes: true });
-  const files = entries.filter(entry => entry.isFile()).map(entry => entry.name);
+  const files = entries
+    .filter(entry => entry.isFile())
+    .map(entry => entry.name)
+    .filter(file => !file.endsWith('.map'))
+    .filter(file => !EXCLUDED_FILES.has(file));
 
   if (files.length === 0) {
     throw new Error(`No files found in ${sourceDir}`);
@@ -43,7 +50,21 @@ async function main() {
     ),
   );
 
-  console.log(`Synced ${files.length} pyodide files to public/pyodide/${version}`);
+  const patchTargets = ['pyodide.js', 'pyodide.mjs'];
+  let patchedFiles = 0;
+  for (const fileName of patchTargets) {
+    const filePath = resolve(versionedTargetDir, fileName);
+    const raw = await readFile(filePath, 'utf8');
+    const patched = raw.replace(CDN_URL_PATTERN, LOCAL_CDN_REPLACEMENT);
+    if (patched !== raw) {
+      await writeFile(filePath, patched, 'utf8');
+      patchedFiles += 1;
+    }
+  }
+
+  console.log(
+    `Synced ${files.length} pyodide files to public/pyodide/${version} (patched ${patchedFiles} CDN refs).`,
+  );
 }
 
 main().catch((error) => {

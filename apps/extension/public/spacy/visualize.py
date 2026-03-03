@@ -1,6 +1,8 @@
 import importlib
 import io
 import json
+import os
+import sys
 import zipfile
 
 from pyodide.http import pyfetch  # pyright: ignore[reportMissingImports]
@@ -8,7 +10,11 @@ from pyodide.http import pyfetch  # pyright: ignore[reportMissingImports]
 PACKAGES_URL_PREFIX = "__SPACY_PACKAGES_BASE_URL__"
 if PACKAGES_URL_PREFIX == "__SPACY_PACKAGES_BASE_URL__":
     PACKAGES_URL_PREFIX = "/spacy/packages"
-SITE_PACKAGES_PATH = "/lib/python3.10/site-packages"
+PERSIST_BASE_PATH = "__SPACY_PERSIST_BASE_PATH__"
+if PERSIST_BASE_PATH == "__SPACY_PERSIST_BASE_PATH__":
+    PERSIST_BASE_PATH = "/tmp/xen-spacy-cache"
+SITE_PACKAGES_PATH = f"{PERSIST_BASE_PATH}/site-packages"
+INSTALL_MARKER_PATH = f"{PERSIST_BASE_PATH}/.spacy-installed-v1"
 
 SPACY_MODEL_NAME = "en_core_web_sm"
 SPACY_MODEL_VERSION = "3.4.0"
@@ -53,8 +59,13 @@ _NLP = None
 _WHEELS_INSTALLED = False
 
 
+def _ensure_site_packages_path():
+    os.makedirs(SITE_PACKAGES_PATH, exist_ok=True)
+    if SITE_PACKAGES_PATH not in sys.path:
+        sys.path.insert(0, SITE_PACKAGES_PATH)
+
+
 def _stub_requests_module():
-    import sys
     import types
 
     # spaCy imports CLI modules that require requests/urllib3;
@@ -67,6 +78,14 @@ async def _install_local_wheels_once():
     if _WHEELS_INSTALLED:
         return
 
+    _ensure_site_packages_path()
+    if os.path.exists(INSTALL_MARKER_PATH) and os.path.exists(
+        f"{SITE_PACKAGES_PATH}/spacy"
+    ):
+        importlib.invalidate_caches()
+        _WHEELS_INSTALLED = True
+        return
+
     for wheel_url in SPACY_WHEEL_URLS:
         response = await pyfetch(wheel_url)
         if not response.ok:
@@ -77,6 +96,9 @@ async def _install_local_wheels_once():
         with zipfile.ZipFile(io.BytesIO(wheel_bytes), "r") as wheel_archive:
             wheel_archive.extractall(SITE_PACKAGES_PATH)
 
+    with open(INSTALL_MARKER_PATH, "w", encoding="utf-8") as marker_file:
+        marker_file.write("\n".join(SPACY_WHEEL_FILES))
+
     importlib.invalidate_caches()
     _WHEELS_INSTALLED = True
 
@@ -84,6 +106,7 @@ async def _install_local_wheels_once():
 def _get_nlp():
     global _NLP
     if _NLP is None:
+        _ensure_site_packages_path()
         _stub_requests_module()
         import spacy  # pyright: ignore[reportMissingImports]
 

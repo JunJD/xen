@@ -39,7 +39,7 @@ export default defineConfig({
       name: 'Xen',
       description: '沉浸式网页翻译与语法/词汇高亮，支持双模式、忽略名单与 LLM 模型。',
       version: '0.1.0',
-      permissions: ['offscreen', 'storage', 'tabs', 'cookies'],
+      permissions: ['offscreen', 'storage', 'cookies'],
       options_ui: {
         page: 'options.html',
         openInTab: true,
