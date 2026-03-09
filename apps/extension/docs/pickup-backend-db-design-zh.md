@@ -1,82 +1,33 @@
-# Pickup 后端数据库设计（MVP 极简版，去掉推荐/可选）
+# Pickup 后端数据库设计（最终极简版：仅翻译缓存）
 
-> 目标：前期只保留必须表，优先降低复杂度与上线成本。
+> 目标：前期只做“降低三方翻译调用成本”，其余都不进后端。
 
-## 1. 结论
+## 1. 最小结论
 
-可以删。
+后端只保留 1 张表：
 
-前期只保留 5 张必须表：
+1. `translation_cache`（必须）
 
-1. `source`
-2. `segment`
-3. `annotation_cache`
-4. `translation_cache`
-5. `segment_translation`
+不做后端 `annotation_cache`。标注缓存继续只放本地 IndexedDB（`xenPickupCache.annotations`）。
 
-其余推荐/可选表（例如 `segment_token`、`unit_translation`、设置表、词典表）全部先不落库。
-
-## 2. 当前前端真实流程（MVP 对齐）
+## 2. 当前流程（最终极简）
 
 ```mermaid
 flowchart LR
-  A[页面 URL + DOM] --> B[collectParagraphs: PickupParagraph{id,text,hash}]
-  B --> C[annotate 请求]
-  C --> D[PickupAnnotation{tokens[]}]
-  D --> E[页面渲染]
+  A[PickupTranslateParagraphInput.sourceText] --> B[hash(sourceText)]
+  B --> C{translation_cache 命中?}
+  C -- 是 --> D[直接返回 paragraphText]
+  C -- 否 --> E[调用三方翻译]
+  E --> F[写入 translation_cache]
+  F --> D
 
-  E --> F[translatePreview 请求]
-  F --> G[PickupTranslateParagraphPreview{paragraphText,units[]}]
-  G --> H[渲染翻译]
-
-  B -.sourceHash.-> I[(annotation_cache)]
-  F -.sourceHash + provider/model.-> J[(translation_cache)]
+  G[annotation tokens] --> H[仅本地 xenPickupCache.annotations]
 ```
 
-## 3. MVP ER 图（仅必须表）
+## 3. ER 图（后端仅 1 表）
 
 ```mermaid
 erDiagram
-  SOURCE ||--o{ SEGMENT : "包含"
-  SEGMENT ||--o{ SEGMENT_TRANSLATION : "翻译结果"
-  ANNOTATION_CACHE ||--o{ SEGMENT : "命中/回填来源"
-  TRANSLATION_CACHE ||--o{ SEGMENT_TRANSLATION : "命中/回填来源"
-
-  SOURCE {
-    string id PK
-    string source_type "page/video/pdf"
-    string url
-    string url_hash
-    string title
-    string domain
-    string language_code
-    datetime created_at
-    datetime updated_at
-  }
-
-  SEGMENT {
-    string id PK
-    string source_id FK
-    string client_paragraph_id
-    string kind "paragraph/sentence/subtitle"
-    int seq
-    string source_text
-    string source_hash
-    int start_ms
-    int end_ms
-    datetime created_at
-  }
-
-  ANNOTATION_CACHE {
-    string id PK
-    string source_hash
-    string model_key
-    int entry_version
-    json tokens_json
-    bigint updated_at_ms
-    bigint last_accessed_ms
-  }
-
   TRANSLATION_CACHE {
     string id PK
     string source_hash
@@ -88,56 +39,31 @@ erDiagram
     bigint updated_at_ms
     bigint last_accessed_ms
   }
-
-  SEGMENT_TRANSLATION {
-    string id PK
-    string segment_id FK
-    string cache_id FK
-    string provider
-    string target_lang
-    string model_key
-    string paragraph_text
-    datetime created_at
-    datetime updated_at
-  }
 ```
 
-## 4. 与前端字段一一对应（仅 MVP）
+## 4. 与当前实现的对应关系
 
-| 前端来源 | 字段 | 后端落点 | 备注 |
-|---|---|---|---|
-| `PickupParagraph` | `text` | `segment.source_text` | 段落原文 |
-| `PickupParagraph` | `hash` | `segment.source_hash` | 对应缓存 key 的 `sourceHash` |
-| `PickupParagraph` | `id` | `segment.client_paragraph_id` | 前端临时 ID，仅追踪请求 |
-| `PickupAnnotation` | `tokens[]` | `annotation_cache.tokens_json` | 先 JSON 存，后续再拆 token 表 |
-| `PickupTranslateParagraphPreview` | `paragraphText` | `translation_cache.paragraph_text` + `segment_translation.paragraph_text` | 缓存 + 业务结果 |
-| translate provider/model | `google/llm + model` | `translation_cache.provider/model_key` | 与当前缓存策略一致 |
+- 后端：`translation_cache`
+- 本地 IndexedDB：
+  - `xenPickupTranslationCache.translations`（可逐步迁移到后端）
+  - `xenPickupCache.annotations`（保留本地，不上后端）
 
-## 5. 明确不入库（第一阶段）
+## 5. 前端字段映射（仅翻译缓存）
 
-1. `units[]` 词级覆盖（`vocabInfusionText/usphone/ukphone`）先不持久化。
-2. 设置项（`xenPickupSettings`、`xenTranslateProvider` 等）先继续走本地 storage。
-3. 词典目录与词典选择先不入后端。
+| 前端来源 | 字段 | 后端字段 |
+|---|---|---|
+| `PickupTranslateParagraphInput` | `sourceText` | 先算 `source_hash` |
+| provider/model | `provider + modelKey` | `provider + model_key` |
+| 翻译结果 | `paragraphText` | `paragraph_text` |
+| 缓存元数据 | `version/updatedAt/lastAccessed` | `entry_version/updated_at_ms/last_accessed_ms` |
 
-## 6. 必须索引（最小集合）
+## 6. 必须索引
 
-1. `source(url_hash)` 唯一。
-2. `segment(source_id, seq)` 唯一。
-3. `segment(source_hash)` 索引。
-4. `annotation_cache(source_hash, model_key, entry_version)` 唯一。
-5. `translation_cache(source_hash, provider, target_lang, model_key, entry_version)` 唯一。
-6. `segment_translation(segment_id, provider, target_lang, model_key)` 唯一。
+1. `translation_cache(source_hash, provider, target_lang, model_key, entry_version)` 唯一。
+2. `translation_cache(updated_at_ms)` 索引（用于 TTL 清理）。
 
-## 7. 为什么这套最省事
+## 7. 为什么这版最符合你现在需求
 
-1. 保留了你最关心的“翻译缓存降成本”闭环。
-2. 保留了 `source`，不会丢页面上下文。
-3. 没有 token 明细表、unit 明细表、设置表，后端实现量最小。
-4. 后续要扩展时可平滑加表，不会推翻现有 5 表。
-
-## 8. 对应代码位置（便于后端联调）
-
-- 段落采集：`apps/extension/lib/pickup/content/collector.ts`
-- 标注缓存：`apps/extension/lib/pickup/background/pickup-background.ts`（`annotateParagraphs`）
-- 翻译缓存：`apps/extension/lib/pickup/background/pickup-background.ts`（`buildTranslationPreviews`）
-- 协议契约：`packages/contracts/src/pickup.ts`
+1. 只解决“翻译调用成本”这个核心问题。
+2. 没有任何业务实体表（`source/segment`），后端实现量最低。
+3. annotation 完全沿用当前本地策略，不改你现有主流程。

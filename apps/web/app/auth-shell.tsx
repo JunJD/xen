@@ -20,8 +20,10 @@ export function AuthShell({ children }: AuthShellProps) {
     return (
       <>
         <header className="topbar">
-          <div className="brand">Xen</div>
-          <div className="auth-actions">Missing NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY</div>
+          <div className="topbar-inner">
+            <div className="brand">Xen</div>
+            <div className="auth-actions">Missing NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY</div>
+          </div>
         </header>
         <main>{children}</main>
       </>
@@ -31,15 +33,17 @@ export function AuthShell({ children }: AuthShellProps) {
   return (
     <ClerkProvider publishableKey={publishableKey}>
       <header className="topbar">
-        <div className="brand">Xen</div>
-        <div className="auth-actions">
-          <SignedOut>
-            <SignInButton />
-            <SignUpButton />
-          </SignedOut>
-          <SignedIn>
-            <UserButton />
-          </SignedIn>
+        <div className="topbar-inner">
+          <div className="brand">Xen</div>
+          <div className="auth-actions">
+            <SignedOut>
+              <SignInButton />
+              <SignUpButton />
+            </SignedOut>
+            <SignedIn>
+              <UserButton />
+            </SignedIn>
+          </div>
         </div>
       </header>
       <main>{children}</main>
