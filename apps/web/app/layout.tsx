@@ -3,8 +3,8 @@ import "./globals.css";
 import { AuthShell } from "./auth-shell";
 
 export const metadata: Metadata = {
-  title: "Xen Clerk Quickstart",
-  description: "Clerk + Next.js App Router",
+  title: "Xen",
+  description: "Xen web pages and privacy policy.",
 };
 
 export const dynamic = "force-dynamic";
