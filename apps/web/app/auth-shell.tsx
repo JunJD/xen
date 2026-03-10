@@ -37,8 +37,16 @@ export function AuthShell({ children }: AuthShellProps) {
           <div className="brand">Xen</div>
           <div className="auth-actions">
             <SignedOut>
-              <SignInButton />
-              <SignUpButton />
+              <SignInButton mode="modal">
+                <button type="button" className="auth-link auth-link-secondary">
+                  登录
+                </button>
+              </SignInButton>
+              <SignUpButton mode="modal">
+                <button type="button" className="auth-link">
+                  注册
+                </button>
+              </SignUpButton>
             </SignedOut>
             <SignedIn>
               <UserButton />

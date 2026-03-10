@@ -1,18 +1,5 @@
-"use client";
-
-import { useEffect } from "react";
-import { useClerk } from "@clerk/clerk-react";
+import { AuthLaunchPage } from "../../auth-launch-page";
 
 export default function SignInPage() {
-  const { openSignIn } = useClerk();
-
-  useEffect(() => {
-    openSignIn({ signUpUrl: "/sign-up", forceRedirectUrl: "/" });
-  }, [openSignIn]);
-
-  return (
-    <section className="card">
-      <h1>Opening sign in...</h1>
-    </section>
-  );
+  return <AuthLaunchPage mode="sign-in" />;
 }
