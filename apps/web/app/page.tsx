@@ -254,11 +254,9 @@ export default function HomePage() {
       <section className="landing-install card" id="install-guide">
         <div className="landing-install-head">
           <p className="landing-section-eyebrow">安装路径</p>
-          <h2 className="landing-section-title">
-            官网负责把用户带到正确入口，最终安装确认仍在浏览器商店完成。
-          </h2>
+          <h2 className="landing-section-title">安装 Xen，直接在原网页里边读边懂</h2>
           <p className="landing-install-summary">
-            Chrome 官方不再支持官网站内直装，所以首页的关键不是隐藏商店跳转，而是把 Chrome、Edge 和访问受限时的安装路径讲清楚。
+            点击安装按钮后，会前往官方扩展页面完成最后一步。支持 Chrome 和 Edge。
           </p>
         </div>
 
