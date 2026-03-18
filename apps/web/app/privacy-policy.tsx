@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { GITHUB_REPO_URL, SITE_URL } from "./install-links";
 
 type PrivacySection = {
   title: string;
@@ -123,9 +124,15 @@ export function PrivacyPolicyArticle() {
               邮箱：<a href="mailto:864546065@qq.com">864546065@qq.com</a>
             </li>
             <li>
+              官网：{" "}
+              <a href={SITE_URL} target="_blank" rel="noreferrer">
+                {SITE_URL}
+              </a>
+            </li>
+            <li>
               GitHub：{" "}
-              <a href="https://github.com/JunJD" target="_blank" rel="noreferrer">
-                https://github.com/JunJD
+              <a href={GITHUB_REPO_URL} target="_blank" rel="noreferrer">
+                {GITHUB_REPO_URL}
               </a>
             </li>
           </ul>

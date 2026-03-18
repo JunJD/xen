@@ -114,6 +114,22 @@ main {
   padding-top: 16px;
 }
 
+.landing-hero,
+.landing-install,
+.landing-demo,
+#install-guide,
+#demo {
+  scroll-margin-top: 96px;
+}
+
+.landing-hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: 28px;
+  align-items: start;
+}
+
 .landing-eyebrow {
   margin: 0;
   color: #6d675f;
@@ -124,7 +140,7 @@ main {
 }
 
 .landing-intro {
-  max-width: 760px;
+  max-width: none;
   padding-top: 20px;
 }
 
@@ -197,8 +213,231 @@ main {
   font-weight: 600;
 }
 
-.landing-demo {
+.install-panel {
+  position: relative;
+  display: grid;
+  gap: 18px;
+  padding: 24px;
+  border-color: rgba(24, 23, 22, 0.14);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at top right, rgba(255, 191, 132, 0.16), rgba(255, 191, 132, 0) 42%),
+    linear-gradient(180deg, #1c1916 0%, #24201b 100%);
+  color: #f8f1e6;
+  box-shadow: 0 32px 70px rgba(28, 24, 20, 0.16);
+}
+
+.install-panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  pointer-events: none;
+}
+
+.install-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.install-panel-badge,
+.install-panel-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 11px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.install-panel-badge {
+  background: rgba(255, 191, 132, 0.16);
+  color: #ffd4ab;
+}
+
+.install-panel-status {
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(248, 241, 230, 0.78);
+}
+
+.install-panel-copy {
+  display: grid;
+  gap: 12px;
+}
+
+.install-panel-title {
+  margin: 0;
+  font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  font-size: clamp(1.95rem, 4vw, 2.6rem);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.install-panel-summary,
+.install-panel-helper {
+  margin: 0;
+  color: rgba(248, 241, 230, 0.8);
+  line-height: 1.78;
+}
+
+.install-panel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.install-panel-button,
+.install-panel-subaction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 999px;
+  font-weight: 700;
+  text-decoration: none;
+  transition:
+    transform 160ms ease,
+    background 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.install-panel-button {
+  border: 1px solid rgba(245, 237, 224, 0.72);
+  background: #f5ede0;
+  color: #181716;
+}
+
+.install-panel-subaction {
+  border: 1px solid rgba(248, 241, 230, 0.16);
+  background: rgba(255, 255, 255, 0.04);
+  color: #f8f1e6;
+}
+
+.install-panel-button:hover,
+.install-panel-subaction:hover {
+  transform: translateY(-1px);
+}
+
+.install-panel-checklist {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.install-panel-checklist li {
+  position: relative;
+  padding-left: 22px;
+  color: rgba(248, 241, 230, 0.84);
+  line-height: 1.65;
+}
+
+.install-panel-checklist li::before {
+  content: "";
+  position: absolute;
+  top: 0.58rem;
+  left: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #ffbf84;
+  box-shadow: 0 0 0 5px rgba(255, 191, 132, 0.12);
+}
+
+.landing-install {
   margin-top: 42px;
+  padding: 28px;
+  border-radius: 32px;
+  background: rgba(255, 255, 255, 0.54);
+}
+
+.landing-install-head {
+  max-width: 760px;
+}
+
+.landing-install-summary {
+  margin: 16px 0 0;
+  color: #5f5b53;
+  line-height: 1.84;
+}
+
+.landing-install-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 24px;
+}
+
+.install-guide-card {
+  display: grid;
+  gap: 12px;
+  min-height: 100%;
+  padding: 20px;
+  border: 1px solid rgba(24, 23, 22, 0.08);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.62);
+}
+
+.install-guide-eyebrow {
+  margin: 0;
+  color: #7b746a;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.install-guide-title {
+  margin: 0;
+  font-size: 1.08rem;
+  font-weight: 600;
+  line-height: 1.42;
+}
+
+.install-guide-body {
+  margin: 0;
+  color: #5f5b53;
+  line-height: 1.8;
+}
+
+.install-guide-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: start;
+  min-height: 40px;
+  margin-top: auto;
+  padding: 0 14px;
+  border: 1px solid rgba(24, 23, 22, 0.12);
+  border-radius: 999px;
+  background: rgba(24, 23, 22, 0.94);
+  color: #f8f4ee;
+  font-size: 0.92rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    transform 160ms ease,
+    background 160ms ease,
+    color 160ms ease;
+}
+
+.install-guide-action:hover {
+  transform: translateY(-1px);
+}
+
+.landing-demo {
+  margin-top: 52px;
 }
 
 .landing-demo-head {
@@ -1023,12 +1262,21 @@ main {
 }
 
 @media (max-width: 920px) {
+  .landing-hero,
+  .landing-install-grid {
+    grid-template-columns: 1fr;
+  }
+
   .policy-section {
     grid-template-columns: 1fr;
   }
 
   .demo-wiki-layout {
     grid-template-columns: 1fr;
+  }
+
+  .landing-install {
+    padding: 22px;
   }
 
   .demo-inline-tooltip {
@@ -1065,6 +1313,11 @@ main {
     font-size: clamp(1.9rem, 10vw, 2.8rem);
   }
 
+  .landing-actions,
+  .install-panel-actions {
+    align-items: stretch;
+  }
+
   .policy-title {
     font-size: clamp(2.3rem, 12vw, 3.2rem);
   }
@@ -1091,7 +1344,9 @@ main {
   }
 
   .demo-browser-content,
-  .auth-gateway {
+  .auth-gateway,
+  .install-panel,
+  .landing-install {
     padding: 18px;
   }
 
@@ -1103,5 +1358,12 @@ main {
   .landing-title,
   .policy-title {
     letter-spacing: -0.035em;
+  }
+
+  .landing-link,
+  .install-panel-button,
+  .install-panel-subaction,
+  .install-guide-action {
+    width: 100%;
   }
 }

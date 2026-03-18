@@ -1,4 +1,6 @@
 import type { CSSProperties, ReactNode } from "react";
+import { CHROME_WEB_STORE_URL, GITHUB_REPO_URL } from "./install-links";
+import { InstallPanel } from "./install-panel";
 import { PronunciationChip } from "./pronunciation-button";
 
 const infoboxSections = [
@@ -19,6 +21,33 @@ const infoboxSections = [
 const demoRuntimePills = ["原文保留", "词汇注释", "段落译文", "点击发音"];
 
 const heroBenefits = ["原网页直接阅读", "词汇释义", "点击发音", "段落译文"];
+
+const installGuideCards = [
+  {
+    eyebrow: "Chrome",
+    title: "Chrome 用户从官网点击后，会在 Chrome Web Store 完成最后一步。",
+    body: "这是 Chrome 官方的安装规则。官网负责把用户带到正确入口，确认安装仍在商店页里完成。",
+    actionLabel: "打开 Chrome 安装页",
+    href: CHROME_WEB_STORE_URL,
+    external: true,
+  },
+  {
+    eyebrow: "Edge",
+    title: "Edge 可以直接安装同一个 Xen 包，不需要等单独上架。",
+    body: "用 Edge 打开同一条 Chrome Web Store 链接即可安装。首次会先提示允许来自其他商店的扩展。",
+    actionLabel: "用 Edge 打开安装页",
+    href: CHROME_WEB_STORE_URL,
+    external: true,
+  },
+  {
+    eyebrow: "访问受限",
+    title: "如果用户打不开 Google 商店，首页要先把限制和路径解释清楚。",
+    body: "当前首次安装仍依赖官方商店。把这一步提前说明，能减少用户误以为官网支持站内直装后的流失。",
+    actionLabel: "先看效果演示",
+    href: "#demo",
+    external: false,
+  },
+];
 
 type MockPickupTokenProps = {
   original: string;
@@ -187,35 +216,74 @@ function DemoParagraph({
 export default function HomePage() {
   return (
     <section className="landing-page">
-      <header className="landing-intro">
-        <h1 className="landing-title">把英文网页直接变成可读的第二语言。</h1>
-        <p className="landing-summary">在你原本浏览的英文网页里，边读边懂，不打断阅读节奏。</p>
+      <section className="landing-hero">
+        <header className="landing-intro">
+          <p className="landing-eyebrow">Chrome 扩展已上线</p>
+          <h1 className="landing-title">把英文网页直接变成可读的第二语言。</h1>
+          <p className="landing-summary">
+            Xen 会保留原文阅读感，只在你正在浏览的网页里补上词汇释义、点击发音和段落译文，不打断节奏。
+          </p>
 
-        <div className="landing-actions">
-          <a className="landing-link landing-link-primary" href="#demo">
-            查看演示
-          </a>
-          <a className="landing-link" href="/privacy">
-            查看隐私协议
-          </a>
-          <a className="landing-link landing-link-secondary" href="/sign-in">
-            登录
-          </a>
+          <div className="landing-actions">
+            <a className="landing-link landing-link-primary" href="#demo">
+              查看效果演示
+            </a>
+            <a className="landing-link" href="#install-guide">
+              安装说明
+            </a>
+            <a className="landing-link" href={GITHUB_REPO_URL} target="_blank" rel="noreferrer">
+              GitHub
+            </a>
+            <a className="landing-link landing-link-secondary" href="/privacy">
+              隐私协议
+            </a>
+          </div>
+
+          <div className="landing-benefits" aria-label="功能特点">
+            {heroBenefits.map((benefit) => (
+              <span className="landing-benefit" key={benefit}>
+                {benefit}
+              </span>
+            ))}
+          </div>
+        </header>
+
+        <InstallPanel />
+      </section>
+
+      <section className="landing-install card" id="install-guide">
+        <div className="landing-install-head">
+          <p className="landing-section-eyebrow">安装路径</p>
+          <h2 className="landing-section-title">
+            官网负责把用户带到正确入口，最终安装确认仍在浏览器商店完成。
+          </h2>
+          <p className="landing-install-summary">
+            Chrome 官方不再支持官网站内直装，所以首页的关键不是隐藏商店跳转，而是把 Chrome、Edge 和访问受限时的安装路径讲清楚。
+          </p>
         </div>
 
-        <div className="landing-benefits" aria-label="功能特点">
-          {heroBenefits.map((benefit) => (
-            <span className="landing-benefit" key={benefit}>
-              {benefit}
-            </span>
+        <div className="landing-install-grid">
+          {installGuideCards.map((card) => (
+            <article className="install-guide-card" key={card.title}>
+              <p className="install-guide-eyebrow">{card.eyebrow}</p>
+              <h3 className="install-guide-title">{card.title}</h3>
+              <p className="install-guide-body">{card.body}</p>
+              <a
+                className="install-guide-action"
+                href={card.href}
+                {...(card.external ? { target: "_blank", rel: "noreferrer" } : {})}
+              >
+                {card.actionLabel}
+              </a>
+            </article>
           ))}
         </div>
-      </header>
+      </section>
 
       <section className="landing-demo" id="demo">
         <div className="landing-demo-head">
           <p className="landing-section-eyebrow">效果预览</p>
-          <h2 className="landing-section-title">打开 Xen 后，网页会像下面这样继续读下去。</h2>
+          <h2 className="landing-section-title">装好 Xen 后，网页会像下面这样继续读下去。</h2>
         </div>
 
         <div className="landing-demo-grid">
