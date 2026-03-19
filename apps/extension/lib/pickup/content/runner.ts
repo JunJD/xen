@@ -182,11 +182,14 @@ export function createPickupRunner(options: PickupRunnerOptions = {}) {
         annotations,
         elementMap,
         {
-          includeParagraphTranslation: translationPreviewEnabled,
+          includeParagraphTranslation: false,
           includeUnitTranslation: true,
         },
       );
       await applyAnnotations(annotations, elementMap, { translationOverridesByParagraph });
+      if (translationPreviewEnabled) {
+        void patchVisibleParagraphTranslations();
+      }
     }
     catch (error) {
       window.clearTimeout(timeoutId);
