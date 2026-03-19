@@ -1,6 +1,7 @@
 ﻿import type {
   PickupAnnotation,
   PickupTranslateParagraphInput,
+  PickupTranslateParagraphPreview,
 } from '@/lib/pickup/messages';
 import { buildSentenceAst } from '@/lib/pickup/ast/adapter-registry';
 import { buildRenderModelFromSentenceAst, type RenderToken } from '@/lib/pickup/render-model';
@@ -173,17 +174,59 @@ async function requestTranslationOverridesByParagraphs(
     return new Map<string, ParagraphTranslationOverride>();
   }
 
-  try {
-    const translations = await requestTranslationPreview(paragraphs, {
+  const overridesByParagraph = new Map<string, ParagraphTranslationOverride>();
+  const unresolvedParagraphs = new Map<string, PickupTranslateParagraphInput>(
+    paragraphs.map(paragraph => [paragraph.id, paragraph]),
+  );
+
+  const mergeTranslations = (translations: PickupTranslateParagraphPreview[]) => {
+    const lookup = buildTranslationOverrideLookup(translations);
+    lookup.forEach((override, id) => {
+      overridesByParagraph.set(id, override);
+      unresolvedParagraphs.delete(id);
+    });
+  };
+
+  const requestOverrides = async (requestParagraphs: PickupTranslateParagraphInput[]) => {
+    const translations = await requestTranslationPreview(requestParagraphs, {
       includeParagraphTranslation: options.includeParagraphTranslation,
       includeUnitTranslation: options.includeUnitTranslation,
     });
-    return buildTranslationOverrideLookup(translations);
+    mergeTranslations(translations);
+  };
+
+  try {
+    await requestOverrides(paragraphs);
   }
   catch (error) {
-    console.warn('Pickup translation preview request failed:', error);
-    return new Map<string, ParagraphTranslationOverride>();
+    console.warn('Pickup translation preview batch request failed, retrying per paragraph:', error);
   }
+
+  if (unresolvedParagraphs.size === 0) {
+    return overridesByParagraph;
+  }
+
+  const isolatedResults = await Promise.allSettled(
+    Array.from(unresolvedParagraphs.values()).map(async (paragraph) => {
+      try {
+        await requestOverrides([paragraph]);
+      }
+      catch (error) {
+        console.warn(
+          `Pickup translation preview failed for paragraph ${paragraph.id}, falling back to token-only render:`,
+          error,
+        );
+      }
+    }),
+  );
+
+  isolatedResults.forEach((result) => {
+    if (result.status === 'rejected') {
+      console.warn('Pickup isolated translation retry failed unexpectedly:', result.reason);
+    }
+  });
+
+  return overridesByParagraph;
 }
 
 async function requestTranslationOverridesByEntries(
@@ -236,7 +279,9 @@ export async function applyAnnotations(
   entries.forEach(({ annotation, element, sourceText, sentenceAst }) => {
     const overrides = translationOverridesByParagraph.get(annotation.id);
     const renderModel = buildRenderModelFromSentenceAst(sentenceAst);
-    const renderableTokens = buildRenderableTokenList(renderModel.tokens, overrides?.units);
+    const renderableTokens = buildRenderableTokenList(renderModel.tokens, overrides?.units, {
+      fallbackToSourceTokens: !overrides,
+    });
     const renderedTokens = annotateElementWithTokens(
       element,
       renderableTokens,
