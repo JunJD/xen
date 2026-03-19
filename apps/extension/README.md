@@ -6,6 +6,14 @@
 pnpm --filter @xen/extension dev
 ```
 
+## Testing
+
+```bash
+pnpm --filter @xen/extension test
+```
+
+Acceptance `.feature` coverage uses the lightweight Vitest harness in `tests/acceptance`. See `docs/bdd-acceptance-harness.md`.
+
 ## Clerk Setup
 
 1. Copy `.env.example` to `.env.local` in `apps/extension`.
