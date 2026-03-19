@@ -240,13 +240,6 @@ function resolveModelKey(modelKey?: string | (() => string)) {
   if (!modelKey) {
     return undefined;
   }
-
-  return annotations;
-}
-function resolveModelKey(modelKey?: string | (() => string)) {
-  if (!modelKey) {
-    return undefined;
-  }
   if (typeof modelKey === 'function') {
     return modelKey;
   }

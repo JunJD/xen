@@ -20,6 +20,11 @@ import { DEFAULT_LLM_MODEL, getStoredLlmModel, getStoredPickupDictionaryIds, set
 import { translateText } from './service';
 
 type TranslationCache = ReturnType<typeof createTranslationCache>;
+type TranslationCacheLoadResult = {
+  value: string;
+  cacheHit: boolean;
+  persisted: boolean;
+};
 
 export type BuildTranslationPreviewsOptions = {
   includeParagraphTranslation?: boolean;
@@ -168,6 +173,7 @@ export async function buildTranslationPreviews(
 
   const modelKey = await dependencies.resolveTranslationModelKey(provider);
   const translationCache = dependencies.getTranslationCache(modelKey);
+  const inFlightParagraphTranslations = new Map<string, Promise<TranslationCacheLoadResult>>();
   let wroteCache = false;
 
   const paragraphTexts = await Promise.all(paragraphs.map(async (paragraph) => {
@@ -179,13 +185,60 @@ export async function buildTranslationPreviews(
 
     try {
       const sourceHash = sha256(cleanText);
-      const result = await translationCache.getOrLoad(
-        sourceHash,
-        () => dependencies.translateText(provider, { text: cleanText }),
-        {
-          shouldPersist: value => value.trim().length > 0,
-        },
-      );
+      const getOrLoad = (translationCache as TranslationCache & {
+        getOrLoad?: (
+          sourceHash: string,
+          load: () => Promise<string>,
+          options?: { shouldPersist?: (value: string) => boolean },
+        ) => Promise<TranslationCacheLoadResult>;
+      }).getOrLoad;
+
+      const result = getOrLoad
+        ? await getOrLoad(
+          sourceHash,
+          () => dependencies.translateText(provider, { text: cleanText }),
+          {
+            shouldPersist: value => value.trim().length > 0,
+          },
+        )
+        : await (async () => {
+          const cached = await translationCache.get(sourceHash);
+          const cachedValue = cached?.value?.trim() ?? '';
+          if (cachedValue) {
+            return {
+              value: cached?.value ?? '',
+              cacheHit: true,
+              persisted: false,
+            };
+          }
+
+          let pending = inFlightParagraphTranslations.get(sourceHash);
+          if (!pending) {
+            pending = (async () => {
+              const value = await dependencies.translateText(provider, { text: cleanText });
+              const persisted = value.trim().length > 0;
+              if (persisted) {
+                await translationCache.set(sourceHash, value);
+              }
+              return {
+                value,
+                cacheHit: false,
+                persisted,
+              };
+            })();
+            inFlightParagraphTranslations.set(sourceHash, pending);
+          }
+
+          try {
+            return await pending;
+          }
+          finally {
+            if (inFlightParagraphTranslations.get(sourceHash) === pending) {
+              inFlightParagraphTranslations.delete(sourceHash);
+            }
+          }
+        })();
+
       wroteCache = wroteCache || result.persisted;
       return result.value;
     } catch (error) {
