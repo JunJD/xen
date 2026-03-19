@@ -250,4 +250,103 @@ describe('段落首屏渲染调度', () => {
 
     runner.stop();
   });
+
+  it('requests paragraph translation when preview is enabled after annotations are already rendered', async () => {
+    const { element, paragraph } = setupParagraph();
+
+    collectParagraphsMock.mockReturnValue({
+      paragraphs: [paragraph],
+      elementMap: new Map([[paragraph.id, element]]),
+    });
+    requestAnnotationsMock.mockResolvedValue([{ id: paragraph.id, tokens: [] }]);
+    requestAnnotationTranslationPreviewMock.mockResolvedValue(
+      new Map([[paragraph.id, { units: new Map() }]]),
+    );
+    applyAnnotationsMock.mockImplementation(async (_annotations, elementMap) => {
+      const annotatedElement = elementMap.get(paragraph.id) as HTMLElement;
+      annotatedElement.dataset.pickupAnnotated = 'true';
+      annotatedElement.dataset.pickupProcessed = 'true';
+      annotatedElement.dataset.pickupStatus = 'done';
+      annotatedElement.dataset.pickupId = paragraph.id;
+      annotatedElement.dataset.pickupOriginal = paragraph.text;
+    });
+    requestParagraphTranslationPreviewMock.mockResolvedValue(
+      new Map([[paragraph.id, { paragraphText: '敏捷的狐狸跳了起来。', units: new Map() }]]),
+    );
+
+    const runner = createPickupRunner({ translationPreviewEnabled: false });
+    runner.start();
+
+    vi.advanceTimersByTime(300);
+    const observer = FakeIntersectionObserver.instances[0]!;
+    observer.trigger([{ target: element, isIntersecting: true }]);
+    await flushPromises();
+
+    expect(applyAnnotationsMock).toHaveBeenCalledTimes(1);
+    expect(requestParagraphTranslationPreviewMock).not.toHaveBeenCalled();
+
+    expect(runner.setTranslationPreviewEnabled(true)).toBe(true);
+    await flushPromises();
+
+    expect(requestParagraphTranslationPreviewMock).toHaveBeenCalledTimes(1);
+    expect(requestParagraphTranslationPreviewMock).toHaveBeenCalledWith(
+      [
+        {
+          id: paragraph.id,
+          sourceText: paragraph.text,
+          units: [],
+        },
+      ],
+      {
+        includeParagraphTranslation: true,
+        includeUnitTranslation: false,
+      },
+    );
+    expect(applyParagraphTranslationOverridesMock).toHaveBeenCalledTimes(1);
+
+    runner.stop();
+  });
+
+  it('shows loading state while paragraph translation patch is in flight and restores done afterwards', async () => {
+    const { element, paragraph } = setupParagraph();
+    const paragraphTranslation = createDeferred<Map<string, ParagraphTranslationOverride>>();
+
+    collectParagraphsMock.mockReturnValue({
+      paragraphs: [paragraph],
+      elementMap: new Map([[paragraph.id, element]]),
+    });
+    requestAnnotationsMock.mockResolvedValue([{ id: paragraph.id, tokens: [] }]);
+    requestAnnotationTranslationPreviewMock.mockResolvedValue(
+      new Map([[paragraph.id, { units: new Map() }]]),
+    );
+    applyAnnotationsMock.mockImplementation(async (_annotations, elementMap) => {
+      const annotatedElement = elementMap.get(paragraph.id) as HTMLElement;
+      annotatedElement.dataset.pickupAnnotated = 'true';
+      annotatedElement.dataset.pickupProcessed = 'true';
+      annotatedElement.dataset.pickupStatus = 'done';
+      annotatedElement.dataset.pickupId = paragraph.id;
+      annotatedElement.dataset.pickupOriginal = paragraph.text;
+    });
+    requestParagraphTranslationPreviewMock.mockImplementation(async () => paragraphTranslation.promise);
+
+    const runner = createPickupRunner({ translationPreviewEnabled: true });
+    runner.start();
+
+    vi.advanceTimersByTime(300);
+    const observer = FakeIntersectionObserver.instances[0]!;
+    observer.trigger([{ target: element, isIntersecting: true }]);
+    await flushPromises();
+
+    expect(element.dataset.pickupStatus).toBe('loading');
+
+    paragraphTranslation.resolve(
+      new Map([[paragraph.id, { paragraphText: '敏捷的狐狸跳了起来。', units: new Map() }]]),
+    );
+    await flushPromises();
+
+    expect(applyParagraphTranslationOverridesMock).toHaveBeenCalledTimes(1);
+    expect(element.dataset.pickupStatus).toBe('done');
+
+    runner.stop();
+  });
 });

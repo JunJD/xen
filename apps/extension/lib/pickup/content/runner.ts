@@ -258,6 +258,19 @@ export function createPickupRunner(options: PickupRunnerOptions = {}) {
     return { paragraphs, elementMap };
   }
 
+  function setAnnotatedParagraphStatuses(
+    elementMap: Map<string, Element>,
+    status: 'loading' | 'done',
+  ) {
+    elementMap.forEach((element) => {
+      const htmlElement = element as HTMLElement;
+      if (!htmlElement.isConnected || htmlElement.dataset.pickupAnnotated !== 'true') {
+        return;
+      }
+      htmlElement.dataset.pickupStatus = status;
+    });
+  }
+
   async function patchVisibleParagraphTranslations() {
     if (contextInvalidated || !started || !translationPreviewEnabled) {
       return;
@@ -267,27 +280,33 @@ export function createPickupRunner(options: PickupRunnerOptions = {}) {
       return;
     }
     patchingParagraphTranslations = true;
+    let activeElementMap = new Map<string, Element>();
     try {
       do {
         patchParagraphTranslationsRequested = false;
         const { paragraphs, elementMap } = collectAnnotatedParagraphTranslationInputs();
+        activeElementMap = elementMap;
         if (paragraphs.length === 0) {
           return;
         }
+        setAnnotatedParagraphStatuses(elementMap, 'loading');
         const translationOverridesByParagraph = await requestParagraphTranslationPreview(paragraphs, {
           includeParagraphTranslation: true,
           includeUnitTranslation: false,
         });
         if (!translationPreviewEnabled || !started || contextInvalidated) {
+          setAnnotatedParagraphStatuses(elementMap, 'done');
           return;
         }
         applyParagraphTranslationOverrides(elementMap, translationOverridesByParagraph);
+        setAnnotatedParagraphStatuses(elementMap, 'done');
       } while (patchParagraphTranslationsRequested && translationPreviewEnabled);
     } catch (error) {
       if (handleContextInvalidatedOnce(error)) {
         stop();
         return;
       }
+      setAnnotatedParagraphStatuses(activeElementMap, 'done');
       console.warn('Pickup paragraph translation patch failed:', error);
     } finally {
       patchingParagraphTranslations = false;
