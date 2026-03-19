@@ -187,6 +187,32 @@ describe('翻译预览与覆盖映射', () => {
     expect(renderable).toEqual([{ id: 'unit-a', kind: 'vocabulary', text: 'apple', typeId: 1 }]);
   });
 
+  it('falls back to source token rendering when paragraph overrides are unavailable', () => {
+    const tokens = [
+      { id: 'unit-a', kind: 'vocabulary', text: 'apple', typeId: 1 },
+      { id: 'unit-b', kind: 'grammar', text: 'the', typeId: 2 },
+    ] as const;
+
+    const renderable = buildRenderableTokenList([...tokens], undefined, {
+      fallbackToSourceTokens: true,
+    });
+
+    expect(renderable).toEqual([...tokens]);
+  });
+
+  it('does not treat an empty override map as a failure fallback', () => {
+    const tokens = [
+      { id: 'unit-a', kind: 'vocabulary', text: 'apple', typeId: 1 },
+      { id: 'unit-b', kind: 'grammar', text: 'the', typeId: 2 },
+    ] as const;
+
+    const renderable = buildRenderableTokenList([...tokens], new Map(), {
+      fallbackToSourceTokens: true,
+    });
+
+    expect(renderable).toEqual([]);
+  });
+
   it('formats tooltip meaning with phones and meaning lines', () => {
     const overrides = new Map<string, UnitTranslationOverride>([
       ['unit-1', {

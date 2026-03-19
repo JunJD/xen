@@ -30,6 +30,10 @@ export type TranslationPreviewEntry = {
 
 export type TokenRenderDecision = 'render' | 'skip';
 
+type BuildRenderableTokenListOptions = {
+  fallbackToSourceTokens?: boolean;
+};
+
 function normalizeComparableText(value: string) {
   return value.replace(/\s+/g, ' ').trim().toLowerCase();
 }
@@ -124,7 +128,11 @@ export function decideTokenRender(
 export function buildRenderableTokenList(
   tokens: RenderToken[],
   overrides?: Map<string, UnitTranslationOverride>,
+  options: BuildRenderableTokenListOptions = {},
 ): RenderToken[] {
+  if (!overrides && options.fallbackToSourceTokens) {
+    return [...tokens];
+  }
   return tokens.filter(token => decideTokenRender(token, overrides) === 'render');
 }
 
