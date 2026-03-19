@@ -5,8 +5,6 @@ import type {
   PickupParagraph,
   PickupTranslateParagraphInput,
   PickupTranslateParagraphPreview,
-  PickupTranslateUnitInput,
-  PickupTranslateUnitPreview,
   PickupToken,
   TranslateProvider,
 } from '@/lib/pickup/messages';
@@ -20,9 +18,6 @@ import { buildWebAuthUrl } from '@/lib/auth/clerk';
 import {
   getVocabDictionaryManifest,
   loadVocabDictionary,
-  lookupVocabAllPos,
-  lookupVocabPhones,
-  lookupVocabTranslation,
   type VocabDictionary,
 } from '@/lib/pickup/vocab/dictionary';
 import {
@@ -52,6 +47,7 @@ import {
   setStoredTranslateProvider,
   translateText,
 } from './translate';
+import { buildTranslationPreviews as buildTranslationPreviewBatch } from './translation-preview';
 
 const OFFSCREEN_CONFIG = {
   contextType: 'OFFSCREEN_DOCUMENT',
@@ -272,37 +268,6 @@ async function annotateParagraphs(
   return annotations;
 }
 
-function buildUnitTranslationPreview(
-  unit: PickupTranslateUnitInput,
-  dictionary: VocabDictionary,
-): PickupTranslateUnitPreview {
-  const vocabTranslation = lookupVocabTranslation(unit.text, dictionary, unit.pos) ?? '';
-  const vocabHint = lookupVocabAllPos(unit.text, dictionary) ?? '';
-  const phones = lookupVocabPhones(unit.text, dictionary);
-  return {
-    unitId: unit.unitId,
-    vocabInfusionText: vocabTranslation,
-    vocabInfusionHint: vocabHint,
-    usphone: phones?.usphone,
-    ukphone: phones?.ukphone,
-    syntaxRebuildText: '',
-    context: unit,
-  };
-}
-
-function buildParagraphTranslationPreview(
-  paragraph: PickupTranslateParagraphInput,
-  units: PickupTranslateUnitPreview[],
-  paragraphText: string,
-): PickupTranslateParagraphPreview {
-  return {
-    id: paragraph.id,
-    sourceText: paragraph.sourceText,
-    paragraphText,
-    units,
-  };
-}
-
 async function buildTranslationPreviews(
   paragraphs: PickupTranslateParagraphInput[],
   provider: TranslateProvider,
@@ -342,48 +307,24 @@ async function buildTranslationPreviews(
     });
   }
   if (!includeParagraphTranslation) {
-    return paragraphs.map((paragraph) => {
-      const units = includeUnitTranslation && dictionary
-        ? paragraph.units.map(unit => buildUnitTranslationPreview(unit, dictionary))
-        : [];
-      return buildParagraphTranslationPreview(paragraph, units, '');
+    return buildTranslationPreviewBatch(paragraphs, {
+      includeParagraphTranslation,
+      includeUnitTranslation,
+      dictionary,
     });
   }
   const modelKey = await resolveTranslationModelKey(provider);
   const translationCache = getTranslationCache(modelKey);
-  const previews: PickupTranslateParagraphPreview[] = [];
-  let wroteCache = false;
-  for (const paragraph of paragraphs) {
-    const sourceText = paragraph.sourceText ?? '';
-    const cleanText = sourceText.replace(/\u200B/g, '').trim();
-    let paragraphText = '';
-    if (cleanText) {
-      try {
-        const sourceHash = sha256(cleanText);
-        const cached = await translationCache.get(sourceHash);
-        const cachedValue = cached?.value?.trim() ?? '';
-        if (cachedValue) {
-          paragraphText = cached!.value;
-        } else {
-          paragraphText = await translateText(provider, { text: cleanText });
-          if (paragraphText.trim()) {
-            await translationCache.set(sourceHash, paragraphText);
-            wroteCache = true;
-          }
-        }
-      } catch (error) {
-        console.warn('Pickup paragraph translation failed, fallback to token-only preview:', error);
-      }
-    }
-    const units = includeUnitTranslation && dictionary
-      ? paragraph.units.map(unit => buildUnitTranslationPreview(unit, dictionary))
-      : [];
-    previews.push(buildParagraphTranslationPreview(paragraph, units, paragraphText));
-  }
-  if (wroteCache) {
-    void translationCache.maybePrune(CACHE_PRUNE_REASONS.translate);
-  }
-  return previews;
+  return buildTranslationPreviewBatch(paragraphs, {
+    includeParagraphTranslation,
+    includeUnitTranslation,
+    dictionary,
+    translationCache,
+    translateParagraph: (text) => translateText(provider, { text }),
+    onParagraphTranslationError: (error) => {
+      console.warn('Pickup paragraph translation failed, fallback to token-only preview:', error);
+    },
+  });
 }
 
 function resolveModelKey(modelKey?: string | (() => string)) {
