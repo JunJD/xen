@@ -212,38 +212,11 @@ async function annotateParagraphs(
   let wroteCache = false;
 
   for (const paragraph of paragraphs) {
-<<<<<<< HEAD
     const sourceHash = paragraph.hash ?? sha256(paragraph.text);
     const cached = await cache.get(sourceHash);
     if (cached?.value && cached.value.length > 0) {
       annotations.push({ id: paragraph.id, tokens: cached.value });
       continue;
-=======
-    const sourceText = paragraph.sourceText ?? '';
-    const cleanText = sourceText.replace(/\u200B/g, '').trim();
-    let paragraphText = '';
-    if (cleanText) {
-      try {
-        const sourceHash = sha256(cleanText);
-        const cached = await translationCache.get(sourceHash);
-        const cachedValue = cached?.value?.trim() ?? '';
-        if (cachedValue) {
-          paragraphText = cached!.value;
-        } else {
-          const result = await translationCache.getOrLoad(
-            sourceHash,
-            () => translateText(provider, { text: cleanText }),
-            {
-              shouldPersist: value => value.trim().length > 0,
-            },
-          );
-          paragraphText = result.value;
-          wroteCache = wroteCache || result.persisted;
-        }
-      } catch (error) {
-        console.warn('Pickup paragraph translation failed, fallback to token-only preview:', error);
-      }
->>>>>>> task/t3-inflight-dedupe
     }
 
     const tokens = await requestTokens(client, paragraph.text);

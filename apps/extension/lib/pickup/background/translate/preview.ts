@@ -168,7 +168,6 @@ export async function buildTranslationPreviews(
 
   const modelKey = await dependencies.resolveTranslationModelKey(provider);
   const translationCache = dependencies.getTranslationCache(modelKey);
-  const inFlightParagraphTranslations = new Map<string, Promise<string>>();
   let wroteCache = false;
 
   const paragraphTexts = await Promise.all(paragraphs.map(async (paragraph) => {
@@ -180,26 +179,15 @@ export async function buildTranslationPreviews(
 
     try {
       const sourceHash = sha256(cleanText);
-      const cached = await translationCache.get(sourceHash);
-      const cachedValue = cached?.value?.trim() ?? '';
-      if (cachedValue) {
-        return cached?.value ?? '';
-      }
-
-      let translationPromise = inFlightParagraphTranslations.get(sourceHash);
-      if (!translationPromise) {
-        translationPromise = (async () => {
-          const paragraphText = await dependencies.translateText(provider, { text: cleanText });
-          if (paragraphText.trim()) {
-            await translationCache.set(sourceHash, paragraphText);
-            wroteCache = true;
-          }
-          return paragraphText;
-        })();
-        inFlightParagraphTranslations.set(sourceHash, translationPromise);
-      }
-
-      return await translationPromise;
+      const result = await translationCache.getOrLoad(
+        sourceHash,
+        () => dependencies.translateText(provider, { text: cleanText }),
+        {
+          shouldPersist: value => value.trim().length > 0,
+        },
+      );
+      wroteCache = wroteCache || result.persisted;
+      return result.value;
     } catch (error) {
       console.warn('Pickup paragraph translation failed, fallback to token-only preview:', error);
       return '';
