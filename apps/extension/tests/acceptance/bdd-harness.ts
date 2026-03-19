@@ -178,6 +178,7 @@ export function defineFeatureAcceptance(options: DefineFeatureAcceptanceOptions)
     feature.scenarios.forEach((scenario) => {
       it(`Scenario: ${scenario.name}`, async () => {
         const handler = options.handlers[scenario.name];
+        expect(handler).toBeTypeOf('function');
         if (!handler) {
           throw new Error(
             `No acceptance handler registered for "${scenario.name}" in ${feature.filePath}`,

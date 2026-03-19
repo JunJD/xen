@@ -29,13 +29,13 @@ import {
   signOutBackgroundSession,
 } from '@/lib/pickup/background/auth/clerk';
 import {
-  buildTranslationPreviews,
   ensureTranslateProviderConfig,
   ensureTranslateProvidersRegistered,
   getStoredTranslateProvider,
   isTranslateProvider,
   setStoredTranslateProvider,
 } from './translate';
+import { buildTranslationPreviews } from './translate/preview';
 
 const OFFSCREEN_CONFIG = {
   contextType: 'OFFSCREEN_DOCUMENT',
@@ -236,6 +236,13 @@ async function annotateParagraphs(
   return annotations;
 }
 
+function resolveModelKey(modelKey?: string | (() => string)) {
+  if (!modelKey) {
+    return undefined;
+  }
+
+  return annotations;
+}
 function resolveModelKey(modelKey?: string | (() => string)) {
   if (!modelKey) {
     return undefined;
