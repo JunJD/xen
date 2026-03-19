@@ -4,27 +4,15 @@ import type {
   PickupModelStatus,
   PickupParagraph,
   PickupTranslateParagraphInput,
-  PickupTranslateParagraphPreview,
-  PickupTranslateUnitInput,
-  PickupTranslateUnitPreview,
   PickupToken,
-  TranslateProvider,
 } from '@/lib/pickup/messages';
-import { createPickupCache, createTranslationCache } from '@/lib/pickup/cache';
+import { createPickupCache } from '@/lib/pickup/cache';
 import {
   CACHE_PRUNE_REASONS,
   MESSAGE_TYPES,
   STATUS_ERROR_CODES,
 } from '@/lib/pickup/constants';
 import { buildWebAuthUrl } from '@/lib/auth/clerk';
-import {
-  getVocabDictionaryManifest,
-  loadVocabDictionary,
-  lookupVocabAllPos,
-  lookupVocabPhones,
-  lookupVocabTranslation,
-  type VocabDictionary,
-} from '@/lib/pickup/vocab/dictionary';
 import {
   PICKUP_OFFSCREEN_ACTION_ANALYZE,
   PICKUP_OFFSCREEN_ACTION_STATUS,
@@ -41,16 +29,12 @@ import {
   signOutBackgroundSession,
 } from '@/lib/pickup/background/auth/clerk';
 import {
-  DEFAULT_LLM_MODEL,
+  buildTranslationPreviews,
   ensureTranslateProviderConfig,
   ensureTranslateProvidersRegistered,
-  getStoredLlmModel,
-  getStoredPickupDictionaryIds,
   getStoredTranslateProvider,
   isTranslateProvider,
-  setStoredPickupDictionaryIds,
   setStoredTranslateProvider,
-  translateText,
 } from './translate';
 
 const OFFSCREEN_CONFIG = {
@@ -78,30 +62,10 @@ type OffscreenClient = {
 };
 
 type PickupCache = ReturnType<typeof createPickupCache>;
-type TranslationCache = ReturnType<typeof createTranslationCache>;
 
 export type PickupBackgroundOptions = {
   modelKey?: string | (() => string);
 };
-
-async function resolveTranslationModelKey(provider: TranslateProvider) {
-  if (provider !== 'llm') {
-    return `translate:${provider}`;
-  }
-  const model = await getStoredLlmModel().catch(() => DEFAULT_LLM_MODEL);
-  return `translate:${provider}:${model}`;
-}
-
-const translationCaches = new Map<string, TranslationCache>();
-
-function getTranslationCache(modelKey: string) {
-  let cache = translationCaches.get(modelKey);
-  if (!cache) {
-    cache = createTranslationCache({ modelKey: () => modelKey });
-    translationCaches.set(modelKey, cache);
-  }
-  return cache;
-}
 
 function createOffscreenClient(): OffscreenClient {
   let warmupInFlight = false;
@@ -270,120 +234,6 @@ async function annotateParagraphs(
   }
 
   return annotations;
-}
-
-function buildUnitTranslationPreview(
-  unit: PickupTranslateUnitInput,
-  dictionary: VocabDictionary,
-): PickupTranslateUnitPreview {
-  const vocabTranslation = lookupVocabTranslation(unit.text, dictionary, unit.pos) ?? '';
-  const vocabHint = lookupVocabAllPos(unit.text, dictionary) ?? '';
-  const phones = lookupVocabPhones(unit.text, dictionary);
-  return {
-    unitId: unit.unitId,
-    vocabInfusionText: vocabTranslation,
-    vocabInfusionHint: vocabHint,
-    usphone: phones?.usphone,
-    ukphone: phones?.ukphone,
-    syntaxRebuildText: '',
-    context: unit,
-  };
-}
-
-function buildParagraphTranslationPreview(
-  paragraph: PickupTranslateParagraphInput,
-  units: PickupTranslateUnitPreview[],
-  paragraphText: string,
-): PickupTranslateParagraphPreview {
-  return {
-    id: paragraph.id,
-    sourceText: paragraph.sourceText,
-    paragraphText,
-    units,
-  };
-}
-
-async function buildTranslationPreviews(
-  paragraphs: PickupTranslateParagraphInput[],
-  provider: TranslateProvider,
-  options: { includeParagraphTranslation?: boolean; includeUnitTranslation?: boolean } = {},
-): Promise<PickupTranslateParagraphPreview[]> {
-  if (paragraphs.length === 0) {
-    return [];
-  }
-  const includeParagraphTranslation = options.includeParagraphTranslation !== false;
-  const includeUnitTranslation = options.includeUnitTranslation !== false;
-  let dictionary: VocabDictionary | null = null;
-  if (includeUnitTranslation) {
-    const manifest = await getVocabDictionaryManifest();
-    const availableDictionaryIds = new Set(manifest.dictionaries.map(item => item.id));
-    const storedDictionaryIds = await getStoredPickupDictionaryIds();
-    let resolvedDictionaryIds = (storedDictionaryIds ?? []).filter(id => availableDictionaryIds.has(id));
-    if (resolvedDictionaryIds.length === 0) {
-      resolvedDictionaryIds = manifest.defaultDictionaryIds.filter(id => availableDictionaryIds.has(id));
-    }
-    if (resolvedDictionaryIds.length === 0) {
-      const firstId = manifest.dictionaries[0]?.id;
-      if (firstId) {
-        resolvedDictionaryIds = [firstId];
-      }
-    }
-    if (resolvedDictionaryIds.length === 0) {
-      throw new Error('Dictionary manifest has no valid dictionary ids.');
-    }
-    const needsMigration = !storedDictionaryIds
-      || storedDictionaryIds.length !== resolvedDictionaryIds.length
-      || storedDictionaryIds.some((id, index) => id !== resolvedDictionaryIds[index]);
-    if (needsMigration) {
-      await setStoredPickupDictionaryIds(resolvedDictionaryIds);
-    }
-    dictionary = await loadVocabDictionary({
-      dictionaryIds: resolvedDictionaryIds,
-    });
-  }
-  if (!includeParagraphTranslation) {
-    return paragraphs.map((paragraph) => {
-      const units = includeUnitTranslation && dictionary
-        ? paragraph.units.map(unit => buildUnitTranslationPreview(unit, dictionary))
-        : [];
-      return buildParagraphTranslationPreview(paragraph, units, '');
-    });
-  }
-  const modelKey = await resolveTranslationModelKey(provider);
-  const translationCache = getTranslationCache(modelKey);
-  const previews: PickupTranslateParagraphPreview[] = [];
-  let wroteCache = false;
-  for (const paragraph of paragraphs) {
-    const sourceText = paragraph.sourceText ?? '';
-    const cleanText = sourceText.replace(/\u200B/g, '').trim();
-    let paragraphText = '';
-    if (cleanText) {
-      try {
-        const sourceHash = sha256(cleanText);
-        const cached = await translationCache.get(sourceHash);
-        const cachedValue = cached?.value?.trim() ?? '';
-        if (cachedValue) {
-          paragraphText = cached!.value;
-        } else {
-          paragraphText = await translateText(provider, { text: cleanText });
-          if (paragraphText.trim()) {
-            await translationCache.set(sourceHash, paragraphText);
-            wroteCache = true;
-          }
-        }
-      } catch (error) {
-        console.warn('Pickup paragraph translation failed, fallback to token-only preview:', error);
-      }
-    }
-    const units = includeUnitTranslation && dictionary
-      ? paragraph.units.map(unit => buildUnitTranslationPreview(unit, dictionary))
-      : [];
-    previews.push(buildParagraphTranslationPreview(paragraph, units, paragraphText));
-  }
-  if (wroteCache) {
-    void translationCache.maybePrune(CACHE_PRUNE_REASONS.translate);
-  }
-  return previews;
 }
 
 function resolveModelKey(modelKey?: string | (() => string)) {

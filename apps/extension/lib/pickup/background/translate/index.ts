@@ -36,4 +36,5 @@ export async function ensureTranslateProviderConfig() {
 export * from './service';
 export * from './storage';
 export * from './types';
+export * from './preview-gateway';
 export { isTranslateProvider };
