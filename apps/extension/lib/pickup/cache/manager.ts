@@ -14,6 +14,7 @@ export class CacheManager<T> {
   private buildKey: (sourceHash: string, modelKey: string) => string;
   private lastPruneAt = 0;
   private pruneInFlight: Promise<void> | null = null;
+  private loadInFlight = new Map<string, Promise<{ value: T; cacheHit: boolean; persisted: boolean }>>();
 
   constructor(options: CacheManagerOptions<T>) {
     this.layers = options.layers;
@@ -86,6 +87,58 @@ export class CacheManager<T> {
     };
 
     await Promise.all(this.layers.map(layer => this.safeSet(layer, entry)));
+  }
+
+  async getOrLoad(
+    sourceHash: string,
+    load: () => Promise<T>,
+    options: { shouldPersist?: (value: T) => boolean } = {},
+  ): Promise<{ value: T; cacheHit: boolean; persisted: boolean }> {
+    const cached = await this.get(sourceHash);
+    if (cached) {
+      return {
+        value: cached.value,
+        cacheHit: true,
+        persisted: false,
+      };
+    }
+
+    const modelKey = this.getModelKey();
+    const hash = this.buildKey(sourceHash, modelKey);
+    const inFlight = this.loadInFlight.get(hash);
+    if (inFlight) {
+      return inFlight;
+    }
+
+    const shouldPersist = options.shouldPersist ?? (() => true);
+    const pendingLoad = (async () => {
+      const value = await load();
+      const persisted = shouldPersist(value);
+      if (persisted) {
+        await this.set(sourceHash, value);
+      }
+      return {
+        value,
+        cacheHit: false,
+        persisted,
+      };
+    })();
+
+    this.loadInFlight.set(hash, pendingLoad);
+    pendingLoad.then(
+      () => {
+        if (this.loadInFlight.get(hash) === pendingLoad) {
+          this.loadInFlight.delete(hash);
+        }
+      },
+      () => {
+        if (this.loadInFlight.get(hash) === pendingLoad) {
+          this.loadInFlight.delete(hash);
+        }
+      },
+    );
+
+    return pendingLoad;
   }
 
   async delete(sourceHash: string): Promise<void> {

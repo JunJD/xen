@@ -365,11 +365,15 @@ async function buildTranslationPreviews(
         if (cachedValue) {
           paragraphText = cached!.value;
         } else {
-          paragraphText = await translateText(provider, { text: cleanText });
-          if (paragraphText.trim()) {
-            await translationCache.set(sourceHash, paragraphText);
-            wroteCache = true;
-          }
+          const result = await translationCache.getOrLoad(
+            sourceHash,
+            () => translateText(provider, { text: cleanText }),
+            {
+              shouldPersist: value => value.trim().length > 0,
+            },
+          );
+          paragraphText = result.value;
+          wroteCache = wroteCache || result.persisted;
         }
       } catch (error) {
         console.warn('Pickup paragraph translation failed, fallback to token-only preview:', error);
